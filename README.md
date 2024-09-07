@@ -108,7 +108,7 @@ All of these architectures have the same goals:
 
 #### 1.5.2 Flexibility in Clean Architecture
 
-#### 1.5.3  Code organization.
+#### 1.5.2.3  Code organization.
 
 1. **Package by Layer:**
     - Horizontal layering
@@ -221,7 +221,15 @@ All of these architectures have the same goals:
 - Before the choosing: consider the size of your team, their skill level, and the complexity of the solution in conjunction with your time and budgetary constraints.    
 
 
-<hr>    
+<hr>   
+
+
+**IN THIS PROJECT:**    
+
+I'm going to follow the approach of `Ports and Adapters`, each boundary as an independent project (Maven).    
+
+
+<hr>      
 
 _**Note:**_ All content here about the design architecture used is based on the book _"Clean Architecture: A Craftsman's Guide to Software Structure and Design"_ by Robert C. Martin.
 

@@ -63,9 +63,76 @@ client side, protecting against common web vulnerabilities like **XSS** and **CS
 
 ### 1.4 Cache
 
-[//]: # (todo: - why i decided cache the users page with: private, max-age=600)
+#### 1.4.1 Redis
+
+**Redis** is an open-source, in-memory data structure store.
+
+
 
 ### 1.5 Design Architecture
+
+This project is going to be developed using the **Clean Architecture**.   
+as we know, this architecture is the integration of several architectures:
+
+1. [**Hexagonal Architecture (also known as Ports and Adapters)
+   **](https://en.wikipedia.org/wiki/Hexagonal_architecture_(software))
+2. [**Data, context and interaction**](https://en.wikipedia.org/wiki/Data,_context_and_interaction)
+3. [**Entity-control-boundary**](https://en.wikipedia.org/wiki/Entity-control-boundary)
+4. ...
+
+the fusion of these architectures for make the **Clean Architecture** finds for:
+
+- **Independent of frameworks.**
+- **Testable.**
+- **Independent of UI.**
+- **Independent of Database.**
+- **Independent of any external agency.**
+#### 1.5.1 Strictness in Clean Architecture
+
+![Clean Architecture](https://blog.cleancoder.com/uncle-bob/images/2012-08-13-the-clean-architecture/CleanArchitecture.jpg)
+
+- **Workflows:**
+    - An element in an _Inner Circle_ must not depend on any element in an _Outer Circle_.
+    - If it needs to use an element in an _Outer Circle_, it must do so through an **Interface**.
+    - Each _Circle_ should only interact with the adjacent _Circle_; no direct jumps between layers are allowed.
+
+- **Layers:**
+    - **Entities:**
+        - Represent critical business rules that would exist even if no software were present.
+    - **Use Cases:**
+        - Define and constrain how the automated system operates (application-specific business rules).
+    - **Interface Adapters:**
+        - Convert data between the format used by the use cases and entities, and the format required by external systems like databases or web services.
+    - **Frameworks and Drivers:**
+        - Handle the details of external interfaces, tools, and devices.
+
+#### 1.5.2 Flexibility in Clean Architecture
+
+The **Clean Architecture** offers flexibility in how code is organized and packaged. The book recommends starting with a simple and straightforward design and evolving it as the system grows. Over time, components become more specific, depending on factors such as:
+
+- Application size
+- Complexity
+- Number of developers
+- Developer expertise
+
+The organization of code is flexible, but the book emphasizes several key practices:
+
+1. **Internal Package Organization:**
+    - Only expose `public` classes that are needed by external packages.
+    - Keep all other classes `package-private` (the default modifier in Java).
+    - Organize packages by layer, feature, or component (considering principles like **Cohesion** and **Coupling**).
+
+2. **Strict Separation:**
+    - Use built-in language mechanisms for enforcing separation (e.g., Java 9 module system).
+    - Ensure compile-time dependency management using tools like Maven or Gradle.
+    - Example: Following Ports and Adapters architecture:
+        - **Domain:** Represents the 'inside' core logic.
+        - **Infrastructure:** Represents the 'outside' (e.g., controllers, repositories).
+        - Be mindful: 'outside' layers can communicate with other 'outside' layers (e.g., controllers with repositories), but always ensure they pass through the 'inside'.
+
+The book says that is very much an idealistic use the **Strict Separation**.
+
+_**Note:**_ All content is based on the book _"Clean Architecture: A Craftsman's Guide to Software Structure and Design"_ by Robert C. Martin.
 
 ### 1.5 Sequences
 

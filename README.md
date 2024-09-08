@@ -65,12 +65,11 @@ client side, protecting against common web vulnerabilities like **XSS** and **CS
 
 #### 1.4.1 Redis
 
-**Redis** is an open-source, in-memory data structure store.   
+**Redis** is an open-source, in-memory data structure store.
+
+#### 1.4.2 Cache Strategies
+
 as we know, we can use redis as a distributed cache, applying the most convenient cache strategy:
-
-[//]: # (todo: add pros and cons of each one)
-
-- **Cache** == **Cache Library**
 
 1. Cache-Aside:
     - **Reads**:
@@ -161,11 +160,15 @@ as we know, we can use redis as a distributed cache, applying the most convenien
 
     - **CONS**:
         - Potential Inconsistency: If data is lost from the cache (e.g., cache entry expires) before the asynchronous
-          write completes, there could be data inconsistencies. ( solve with a setting the TAT of cache little higher
+          write is completed, there could be data inconsistencies. ( solve with a setting the TAT (Turnaround Time) of
+          cache little higher
+          like 2 days )
 
-[//]: # (          like 2 days &#41; todo: explain better this)
+<hr>
 
-[//]: # (todo: choose the best strategy for this project)
+**IN THIS PROJECT:**
+I am going to use **Write-Through** & **Read-Through** strategies, using Redis.
+
 ### 1.5 Design Architecture
 
 This project is going to be developed using the **Clean Architecture**.   
@@ -204,6 +207,8 @@ All of these architectures have the same goals:
           systems like databases or web services.
     - **Frameworks and Drivers:**
         - Handle the details of external interfaces, tools, and devices.
+    - **Other:**
+        - can have more layers.
 
 #### 1.5.2 Flexibility in Clean Architecture
 

@@ -3,25 +3,27 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.cris6h16</groupId>
+        <artifactId>restful-api-jwt</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
 
-    <groupId>org.cris6h16</groupId>
-    <artifactId>restful-api-jwt</artifactId>
-    <version>1.0-SNAPSHOT</version>
-    <name>restful-api-jwt</name>
-    <description>RESTful API with JWT authentication</description>
-
-    <packaging>pom</packaging> <!--  used to manage dependency inheritance for child projects. -->
-
-    <modules>
-        <module>Domain</module>
-        <module>Infrastructure</module>
-        <module>Application</module>
-    </modules>
+    <artifactId>Application</artifactId>
 
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
+
+    <dependencies>
+        <dependency>
+            <groupId>org.cris6h16</groupId>
+            <artifactId>Domain</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
 
 </project>

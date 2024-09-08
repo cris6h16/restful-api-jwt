@@ -6,7 +6,7 @@ public class CreateAccountCommand {
     private String email;
 
     public CreateAccountCommand(String username, String password, String email) {
-//        todo: add setter validations as not null / blank / eyc
+//        todo: add setter validations like not null / blank / eyc
         this.setUsername(username);
         this.setPassword(password);
         this.setEmail(email);

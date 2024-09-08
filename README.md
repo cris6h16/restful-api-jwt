@@ -334,6 +334,12 @@ I'm going to follow the approach of `Ports and Adapters`, each boundary as an in
 _**Note:**_ All content here about the design architecture used is based on the book _"Clean Architecture: A Craftsman's
 Guide to Software Structure and Design"_ by Robert C. Martin.
 
-### 1.5 Sequences
+### 1.5 Use Cases   
+
+![Use Cases](docs/imgs/UseCase_Diagram.png)
+
+### 1.6 Sequences
 
 ![Sequences diagram](docs/imgs/sequences.jpg)
+
+

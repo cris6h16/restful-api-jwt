@@ -65,7 +65,35 @@ client side, protecting against common web vulnerabilities like **XSS** and **CS
 
 #### 1.4.1 Redis
 
-**Redis** is an open-source, in-memory data structure store.
+**Redis** is an open-source, in-memory data structure store.   
+as we know, we can use redis as a distributed cache, applying the most convenient cache strategy:
+
+[//]: # (todo: add pros and cons of each one)
+1. Cache-Aside:
+    - **Reads**:
+        1. Check the cache   
+        if not found (Cache Miss):
+        3. **App** read from the database
+        4. **App** store the result in the cache
+        5. **App** return the result to the client.
+    - Ideal for read-heavy apps.
+
+2. Read-Through:
+    - **Reads**:
+        1. **App** check the cache    
+        if not found (Cache Miss)
+        2. **Cache** read from the database
+        3. **Cache** itself store the result in the cache
+        4. **Cache** return the result to the **App** 
+    - Ideal for read-heavy apps.
+    - Logic for fetching data from the database is handled outside the application.   
+
+3. Write Around:
+    - **Writes**:
+        1. **App** write to the database
+        2. **App** invalidate the cache
+    - Ideal for read-heavy apps.
+    - 
 
 ### 1.5 Design Architecture
 
@@ -78,7 +106,7 @@ as we know, this architecture is the integration of several architectures:
 3. [**Entity-control-boundary**](https://en.wikipedia.org/wiki/Entity-control-boundary)
 4. ...
 
-All of these architectures have the same goals:   
+All of these architectures have the same goals:
 
 - **Independent of frameworks.**
 - **Testable.**
@@ -122,9 +150,7 @@ All of these architectures have the same goals:
         - Hard: Understand what the business does just by looking at the code.
         - Hard: Maintain or extend business-specific features.
         - Hard: Communicate the domain effectively to new developers or stakeholders.
-    - Example of layers: `Web`, `Service`, `Data`   
-
-
+    - Example of layers: `Web`, `Service`, `Data`
 
 
 2. **Package by Feature:**
@@ -139,8 +165,6 @@ All of these architectures have the same goals:
          ```text
          com.example.app.orders >> ( OrdersController, OrdersService, OrdersServiceImpl, OrdersRepository, InMemoryOrdersRepository )
       ```   
-      
-
 
 
 3. **Ports and Adapters:**
@@ -151,8 +175,7 @@ All of these architectures have the same goals:
             - UIs, Databases, Third-party integrations, etc.
     - **Important**: **Infrastructure** depends on **Domain**, but **Domain** doesn't depend on **Infrastructure**.
     - **Inside** should be stated in terms of _Ubiquitous domain language (DDD)_.
-        - Example: `OrderRepository` >> renamed to >> `Orders`   
-
+        - Example: `OrderRepository` >> renamed to >> `Orders`
 
 
 4. **Package by Component**:
@@ -199,39 +222,41 @@ All of these architectures have the same goals:
             ├── OrdersRepository.java    ( package private )
             └── InMemoryOrdersRepository.java ( package private )
       ```    
-      
-
-
 
 
 5. **Other Decoupling Modes**:
     1. Java 9 module system ( ensures a strict decoupling )
     2. Source Code level decoupling (different source code trees for each):
         - Examples with **ports and adapters**:
-            1. a src code tree for **Domain** ('inside' - everything that is independent of any technology ): `OrdersService`, `OrdersServiceImpl`, `Orders` (db gateway)
-            2. another src code tree for **Infrastructure**: The _outside_ (e.g., controllers, repositories, frameworks, ect). 
-            - **Infrastructure** has a compile-time dependency of **Domain** ( by modules or projects in your build tool (Maven, Gradle, etc).)
-            - be careful: 'outside' layers can communicate with other 'outside' layers (e.g., controllers with repositories).   
+            1. a src code tree for **Domain** ('inside' - everything that is independent of any
+               technology ): `OrdersService`, `OrdersServiceImpl`, `Orders` (db gateway)
+            2. another src code tree for **Infrastructure**: The _outside_ (e.g., controllers, repositories, frameworks,
+               ect).
 
+            - **Infrastructure** has a compile-time dependency of **Domain** ( by modules or projects in your build
+              tool (Maven, Gradle, etc).)
+            - be careful: 'outside' layers can communicate with other 'outside' layers (e.g., controllers with
+              repositories).
 
+**CONSIDERATIONS**:
 
-**CONSIDERATIONS**:   
-
-- **Package-Private**: `Public`: Only expose classes that are needed by external packages, otherwise keep them `package-private`.
-- Before the choosing: consider the size of your team, their skill level, and the complexity of the solution in conjunction with your time and budgetary constraints.    
-
+- **Package-Private**: `Public`: Only expose classes that are needed by external packages, otherwise keep
+  them `package-private`.
+- Before the choosing: consider the size of your team, their skill level, and the complexity of the solution in
+  conjunction with your time and budgetary constraints.
 
 <hr>   
 
 
-**IN THIS PROJECT:**    
+**IN THIS PROJECT:**
 
-I'm going to follow the approach of `Ports and Adapters`, each boundary as an independent project (Maven).    
+I'm going to follow the approach of `Ports and Adapters`, each boundary as an independent project (Maven).
 
 
 <hr>      
 
-_**Note:**_ All content here about the design architecture used is based on the book _"Clean Architecture: A Craftsman's Guide to Software Structure and Design"_ by Robert C. Martin.
+_**Note:**_ All content here about the design architecture used is based on the book _"Clean Architecture: A Craftsman's
+Guide to Software Structure and Design"_ by Robert C. Martin.
 
 ### 1.5 Sequences
 

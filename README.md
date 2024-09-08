@@ -69,32 +69,103 @@ client side, protecting against common web vulnerabilities like **XSS** and **CS
 as we know, we can use redis as a distributed cache, applying the most convenient cache strategy:
 
 [//]: # (todo: add pros and cons of each one)
+
+- **Cache** == **Cache Library**
+
 1. Cache-Aside:
     - **Reads**:
-        1. Check the cache   
-        if not found (Cache Miss):
+        1. **App** Check the cache
+
+        - if found (Cache Hit), return the result to the client.
+        - if not found (Cache Miss):
+
         3. **App** read from the database
         4. **App** store the result in the cache
         5. **App** return the result to the client.
-    - Ideal for read-heavy apps.
+
+    - **Writes**:
+        1. **App** write to the database
+
+    - **Pros**:
+        - Ideal for read-heavy apps.
+        - If cache is down, the app can still work.
+
+    - **Cons**:
+        - For new data (write) , always will be Cache Miss ( pre-heat the cache for solve )
+        - Cache can be inconsistent with the database if the write strategy is not the appropriate one. ( when update
+          data in db )
+        - The way you store the data in the cache can be different from the way that data is stored in the database. (
+          App has the responsibility to read/write the cache )
 
 2. Read-Through:
     - **Reads**:
-        1. **App** check the cache    
-        if not found (Cache Miss)
+        1. **App** check the cache
+
+        - if found (Cache Hit), **Cache** return the result to the **App**.
+        - if not found (Cache Miss):
+
         2. **Cache** read from the database
         3. **Cache** itself store the result in the cache
-        4. **Cache** return the result to the **App** 
-    - Ideal for read-heavy apps.
-    - Logic for fetching data from the database is handled outside the application.   
+        4. **Cache** return the result to the **App**
+
+    - **Writes**:
+        1. **App** write to the database
+
+    - **Pros**:
+        - Ideal for read-heavy apps.
+        - Logic for fetching data from DB and update cache is handled separate from the application.
+
+    - **Cons**:
+        - For new data(write), always will be Cache Miss ( pre-heat the cache for solve )
+        - Cache can be inconsistent with the database if the write strategy is not the appropriate one. ( when update
+          data in db )
+        - The way you store the data in the cache should be the same as the table in the database. ( Avoids complexity )
 
 3. Write Around:
     - **Writes**:
         1. **App** write to the database
-        2. **App** invalidate the cache
-    - Ideal for read-heavy apps.
-    - 
+        2. **App** invalidate the cache ( e.g. using a flag )
+    - **PROS**:
+        - Just recommended for read-heavy application ( with Read-Through or Cache-Aside - alone shouldn't be used )
+        - Inconsistent between cache and database is solved.
+    - **CONS**:
+        - If DB is down, write will fail.
 
+
+4. Write-Through:
+    - **Writes**:
+        1. **App** write to the cache
+        2. **App** synchronously write to the database
+
+    - **PROS**:
+        - Consistent: cache and database.
+        - Cache Hit rate is higher.
+
+    - **CONS**:
+        - Alone used just increase the latency of the write operation ( use this with Read-Through or Cache-Aside )
+        - For maintain the transactional property, we need support 2 phase commit.
+        - If DB is down, write will fail.
+
+
+5. Write-Behind (Write-Back):
+    - **Writes**:
+        1. **App** write to the cache
+        2. **App** ASYNCHRONOUS write to the database ( sent to a queue )
+
+    - **PROS**:
+        - Ideal for write-heavy applications.
+        - Write latency is reduced. ( write in DB is async )
+        - Cache Hit rate is higher.
+        - better if is used with **Read-Through**.
+        - If DB is down, write will not fail. ( even for a long time - regarding the cache live time )
+
+    - **CONS**:
+        - Potential Inconsistency: If data is lost from the cache (e.g., cache entry expires) before the asynchronous
+          write completes, there could be data inconsistencies. ( solve with a setting the TAT of cache little higher
+
+[//]: # (          like 2 days &#41; todo: explain better this)
+
+[//]: # (todo: choose the best strategy for this project)
 ### 1.5 Design Architecture
 
 This project is going to be developed using the **Clean Architecture**.   

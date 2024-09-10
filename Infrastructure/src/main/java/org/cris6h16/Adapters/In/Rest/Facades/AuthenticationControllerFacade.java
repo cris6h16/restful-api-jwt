@@ -1,15 +1,19 @@
 package org.cris6h16.Adapters.In.Rest.Facades;
 
+import org.cris6h16.Adapters.In.Rest.DTOs.CreateAccountDTO;
 import org.cris6h16.Exceptions.Impls.AlreadyExistException;
 import org.cris6h16.Exceptions.Impls.InvalidAttributeException;
 import org.cris6h16.Exceptions.Impls.Rest.MyResponseStatusException;
 import org.cris6h16.In.Commands.CreateAccountCommand;
 import org.cris6h16.In.Ports.CreateAccountPort;
+import org.cris6h16.Models.ERoles;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import java.net.URI;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 
@@ -23,7 +27,9 @@ public class AuthenticationControllerFacade {
         this.createAccountPort = createAccountPort;
     }
 
-    public ResponseEntity<Void> signUp(CreateAccountCommand cmd) {
+    public ResponseEntity<Void> signUp(CreateAccountDTO dto) {
+        Set<ERoles> defaultRoles = new HashSet<>(Set.of(ERoles.ROLE_USER));
+        CreateAccountCommand cmd = new CreateAccountCommand(dto.getUsername(), dto.getPassword(), dto.getEmail(), defaultRoles);
         AtomicReference<Long> id = new AtomicReference<>(); // thread-safe: eg update without explicit synchronization, required for lambdas
         Runnable createAccount = () -> id.set(createAccountPort.createAccount(cmd));
         handleExceptions(createAccount);

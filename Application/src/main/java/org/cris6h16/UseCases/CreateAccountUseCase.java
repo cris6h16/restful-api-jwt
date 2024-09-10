@@ -8,15 +8,18 @@ import org.cris6h16.In.Ports.CreateAccountPort;
 import org.cris6h16.Models.ERoles;
 import org.cris6h16.Models.UserModel;
 import org.cris6h16.Repositories.UserRepository;
+import org.cris6h16.Utils.MyPasswordEncoder;
 
 import java.util.Set;
 
- public class CreateAccountUseCase implements CreateAccountPort {
+public class CreateAccountUseCase implements CreateAccountPort {
 
     private final UserRepository userRepository;
+    private final MyPasswordEncoder passwordEncoder;
 
-     public CreateAccountUseCase(UserRepository userRepository) {
+    public CreateAccountUseCase(UserRepository userRepository, MyPasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public Long createAccount(CreateAccountCommand command) {
@@ -26,11 +29,17 @@ import java.util.Set;
         verifyEmail(command.getEmail());
         verifyRoles(command.getRoles());
 
+        String username = command.getUsername().trim();
+        String password = command.getPassword().trim();
+        String email = command.getEmail().trim();
+        Set<ERoles> roles = command.getRoles();
+
+
         UserModel userModel = new UserModel.Builder()
-                .setUsername(command.getUsername().trim())
-                .setPassword(command.getPassword().trim())
-                .setEmail(command.getEmail().trim())
-                .setRoles(command.getRoles())
+                .setUsername(username)
+                .setPassword(passwordEncoder.encode(password))
+                .setEmail(email)
+                .setRoles(roles)
                 .setActive(false)
                 .setEmailVerified(false)
                 .setLastModified(System.currentTimeMillis())

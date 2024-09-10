@@ -55,6 +55,10 @@ public class UserModel {
         return lastModified;
     }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public static class Builder {
         private Long id;
         private String username;

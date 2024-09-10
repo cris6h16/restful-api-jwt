@@ -1,0 +1,32 @@
+spring:
+
+  application:
+    name: restful-api-jwt
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/restful-api-jwt
+    driver-class-name: org.postgresql.Driver
+    username: ${PSQL_USER}
+    password: ${PSQL_PASS}
+    hikari:
+      schema: public
+
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+server:
+  port: 8080
+  error:
+    include-message: never
+    include-exception: off
+    include-stacktrace: never
+
+
+
+

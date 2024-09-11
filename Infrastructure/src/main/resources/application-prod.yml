@@ -37,12 +37,6 @@ spring:
             required: true
 
 
-  servlet:
-    multipart:
-      enabled: true
-      max-file-size: 10MB
-      max-request-size: 10MB
-
 server:
   port: 8080
   error:
@@ -54,7 +48,7 @@ server:
 
 jwt:
   secret:
-    key: hola
+    key: ${JWT_SECRET_KEY}
 
 
 

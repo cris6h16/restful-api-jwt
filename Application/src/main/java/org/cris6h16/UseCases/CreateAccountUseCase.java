@@ -9,11 +9,15 @@ import org.cris6h16.In.Ports.CreateAccountPort;
 import org.cris6h16.Models.ERoles;
 import org.cris6h16.Models.UserModel;
 import org.cris6h16.Repositories.UserRepository;
+import org.cris6h16.Services.EIsolationLevel;
 import org.cris6h16.Services.EmailService;
+import org.cris6h16.Services.TransactionManager;
 import org.cris6h16.Utils.JwtUtils;
-import org.cris6h16.Utils.MyPasswordEncoder;
+import org.cris6h16.Services.MyPasswordEncoder;
 
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.logging.Logger;
 
 public class CreateAccountUseCase implements CreateAccountPort {
 
@@ -21,12 +25,15 @@ public class CreateAccountUseCase implements CreateAccountPort {
     private final MyPasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final JwtUtils jwtUtils;
+    private final TransactionManager transactionManager;
+    private static final Logger log = Logger.getLogger(CreateAccountUseCase.class.getName());
 
-    public CreateAccountUseCase(UserRepository userRepository, MyPasswordEncoder passwordEncoder, EmailService emailService, JwtUtils jwtUtils) {
+    public CreateAccountUseCase(UserRepository userRepository, MyPasswordEncoder passwordEncoder, EmailService emailService, JwtUtils jwtUtils, TransactionManager transactionManager) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
         this.jwtUtils = jwtUtils;
+        this.transactionManager = transactionManager;
     }
 
     public Long createAccount(CreateAccountCommand command) {
@@ -52,17 +59,26 @@ public class CreateAccountUseCase implements CreateAccountPort {
                 .setLastModified(System.currentTimeMillis())
                 .build();
 
-        if (userRepository.existsByUsername(userModel.getUsername())) {
-            throw new AlreadyExistException("Username already exists");
-        }
-        if (userRepository.existsByEmail(userModel.getEmail())) {
-            throw new AlreadyExistException("Email already exists");
-        }
+        transactionManager.executeInTransaction(EIsolationLevel.READ_COMMITTED, () -> {
+            if (userRepository.existsByUsername(userModel.getUsername())) {
+                 throw new AlreadyExistException("Username already exists");
+            }
+            if (userRepository.existsByEmail(userModel.getEmail())) {
+                throw new AlreadyExistException("Email already exists");
+            }
 
-        userRepository.save(userModel);
+            userRepository.save(userModel);
+        });
 
-        String token = jwtUtils.genToken(userModel.getUsername(), null, (5 * 60 * 1000)); // 5 mins of live
-        emailService.sendEmail(userModel.getEmail(), EmailContent.HTML_SIGNUP_SUBJECT, EmailContent.getSignUpHtmlBody(token), true);
+        // Send email in async way ( non-blocking ) -> also I can use a ExecutorService
+        CompletableFuture.runAsync(() -> {
+            try {
+                String token = jwtUtils.genToken(userModel.getUsername(), null, (5 * 60 * 1000)); // 5 mins of live
+                emailService.sendEmail(userModel.getEmail(), EmailContent.HTML_SIGNUP_SUBJECT, EmailContent.getSignUpHtmlBody(token), true);
+            } catch (Exception e) {
+                log.severe("Error sending email: " + e.toString());
+            }
+        });
 
         return userModel.getId();
     }

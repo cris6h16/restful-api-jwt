@@ -19,23 +19,38 @@ spring:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
+  # My ISP is blocking port 587, so I have to use port 465
+  #  mail:
+  #    host: smtp.gmail.com
+  #    port: 587
+  #    username: ${MAIL_USER}
+  #    password: ${MAIL_PASS}
+  #    protocol: smtp
+  #    properties:
+  #      mail:
+  #        debug: true
+  #        transport:
+  #          protocol: smtp
+  #        smtp:
+  #          auth: true
+  #          starttls:
+  #            enable: true
+  #            required: true
+
   mail:
     host: smtp.gmail.com
-    port: 587
+    port: 465
     username: ${MAIL_USER}
     password: ${MAIL_PASS}
     protocol: smtp
     properties:
       mail:
-        debug: true
-        transport:
-          protocol: smtp
         smtp:
-          auth: true
-          starttls:
+          ssl:
             enable: true
-            required: true
-
+            trust: smtp.gmail.com
+            checkserveridentity: true
+        debug: false
 
 server:
   port: 8080

@@ -1,6 +1,6 @@
 package org.cris6h16.Config.SpringBoot.Security;
 
-import org.cris6h16.Utils.MyPasswordEncoder;
+import org.cris6h16.Services.MyPasswordEncoder;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 

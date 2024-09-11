@@ -2,10 +2,7 @@ package org.cris6h16.Adapters.In.Rest;
 
 import org.cris6h16.Adapters.In.Rest.DTOs.CreateAccountDTO;
 import org.cris6h16.Adapters.In.Rest.Facades.AuthenticationControllerFacade;
-import org.cris6h16.In.Commands.CreateAccountCommand;
-import org.cris6h16.In.Ports.CreateAccountPort;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;

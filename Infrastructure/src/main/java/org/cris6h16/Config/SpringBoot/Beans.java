@@ -2,8 +2,11 @@ package org.cris6h16.Config.SpringBoot;
 
 import org.cris6h16.Adapters.Out.SpringData.UserJpaRepository;
 import org.cris6h16.Config.SpringBoot.Security.PasswordEncoderImpl;
+import org.cris6h16.Config.SpringBoot.Utils.JwtUtilsImpl;
 import org.cris6h16.In.Ports.CreateAccountPort;
+import org.cris6h16.Services.EmailService;
 import org.cris6h16.UseCases.CreateAccountUseCase;
+import org.cris6h16.Utils.JwtUtils;
 import org.cris6h16.Utils.MyPasswordEncoder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,8 +18,8 @@ public class Beans {
 
     @Bean
     @Scope("singleton")
-    public CreateAccountPort createAccountCommand(UserJpaRepository userJpaRepository, MyPasswordEncoder passwordEncoder) {
-        return new CreateAccountUseCase(userJpaRepository, passwordEncoder);
+    public CreateAccountPort createAccountCommand(UserJpaRepository userJpaRepository, MyPasswordEncoder passwordEncoder, EmailService emailService, JwtUtils jwtUtils) {
+        return new CreateAccountUseCase(userJpaRepository, passwordEncoder, emailService, jwtUtils);
     }
 
     @Bean
@@ -24,5 +27,6 @@ public class Beans {
     public MyPasswordEncoder passwordEncoder() {
         return new PasswordEncoderImpl();
     }
+
 }
 

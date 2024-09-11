@@ -1,5 +1,6 @@
 package org.cris6h16.UseCases;
 
+import org.cris6h16.Constants.EmailContent;
 import org.cris6h16.Exceptions.Impls.AlreadyExistException;
 import org.cris6h16.Exceptions.Impls.ImplementationException;
 import org.cris6h16.Exceptions.Impls.InvalidAttributeException;
@@ -8,6 +9,8 @@ import org.cris6h16.In.Ports.CreateAccountPort;
 import org.cris6h16.Models.ERoles;
 import org.cris6h16.Models.UserModel;
 import org.cris6h16.Repositories.UserRepository;
+import org.cris6h16.Services.EmailService;
+import org.cris6h16.Utils.JwtUtils;
 import org.cris6h16.Utils.MyPasswordEncoder;
 
 import java.util.Set;
@@ -16,10 +19,14 @@ public class CreateAccountUseCase implements CreateAccountPort {
 
     private final UserRepository userRepository;
     private final MyPasswordEncoder passwordEncoder;
+    private final EmailService emailService;
+    private final JwtUtils jwtUtils;
 
-    public CreateAccountUseCase(UserRepository userRepository, MyPasswordEncoder passwordEncoder) {
+    public CreateAccountUseCase(UserRepository userRepository, MyPasswordEncoder passwordEncoder, EmailService emailService, JwtUtils jwtUtils) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
+        this.jwtUtils = jwtUtils;
     }
 
     public Long createAccount(CreateAccountCommand command) {
@@ -40,7 +47,7 @@ public class CreateAccountUseCase implements CreateAccountPort {
                 .setPassword(passwordEncoder.encode(password))
                 .setEmail(email)
                 .setRoles(roles)
-                .setActive(false)
+                .setActive(true)
                 .setEmailVerified(false)
                 .setLastModified(System.currentTimeMillis())
                 .build();
@@ -53,6 +60,9 @@ public class CreateAccountUseCase implements CreateAccountPort {
         }
 
         userRepository.save(userModel);
+
+        String token = jwtUtils.genToken(userModel.getUsername(), null, (5 * 60 * 1000)); // 5 mins of live
+        emailService.sendEmail(userModel.getEmail(), EmailContent.HTML_SIGNUP_SUBJECT, EmailContent.getSignUpHtmlBody(token), true);
 
         return userModel.getId();
     }

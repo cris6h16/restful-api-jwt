@@ -24,6 +24,9 @@
             <artifactId>Domain</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-api -->
+
+
     </dependencies>
 
 </project>

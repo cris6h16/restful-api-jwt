@@ -23,6 +23,10 @@ public class UserModel {
         this.lastModified = lastModified;
     }
 
+    private UserModel() {
+    }
+
+
     public Long getId() {
         return id;
     }

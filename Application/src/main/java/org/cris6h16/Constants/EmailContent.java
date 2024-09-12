@@ -5,7 +5,7 @@ public final class EmailContent {
 
     public static String getSignUpHtmlBody(String token) {
         return HTML_SIGNUP_TEMPLATE
-                .replace("{{confirmationLink}}", "http://localhost:8080/auth/verify-email?token=" + token); // todo: improve hardcoded
+                .replace("{{confirmationLink}}", "http://localhost:8080/auth/verify-email?token=" + token); // todo: improve hardcoded in yml
     }
 
 

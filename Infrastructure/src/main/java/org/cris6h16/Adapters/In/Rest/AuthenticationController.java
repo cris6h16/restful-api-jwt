@@ -1,12 +1,10 @@
 package org.cris6h16.Adapters.In.Rest;
 
 import org.cris6h16.Adapters.In.Rest.DTOs.CreateAccountDTO;
+import org.cris6h16.Adapters.In.Rest.DTOs.LoginDTO;
 import org.cris6h16.Adapters.In.Rest.Facades.AuthenticationControllerFacade;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping(value = "/api/v1/auth")
@@ -23,6 +21,23 @@ public class AuthenticationController {
     )
     public ResponseEntity<Void> signUp(@RequestBody CreateAccountDTO dto) {
         return facade.signUp(dto);
+    }
+
+
+    @PostMapping(
+            value = "/login",
+            consumes = "application/json"
+    )
+    public ResponseEntity<Void> login(@RequestBody LoginDTO dto) {
+        return facade.login(dto);
+    }
+
+    @PutMapping(
+            value = "/verify-email",
+            consumes = "application/json"
+    )
+    public ResponseEntity<Void> verifyMyEmail() { //todo: test this
+        return facade.verifyMyEmail();
     }
 
 

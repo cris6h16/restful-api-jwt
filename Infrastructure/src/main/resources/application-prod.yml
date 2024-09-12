@@ -58,6 +58,13 @@ server:
     include-message: never
     include-exception: off
     include-stacktrace: never
+  ssl:
+    key-store: classpath:cris6h16.p12
+    key-store-password: ${KEY_STORE_PASS}
+    key-store-type: PKCS12
+    key-alias: cris6h16
+    enabled: true
+
 
 
 
@@ -66,4 +73,14 @@ jwt:
     key: ${JWT_SECRET_KEY}
 
 
+
+  expiration:
+    token:
+      refresh:
+        secs: 1296000 # 15 days
+      access:
+        secs: 1800 # 30 minutes
+      verification:
+        email:
+          secs: 86400 # 1 day todo: add to docs this change ( initiallly was 5 minutes)
 

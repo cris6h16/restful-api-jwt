@@ -1,18 +1,18 @@
 package org.cris6h16.Config.SpringBoot.Services;
 
-import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
+import org.cris6h16.Constants.EmailContent;
+import org.cris6h16.Models.UserModel;
 import org.cris6h16.Services.EmailService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.cris6h16.Utils.JwtUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
-import java.util.Properties;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @Slf4j
@@ -20,9 +20,13 @@ import java.util.Properties;
 public class EmailServiceImpl implements EmailService {
 
     private final JavaMailSender mailSender;
+    private final JwtUtils jwtUtils;
+    @Value("${jwt.expiration.token.verification.email.secs}")
+    private long EMAIL_VERIFICATION_TOKEN_TIME_LIVE;
 
-    public EmailServiceImpl(JavaMailSender mailSender) {
+    public EmailServiceImpl(JavaMailSender mailSender, JwtUtils jwtUtils) {
         this.mailSender = mailSender;
+        this.jwtUtils = jwtUtils;
     }
 
     public void sendEmail(String email, String subject, String text, boolean isHTML) {
@@ -48,5 +52,18 @@ public class EmailServiceImpl implements EmailService {
         } catch (Exception e) {
             log.error("Failed to send email to {}: {}", email, e.toString());
         }
+    }
+
+    @Override
+    public void sendAsychVerificationEmail(UserModel userModel) {
+        // Send email in async way ( non-blocking ) -> also I can use a ExecutorService
+        CompletableFuture.runAsync(() -> {
+            try {
+                String token = jwtUtils.genToken(userModel.getUsername(), null, EMAIL_VERIFICATION_TOKEN_TIME_LIVE);
+                sendEmail(userModel.getEmail(), EmailContent.HTML_SIGNUP_SUBJECT, EmailContent.getSignUpHtmlBody(token), true);
+            } catch (Exception e) {
+                log.error("Error sending email: {}", e.toString());
+            }
+        });
     }
 }

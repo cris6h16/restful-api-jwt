@@ -45,6 +45,7 @@
 # *.ipr
 
 # CMake
+*.p12
 cmake-build-*/
 
 # Mongo Explorer plugin

@@ -1,30 +1,52 @@
 package org.cris6h16.Adapters.In.Rest.Facades;
 
+import lombok.extern.slf4j.Slf4j;
 import org.cris6h16.Adapters.In.Rest.DTOs.CreateAccountDTO;
+import org.cris6h16.Adapters.In.Rest.DTOs.LoginDTO;
+import org.cris6h16.Config.SpringBoot.Security.CustomUserDetails.UserDetailsWithId;
 import org.cris6h16.Exceptions.Impls.AlreadyExistException;
+import org.cris6h16.Exceptions.Impls.EmailNotVerifiedException;
 import org.cris6h16.Exceptions.Impls.InvalidAttributeException;
+import org.cris6h16.Exceptions.Impls.NotFoundException;
 import org.cris6h16.Exceptions.Impls.Rest.MyResponseStatusException;
 import org.cris6h16.In.Commands.CreateAccountCommand;
 import org.cris6h16.In.Ports.CreateAccountPort;
+import org.cris6h16.In.Ports.LoginPort;
+import org.cris6h16.In.Ports.VerifyEmailPort;
+import org.cris6h16.In.Results.ResultLogin;
 import org.cris6h16.Models.ERoles;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Logger;
 
 @Component
+@Slf4j
 public class AuthenticationControllerFacade {
 
     private final CreateAccountPort createAccountPort;
-    private static final Logger log = Logger.getLogger(AuthenticationControllerFacade.class.getName());
+    private final VerifyEmailPort verifyEmailPort;
+    private final LoginPort loginPort;
+    private final long REFRESH_TOKEN_EXP_TIME_SECS;
+    private final long ACCESS_TOKEN_EXP_TIME_SECS;
 
-    public AuthenticationControllerFacade(CreateAccountPort createAccountPort) {
+    public AuthenticationControllerFacade(CreateAccountPort createAccountPort,
+                                          VerifyEmailPort verifyEmailPort,
+                                          LoginPort loginPort,
+                                          @Value("${jwt.expiration.token.refresh.secs}") long refreshTokenExpTimeSecs,
+                                          @Value("${jwt.expiration.token.access.secs}")  long accessTokenExpTimeSecs) {
         this.createAccountPort = createAccountPort;
+        this.verifyEmailPort = verifyEmailPort;
+        this.loginPort = loginPort;
+        REFRESH_TOKEN_EXP_TIME_SECS = refreshTokenExpTimeSecs;
+        ACCESS_TOKEN_EXP_TIME_SECS = accessTokenExpTimeSecs;
     }
 
     public ResponseEntity<Void> signUp(CreateAccountDTO dto) {
@@ -34,21 +56,82 @@ public class AuthenticationControllerFacade {
         Runnable createAccount = () -> id.set(createAccountPort.createAccount(cmd));
         handleExceptions(createAccount);
 
-        URI location = URI.create("/v1/users/me");  //.../me because our app is JWT based
+        URI location = URI.create("/v1/users/me");  //.../me because my app is JWT based
         return ResponseEntity.created(location).build();
     }
 
 
+    public ResponseEntity<Void> verifyMyEmail() {
+        Long id = getPrincipalId();
+        handleExceptions(() -> verifyEmailPort.verifyEmailById(id));
+        return ResponseEntity.ok().build();
+    }
+
+    private Long getPrincipalId() {
+        try {
+            Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            return ((UserDetailsWithId) principal).getId();
+        } catch (Exception e) {
+            log.debug("Exception trying to get user id: {}", e.toString());
+            throw new MyResponseStatusException("Failed to get user id, possibly you're not authenticated", HttpStatus.UNAUTHORIZED);
+        }
+    }
+
     private void handleExceptions(Runnable runnable) {
         try {
             runnable.run();
+
         } catch (AlreadyExistException e) {
             throw new MyResponseStatusException(e.getMessage(), HttpStatus.CONFLICT);
         } catch (InvalidAttributeException e) {
             throw new MyResponseStatusException(e.getMessage(), HttpStatus.BAD_REQUEST);
-        } catch (Exception e) { // & ImplementationException
-            log.severe(e.getMessage());
+        } catch (NotFoundException e) {
+            throw new MyResponseStatusException(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (EmailNotVerifiedException e) {
+            throw new MyResponseStatusException(e.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY); // semantic error
+        }catch (Exception e) { // & ImplementationException
+            log.error("Unexpected error: {}", e.toString());
             throw new MyResponseStatusException("An unexpected error happened, try later", HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    public ResponseEntity<Void> login(LoginDTO dto) {
+        String accessToken;
+        String refreshToken;
+        AtomicReference<ResultLogin> resultLogin = new AtomicReference<>();
+
+        handleExceptions(() -> resultLogin.set(
+                loginPort.login(
+                        dto.getEmail(),
+                        dto.getPassword()
+                )
+        ));
+
+        accessToken = resultLogin.get().getAccessToken();
+        refreshToken = resultLogin.get().getRefreshToken();
+
+        if (accessToken == null || refreshToken == null) {
+            log.error("Login failed, accessToken or refreshToken are null, accessToken: {}, refreshToken: {}", accessToken, refreshToken);
+            throw new MyResponseStatusException("An unexpected error occurred, try again later", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        ResponseCookie cookieAccessToken = ResponseCookie.from("accessToken", accessToken)
+                .httpOnly(true)
+                .sameSite("Strict")
+                .secure(true)  // todo: add in docs info about HTTPS and a reverse proxy
+                .path("/")
+                .maxAge(ACCESS_TOKEN_EXP_TIME_SECS)
+                .build();
+
+        ResponseCookie cookieRefreshToken = ResponseCookie.from("refreshToken", refreshToken)
+                .httpOnly(true)
+                .sameSite("Strict")
+                .secure(true)
+                .path("/...") //todo: add the centrilized path
+                .maxAge(REFRESH_TOKEN_EXP_TIME_SECS)
+                .build();
+
+
+        return ResponseEntity.ok().build();
     }
 }

@@ -37,11 +37,11 @@ public class CreateAccountUseCase implements CreateAccountPort {
     }
 
     public Long createAccount(CreateAccountCommand command) {
-        verifyNotNull(command);
-        verifyUsername(command.getUsername());
-        verifyPassword(command.getPassword());
-        verifyEmail(command.getEmail());
-        verifyRoles(command.getRoles());
+        validateNotNull(command);
+        validateUsername(command.getUsername());
+        validatePassword(command.getPassword());
+        validateEmail(command.getEmail());
+        validateRoles(command.getRoles());
 
         String username = command.getUsername().trim();
         String password = command.getPassword().trim();
@@ -61,7 +61,7 @@ public class CreateAccountUseCase implements CreateAccountPort {
 
         transactionManager.executeInTransaction(EIsolationLevel.READ_COMMITTED, () -> {
             if (userRepository.existsByUsername(userModel.getUsername())) {
-                 throw new AlreadyExistException("Username already exists");
+                throw new AlreadyExistException("Username already exists");
             }
             if (userRepository.existsByEmail(userModel.getEmail())) {
                 throw new AlreadyExistException("Email already exists");
@@ -70,44 +70,36 @@ public class CreateAccountUseCase implements CreateAccountPort {
             userRepository.save(userModel);
         });
 
-        // Send email in async way ( non-blocking ) -> also I can use a ExecutorService
-        CompletableFuture.runAsync(() -> {
-            try {
-                String token = jwtUtils.genToken(userModel.getUsername(), null, (5 * 60 * 1000)); // 5 mins of live
-                emailService.sendEmail(userModel.getEmail(), EmailContent.HTML_SIGNUP_SUBJECT, EmailContent.getSignUpHtmlBody(token), true);
-            } catch (Exception e) {
-                log.severe("Error sending email: " + e.toString());
-            }
-        });
+       emailService.sendAsychVerificationEmail(userModel); // non-blocking
 
         return userModel.getId();
     }
 
-    private void verifyNotNull(CreateAccountCommand command) {
+    private void validateNotNull(CreateAccountCommand command) {
         if (command == null) { // Never should be null
             throw new ImplementationException("Command cannot be null");
         }
     }
 
-    private void verifyUsername(String username) {
+    private void validateUsername(String username) {
         if (username == null || username.trim().isEmpty()) {
             throw new InvalidAttributeException("Username cannot be null or blank");
         }
     }
 
-    private void verifyPassword(String password) {
+    private void validatePassword(String password) {
         if (password == null || password.trim().isEmpty() || password.length() < 8) {
             throw new InvalidAttributeException("Password must be at least 8 characters long");
         }
     }
 
-    private void verifyEmail(String email) {
+    private void validateEmail(String email) {
         if (email == null || email.trim().isEmpty() || !email.matches("^\\S+@\\S+\\.\\S+$")) { //--> ^ = start of the string, \S = any non-whitespace character, + = one or more, @ = @, \S = any non-whitespace character, + = one or more, \. = ., \S = any non-whitespace character, + = one or more, $ = end of the string
             throw new InvalidAttributeException("Email is invalid");
         }
     }
 
-    private void verifyRoles(Set<ERoles> roles) {
+    private void validateRoles(Set<ERoles> roles) {
         if (roles == null || roles.isEmpty()) {
             throw new ImplementationException("Roles cannot be null or empty");
         }

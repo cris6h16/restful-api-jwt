@@ -22,15 +22,15 @@ public class JwtUtilsImpl implements JwtUtils {
     private String secretKey;
 
     @Override
-    public String genToken(String username, Map<String, Object> claims, long timeExpirationMillis) {
+    public String genToken(String subject, Map<String, String> claims, long timeExpirationMillis) {
         JwtBuilder jwtBuilder = Jwts.builder()
-                .subject(username)
+                .subject(subject)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + timeExpirationMillis))
                 .signWith(getSign());
 
         if (claims != null && !claims.isEmpty()) {
-            for (Map.Entry<String, Object> entry : claims.entrySet()) {
+            for (Map.Entry<String, String> entry : claims.entrySet()) {
                 jwtBuilder.claim(entry.getKey(), entry.getValue());
             }
         }

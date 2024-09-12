@@ -6,10 +6,19 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 public class PasswordEncoderImpl implements MyPasswordEncoder {
 
-    private PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
+    private final PasswordEncoder encoder; // todo: verify all attributes in any class are not instatiated directly ( beans )
+
+    public PasswordEncoderImpl(PasswordEncoder encoder) {
+        this.encoder = encoder;
+    }
 
     @Override
     public String encode(String password) {
         return encoder.encode(password);
+    }
+
+    @Override
+    public boolean matches(String rawPassword, String encodedPassword) {
+        return encoder.matches(rawPassword, encodedPassword);
     }
 }

@@ -16,7 +16,8 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(
                         authz -> authz
-                                .requestMatchers("/api/v1/auth/signup").permitAll()
+                                .requestMatchers("/api/v1/auth/signup", "/api/v1/auth/login").permitAll()
+                                .requestMatchers("/api/v1/auth/verify-email").authenticated()
                                 .anyRequest().denyAll()
                 )
                 .formLogin(AbstractHttpConfigurer::disable)
@@ -24,7 +25,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .logout(AbstractHttpConfigurer::disable)
                 .cors(AbstractHttpConfigurer::disable)
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))        ;
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         return http.build();
     }

@@ -3,29 +3,60 @@ package org.cris6h16.Config.SpringBoot;
 import org.cris6h16.Adapters.Out.SpringData.UserJpaRepository;
 import org.cris6h16.Config.SpringBoot.Security.PasswordEncoderImpl;
 import org.cris6h16.In.Ports.CreateAccountPort;
+import org.cris6h16.In.Ports.LoginPort;
+import org.cris6h16.In.Ports.VerifyEmailPort;
 import org.cris6h16.Services.EmailService;
 import org.cris6h16.Services.TransactionManager;
 import org.cris6h16.UseCases.CreateAccountUseCase;
+import org.cris6h16.UseCases.LoginUseCase;
+import org.cris6h16.UseCases.VerifyEmailUseCase;
 import org.cris6h16.Utils.JwtUtils;
 import org.cris6h16.Services.MyPasswordEncoder;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
 public class Beans {
 
     @Bean
     @Scope("singleton")
-    public CreateAccountPort createAccountCommand(UserJpaRepository userJpaRepository, MyPasswordEncoder passwordEncoder, EmailService emailService, JwtUtils jwtUtils, TransactionManager transactionManager) {
+    public CreateAccountPort createAccountPort(UserJpaRepository userJpaRepository, MyPasswordEncoder passwordEncoder, EmailService emailService, JwtUtils jwtUtils, TransactionManager transactionManager) {
         return new CreateAccountUseCase(userJpaRepository, passwordEncoder, emailService, jwtUtils, transactionManager);
     }
 
     @Bean
     @Scope("singleton")
-    public MyPasswordEncoder passwordEncoder() {
-        return new PasswordEncoderImpl();
+    public VerifyEmailPort verifyEmailPort(UserJpaRepository userJpaRepository, MyPasswordEncoder passwordEncoder, EmailService emailService, JwtUtils jwtUtils, TransactionManager transactionManager) {
+        return new VerifyEmailUseCase(userJpaRepository, transactionManager);
     }
 
+    @Bean
+    @Scope("singleton")
+    public LoginPort loginPort(UserJpaRepository userJpaRepository,
+                               MyPasswordEncoder passwordEncoder,
+                               JwtUtils jwtUtils,
+                               TransactionManager transactionManager,
+                               EmailService emailService,
+                               @Value("${jwt.expiration.token.refresh.secs}") long refreshTokenExpTimeSecs,
+                               @Value("${jwt.expiration.token.access.secs}")  long accessTokenExpTimeSecs) {
+        return new LoginUseCase(userJpaRepository, passwordEncoder, jwtUtils, transactionManager, emailService, refreshTokenExpTimeSecs, accessTokenExpTimeSecs);
+    }
+
+
+    @Bean
+    @Scope("singleton")
+    public MyPasswordEncoder passwordEncoder(PasswordEncoder encoder) {
+        return new PasswordEncoderImpl(encoder);
+    }
+
+    @Bean
+    @Scope("singleton")
+    public PasswordEncoder springPasswordEncoder() {
+        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+    }
 }
 

@@ -12,6 +12,7 @@ import org.cris6h16.Exceptions.Impls.Rest.MyResponseStatusException;
 import org.cris6h16.In.Commands.CreateAccountCommand;
 import org.cris6h16.In.Ports.CreateAccountPort;
 import org.cris6h16.In.Ports.LoginPort;
+import org.cris6h16.In.Ports.RequestResetPasswordPort;
 import org.cris6h16.In.Ports.VerifyEmailPort;
 import org.cris6h16.In.Results.ResultLogin;
 import org.cris6h16.Models.ERoles;
@@ -35,17 +36,19 @@ public class AuthenticationControllerFacade {
     private final CreateAccountPort createAccountPort;
     private final VerifyEmailPort verifyEmailPort;
     private final LoginPort loginPort;
+    private final RequestResetPasswordPort requestResetPasswordPort;
     private final long REFRESH_TOKEN_EXP_TIME_SECS;
     private final long ACCESS_TOKEN_EXP_TIME_SECS;
 
     public AuthenticationControllerFacade(CreateAccountPort createAccountPort,
                                           VerifyEmailPort verifyEmailPort,
-                                          LoginPort loginPort,
+                                          LoginPort loginPort, RequestResetPasswordPort requestResetPasswordPort,
                                           @Value("${jwt.expiration.token.refresh.secs}") long refreshTokenExpTimeSecs,
                                           @Value("${jwt.expiration.token.access.secs}") long accessTokenExpTimeSecs) {
         this.createAccountPort = createAccountPort;
         this.verifyEmailPort = verifyEmailPort;
         this.loginPort = loginPort;
+        this.requestResetPasswordPort = requestResetPasswordPort;
         REFRESH_TOKEN_EXP_TIME_SECS = refreshTokenExpTimeSecs;
         ACCESS_TOKEN_EXP_TIME_SECS = accessTokenExpTimeSecs;
     }
@@ -65,7 +68,7 @@ public class AuthenticationControllerFacade {
     public ResponseEntity<Void> verifyMyEmail() {
         Long id = getPrincipalId();
         handleExceptions(() -> verifyEmailPort.verifyEmailById(id));
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 
     private Long getPrincipalId() {
@@ -141,5 +144,10 @@ public class AuthenticationControllerFacade {
                 .header("Set-Cookie", cookieAccessToken.toString())
                 .header("Set-Cookie", cookieRefreshToken.toString())
                 .build();
+    }
+
+    public ResponseEntity<Void> requestPasswordReset(String email) {
+        handleExceptions(() -> requestResetPasswordPort.requestResetPassword(email));
+        return ResponseEntity.accepted().build();
     }
 }

@@ -14,17 +14,14 @@ import org.cris6h16.Services.TransactionManager;
 import org.cris6h16.Utils.JwtUtils;
 import org.cris6h16.Services.MyPasswordEncoder;
 
-import java.util.Set;
-import java.util.logging.Logger;
+import java.util.Set; // todo:add logger
 
 public class CreateAccountUseCase implements CreateAccountPort {
 
     private final UserRepository userRepository;
     private final MyPasswordEncoder passwordEncoder;
     private final EmailService emailService;
-    private final JwtUtils jwtUtils;
     private final TransactionManager transactionManager;
-    private static final Logger log = Logger.getLogger(CreateAccountUseCase.class.getName());
 
     public CreateAccountUseCase(UserRepository userRepository, MyPasswordEncoder passwordEncoder, EmailService emailService, JwtUtils jwtUtils, TransactionManager transactionManager) {
         this.userRepository = userRepository;

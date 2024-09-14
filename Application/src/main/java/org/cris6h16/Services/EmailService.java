@@ -6,4 +6,6 @@ public interface EmailService {
     void sendEmail(String email, String subject, String text, boolean isHTML);
 
     void sendAsychVerificationEmail(UserModel userModel);
+
+    void sendAsychResetPasswordEmail(UserModel userModel);
 }

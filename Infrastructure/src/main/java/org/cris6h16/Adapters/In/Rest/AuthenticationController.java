@@ -39,5 +39,13 @@ public class AuthenticationController {
         return facade.verifyMyEmail();
     }
 
+    @PostMapping(
+            value = "/password/request-reset",
+            consumes = "application/json"
+    )
+    public ResponseEntity<Void> requestPasswordReset(@RequestBody String email) {
+        return facade.requestPasswordReset(email);
+    }
+
 
 }

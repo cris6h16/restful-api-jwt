@@ -7,51 +7,59 @@ import org.cris6h16.In.Ports.LoginPort;
 import org.cris6h16.In.Results.ResultLogin;
 import org.cris6h16.Models.UserModel;
 import org.cris6h16.Repositories.UserRepository;
-import org.cris6h16.Services.EIsolationLevel;
+import org.cris6h16.Services.CacheService;
 import org.cris6h16.Services.EmailService;
 import org.cris6h16.Services.MyPasswordEncoder;
 import org.cris6h16.Services.TransactionManager;
+import org.cris6h16.Utils.ErrorMessages;
 import org.cris6h16.Utils.JwtUtils;
+import org.cris6h16.Utils.UserValidator;
 
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class LoginUseCase implements LoginPort {
+
+
     private final UserRepository userRepository;
+    private final CacheService cacheService;
     private final MyPasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
     private final TransactionManager transactionManager;
     private final EmailService emailService;
+    private final UserValidator userValidator;
     private final long REFRESH_TOKEN_EXP_TIME_SECS;
     private final long ACCESS_TOKEN_EXP_TIME_SECS;
 
-    public LoginUseCase(UserRepository userRepository, MyPasswordEncoder passwordEncoder, JwtUtils jwtUtils, TransactionManager transactionManager, EmailService emailService, long refreshTokenExpTimeSecs, long accessTokenExpTimeSecs) {
+    public LoginUseCase(UserRepository userRepository, CacheService cacheService, MyPasswordEncoder passwordEncoder, JwtUtils jwtUtils, TransactionManager transactionManager, EmailService emailService, UserValidator userValidator, long refreshTokenExpTimeSecs, long accessTokenExpTimeSecs) {
         this.userRepository = userRepository;
+        this.cacheService = cacheService;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtils = jwtUtils;
         this.transactionManager = transactionManager;
         this.emailService = emailService;
+        this.userValidator = userValidator;
         REFRESH_TOKEN_EXP_TIME_SECS = refreshTokenExpTimeSecs;
         ACCESS_TOKEN_EXP_TIME_SECS = accessTokenExpTimeSecs;
     }
 
     @Override
     public ResultLogin login(String email, String password) {
-        validateEmail(email); // todo: make a validator class, the validations are boilerplate
-        validatePassword(password);
+        userValidator.validateEmail(email);
+        userValidator.validatePassword(password);
 
-        String encodedPassword = passwordEncoder.encode(password);
+
         AtomicReference<UserModel> user = new AtomicReference<>(); // necessary for lambdas
 
-        transactionManager.readCommitted(() -> {
-            user.set(
-                    userRepository.findByEmailCustom(email).orElse(null)
-            );
-        });
+        transactionManager.readCommitted(() ->
+                user.set(
+                        cacheService.getByEmail(email).orElse(null) // cached & used later e.g. for get details
+                )
+        );
         UserModel userModel = user.get();
 
-        if (userModel == null || !passwordEncoder.matches(password, userModel.getPassword())) {
+        if (userModel == null || !passwordEncoder.matches(password, userModel.getPassword()) || !userModel.getActive()) {
             throw new NotFoundException("Invalid email or password");
         }
 
@@ -60,7 +68,10 @@ public class LoginUseCase implements LoginPort {
             throw new EmailNotVerifiedException("Email is not verified, please go to your email and verify it");
         }
 
-        return toResultLogin(userModel);
+
+        return
+
+                toResultLogin(userModel);
     }
 
     private ResultLogin toResultLogin(UserModel userModel) {
@@ -72,16 +83,5 @@ public class LoginUseCase implements LoginPort {
         return new ResultLogin(accessToken, refreshToken);
     }
 
-    private void validatePassword(String password) {
-        if (password == null || password.trim().isEmpty()) {
-            throw new InvalidAttributeException("Password cannot be blank");
-        }
-    }
-
-    private void validateEmail(String email) {
-        if (email == null || email.trim().isEmpty() || !email.matches("^\\S+@\\S+\\.\\S+$")) { //--> ^ = start of the string, \S = any non-whitespace character, + = one or more, @ = @, \S = any non-whitespace character, + = one or more, \. = ., \S = any non-whitespace character, + = one or more, $ = end of the string
-            throw new InvalidAttributeException("Email is invalid");
-        }
-    }
 }
 //todo: follow the clean architecture principles like make a presenter class

@@ -2,47 +2,48 @@ package org.cris6h16.UseCases;
 
 import org.cris6h16.Exceptions.Impls.AlreadyExistException;
 import org.cris6h16.Exceptions.Impls.ImplementationException;
-import org.cris6h16.Exceptions.Impls.InvalidAttributeException;
 import org.cris6h16.In.Commands.CreateAccountCommand;
 import org.cris6h16.In.Ports.CreateAccountPort;
 import org.cris6h16.Models.ERoles;
 import org.cris6h16.Models.UserModel;
 import org.cris6h16.Repositories.UserRepository;
-import org.cris6h16.Services.EIsolationLevel;
+import org.cris6h16.Services.CacheService;
 import org.cris6h16.Services.EmailService;
 import org.cris6h16.Services.TransactionManager;
+import org.cris6h16.Utils.ErrorMessages;
 import org.cris6h16.Utils.JwtUtils;
 import org.cris6h16.Services.MyPasswordEncoder;
+import org.cris6h16.Utils.UserValidator;
 
 import java.util.Set; // todo:add logger
 
 public class CreateAccountUseCase implements CreateAccountPort {
 
+    private final ErrorMessages errorMessages;
+    private final UserValidator userValidator;
     private final UserRepository userRepository;
     private final MyPasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final TransactionManager transactionManager;
+    private final CacheService cacheService;
 
-    public CreateAccountUseCase(UserRepository userRepository, MyPasswordEncoder passwordEncoder, EmailService emailService, JwtUtils jwtUtils, TransactionManager transactionManager) {
+    public CreateAccountUseCase(UserRepository userRepository, MyPasswordEncoder passwordEncoder, EmailService emailService, JwtUtils jwtUtils, ErrorMessages constants, UserValidator userValidator, TransactionManager transactionManager, CacheService cacheService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
-        this.jwtUtils = jwtUtils;
+        this.errorMessages = constants;
+        this.userValidator = userValidator;
         this.transactionManager = transactionManager;
+        this.cacheService = cacheService;
     }
 
     public Long createAccount(CreateAccountCommand command) {
-        validateNotNull(command);
-        validateUsername(command.getUsername());
-        validatePassword(command.getPassword());
-        validateEmail(command.getEmail());
-        validateRoles(command.getRoles());
+        command = validateAndCleanCommand(command);
 
-        String username = command.getUsername().trim();
-        String password = command.getPassword().trim();
-        String email = command.getEmail().trim();
+        String username = command.getUsername();
+        String password = command.getPassword();
+        String email = command.getEmail();
         Set<ERoles> roles = command.getRoles();
-
 
         UserModel userModel = new UserModel.Builder()
                 .setUsername(username)
@@ -55,50 +56,44 @@ public class CreateAccountUseCase implements CreateAccountPort {
                 .build();
 
         transactionManager.readCommitted(() -> {
-            if (userRepository.existsByUsernameCustom(userModel.getUsername())) {
-                throw new AlreadyExistException("Username already exists");
-            }
-            if (userRepository.existsByEmailCustom(userModel.getEmail())) {
-                throw new AlreadyExistException("Email already exists");
-            }
+            checkCacheForDuplicates(userModel);
 
+            // inverse (write-through), we need an id for cache completely
             userRepository.saveCustom(userModel);
+            cacheService.putUserModelToCache(userModel.getId().toString(), userModel);
         });
 
-       emailService.sendAsychVerificationEmail(userModel); // non-blocking
+        emailService.sendAsychVerificationEmail(userModel); // non-blocking
 
         return userModel.getId();
     }
 
-    private void validateNotNull(CreateAccountCommand command) {
-        if (command == null) { // Never should be null
+    private CreateAccountCommand validateAndCleanCommand(CreateAccountCommand cmd) {
+        if (cmd == null) {
             throw new ImplementationException("Command cannot be null");
         }
+
+        userValidator.validateUsername(cmd.getUsername());
+        userValidator.validatePassword(cmd.getPassword());
+        userValidator.validateEmail(cmd.getEmail());
+        userValidator.validateRoles(cmd.getRoles());
+
+        return new CreateAccountCommand(
+                cmd.getUsername().trim(),
+                cmd.getPassword().trim(),
+                cmd.getEmail().trim(),
+                cmd.getRoles()
+        );
     }
 
-    private void validateUsername(String username) {
-        if (username == null || username.trim().isEmpty()) {
-            throw new InvalidAttributeException("Username cannot be null or blank");
+    // mid-frequency operation & not expensive, cache is optional
+    private void checkCacheForDuplicates(UserModel userModel) {
+        if (cacheService.existsByUsername(userModel.getUsername())) {
+            throw new AlreadyExistException(errorMessages.getUsernameAlreadyExistsMessage());
+        }
+        if (cacheService.existsByEmail(userModel.getEmail())) {
+            throw new AlreadyExistException(errorMessages.getEmailAlreadyExistsMessage());
         }
     }
-
-    private void validatePassword(String password) {
-        if (password == null || password.trim().isEmpty() || password.length() < 8) {
-            throw new InvalidAttributeException("Password must be at least 8 characters long");
-        }
-    }
-
-    private void validateEmail(String email) {
-        if (email == null || email.trim().isEmpty() || !email.matches("^\\S+@\\S+\\.\\S+$")) { //--> ^ = start of the string, \S = any non-whitespace character, + = one or more, @ = @, \S = any non-whitespace character, + = one or more, \. = ., \S = any non-whitespace character, + = one or more, $ = end of the string
-            throw new InvalidAttributeException("Email is invalid");
-        }
-    }
-
-    private void validateRoles(Set<ERoles> roles) {
-        if (roles == null || roles.isEmpty()) {
-            throw new ImplementationException("Roles cannot be null or empty");
-        }
-    }
-
 
 }

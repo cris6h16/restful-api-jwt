@@ -1,40 +1,43 @@
 package org.cris6h16.UseCases;
 
-import org.cris6h16.Exceptions.Impls.InvalidAttributeException;
 import org.cris6h16.Exceptions.Impls.NotFoundException;
 import org.cris6h16.In.Ports.VerifyEmailPort;
 import org.cris6h16.Repositories.UserRepository;
-import org.cris6h16.Services.EIsolationLevel;
+import org.cris6h16.Services.CacheService;
 import org.cris6h16.Services.TransactionManager;
+import org.cris6h16.Utils.UserValidator;
 
 import java.util.logging.Logger;
 
 public class VerifyEmailUseCase implements VerifyEmailPort {
     private final UserRepository userRepository;
     private final TransactionManager transactionManager;
+    private final UserValidator userValidator;
+    private final CacheService cacheService;
     private static final Logger log = Logger.getLogger(VerifyEmailUseCase.class.getName());
 
-    public VerifyEmailUseCase(UserRepository userRepository, TransactionManager transactionManager) {
+    public VerifyEmailUseCase(UserRepository userRepository, TransactionManager transactionManager, UserValidator userValidator, CacheService cacheService) {
         this.userRepository = userRepository;
         this.transactionManager = transactionManager;
+        this.userValidator = userValidator;
+        this.cacheService = cacheService;
     }
 
     @Override
     public void verifyEmailById(Long id) {
-        validateId(id);
+        userValidator.validateId(id);
+
         transactionManager.readCommitted(() -> {
-            if (!userRepository.existsByIdCustom(id)) {
+            if (!userRepository.existsByIdCustom(id)) { // todo: for docs-> small & low frequent & impact operation, no need to be cached
                 throw new NotFoundException("User not found");
             }
+            // write-through inverse, update cache if db is successfully updated
             userRepository.updateEmailVerifiedByIdCustom(id, true);
+            cacheService.updateEmailVerifiedIfExists(id, true);
         });
     }
 
-    private void validateId(Long id) {
-        if (id == null) {
-            throw new InvalidAttributeException("Id cannot be null");
-        }
-    }
+
 
 
 }

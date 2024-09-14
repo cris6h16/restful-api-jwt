@@ -28,13 +28,12 @@ public class AuthenticationController {
             value = "/login",
             consumes = "application/json"
     )
-    public ResponseEntity<Void> login(@RequestBody LoginDTO dto) {
+    public ResponseEntity<Void> login(@RequestBody LoginDTO dto) { //todo: if is logged in, say something
         return facade.login(dto);
     }
 
     @PutMapping(
-            value = "/verify-email",
-            consumes = "application/json"
+            value = "/verify-email"
     )
     public ResponseEntity<Void> verifyMyEmail() { //todo: test this
         return facade.verifyMyEmail();

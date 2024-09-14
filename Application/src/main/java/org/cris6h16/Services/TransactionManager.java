@@ -1,14 +1,11 @@
 package org.cris6h16.Services;
 
 public interface TransactionManager {
-    /**
-     * Execute a runnable Synchronously in a transaction
-     * @param isolationLevel
-     * @param runnable
-     */
-    public void executeInTransaction(EIsolationLevel isolationLevel, Runnable runnable);
+    void readCommitted(Runnable runnable);
 
-    public void commit();
+    void repeatableRead(Runnable runnable);
 
-    public void rollback();
+    void serializable(Runnable runnable);
+
+    void readUncommitted(Runnable runnable);
 }

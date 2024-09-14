@@ -3,42 +3,31 @@ package org.cris6h16.Config.SpringBoot.Services.Transactional;
 import org.cris6h16.Services.EIsolationLevel;
 import org.cris6h16.Services.TransactionManager;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 public class TransactionManagerImpl implements TransactionManager {
 
-    private final TransactionService transactionService;
 
-    public TransactionManagerImpl() {
-        this.transactionService = new TransactionService();
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public void readCommitted(Runnable runnable) {
+        runnable.run();
     }
 
-    @Override
-    public void executeInTransaction(EIsolationLevel isolationLevel, Runnable runnable) {
-        switch (isolationLevel) {
-            case READ_COMMITTED:
-                transactionService.readCommitted(runnable);
-                break;
-            case REPEATABLE_READ:
-                transactionService.repeatableRead(runnable);
-                break;
-            case SERIALIZABLE:
-                transactionService.serializable(runnable);
-                break;
-            case READ_UNCOMMITTED:
-                transactionService.readUncommitted(runnable);
-                break;
-        }
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public void repeatableRead(Runnable runnable) {
+        runnable.run();
     }
 
-    @Override
-    public void commit() {
-
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    public void serializable(Runnable runnable) {
+        runnable.run();
     }
 
-    @Override
-    public void rollback() {
-
+    @Transactional(isolation = Isolation.READ_UNCOMMITTED)
+    public void readUncommitted(Runnable runnable) {
+        runnable.run();
     }
 
 }

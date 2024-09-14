@@ -44,9 +44,9 @@ public class LoginUseCase implements LoginPort {
         String encodedPassword = passwordEncoder.encode(password);
         AtomicReference<UserModel> user = new AtomicReference<>(); // necessary for lambdas
 
-        transactionManager.executeInTransaction(EIsolationLevel.READ_COMMITTED, () -> {
+        transactionManager.readCommitted(() -> {
             user.set(
-                    userRepository.findByEmail(email).orElse(null)
+                    userRepository.findByEmailCustom(email).orElse(null)
             );
         });
         UserModel userModel = user.get();
@@ -66,8 +66,8 @@ public class LoginUseCase implements LoginPort {
     private ResultLogin toResultLogin(UserModel userModel) {
         Map<String, String> accessTokenClaims = Map.of("roles", Arrays.toString(userModel.getRoles().toArray()));
 
-        String refreshToken = jwtUtils.genToken(userModel.getId().toString(), null, REFRESH_TOKEN_EXP_TIME_SECS);
-        String accessToken = jwtUtils.genToken(userModel.getId().toString(), accessTokenClaims, ACCESS_TOKEN_EXP_TIME_SECS);
+        String refreshToken = jwtUtils.genToken(userModel.getId(), null, REFRESH_TOKEN_EXP_TIME_SECS);
+        String accessToken = jwtUtils.genToken(userModel.getId(), accessTokenClaims, ACCESS_TOKEN_EXP_TIME_SECS);
 
         return new ResultLogin(accessToken, refreshToken);
     }

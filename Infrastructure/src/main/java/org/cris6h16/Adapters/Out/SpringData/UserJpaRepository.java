@@ -10,18 +10,26 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
-@Repository
+@Repository(value = "UserRepository")
 public interface UserJpaRepository extends JpaRepository<UserEntity, Long>, UserRepository {
 
-    boolean existsByUsername(String username);
+    @Query("SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END FROM UserEntity u WHERE u.username = :username")
+    boolean existsByUsernameCustom(String username);
 
-    boolean existsByEmail(String email);
+    @Query("SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END FROM UserEntity u WHERE u.email = :email")
+    boolean existsByEmailCustom(String email);
 
-    boolean existsById(Long id);
+    @Query("SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END FROM UserEntity u WHERE u.id = :id")
+    boolean existsByIdCustom(Long id);
 
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE UserEntity u SET u.emailVerified = :isVerified WHERE u.id = :id")
+    void updateEmailVerifiedByIdCustom(Long id, boolean isVerified);
+
+    Optional<UserEntity> findByEmail(String email);
 
     @Override
-    default void save(UserModel userModel) {
+    default void saveCustom(UserModel userModel) {
         UserEntity userEntity = UserEntity.builder()
                 .id(userModel.getId())
                 .username(userModel.getUsername())
@@ -37,16 +45,10 @@ public interface UserJpaRepository extends JpaRepository<UserEntity, Long>, User
         userModel.setId(userEntity.getId());
     }
 
-    @Modifying(clearAutomatically = true)/* clearAutomatically = true, to avoid the `EntityManager` to be out of sync ( e.g. In db with emailVerified = false, but in memory with emailVerified = true)*/
-    @Query("UPDATE UserEntity u SET u.emailVerified = :isVerified WHERE u.id = :id")
-    void updateEmailVerifiedById(Long id, boolean isVerified);
-
-    @Query("SELECT u FROM UserEntity u WHERE u.email = :email")
-    Optional<UserEntity> findByEmailInternal(String email);
 
     @Override
-    default Optional<UserModel> findByEmail(String email) {
-        UserEntity ue = findByEmailInternal(email).orElse(null);
+    default Optional<UserModel> findByEmailCustom(String email) {
+        UserEntity ue = findByEmail(email).orElse(null);
         if (ue == null) return Optional.empty();
         return Optional.of(new UserModel.Builder()
                 .setId(ue.getId())
@@ -59,6 +61,24 @@ public interface UserJpaRepository extends JpaRepository<UserEntity, Long>, User
                 .setLastModified(ue.getLastModified())
                 .build());
     }
+
+    @Override
+    default Optional<UserModel> findByIdCustom(Long id) {
+        UserEntity ue = findById(id).orElse(null);
+        if (ue == null) return Optional.empty();
+        return Optional.of(new UserModel.Builder()
+                .setId(ue.getId())
+                .setUsername(ue.getUsername())
+                .setPassword(ue.getPassword())
+                .setEmail(ue.getEmail())
+                .setRoles(ue.getRoles())
+                .setActive(ue.getActive())
+                .setEmailVerified(ue.getEmailVerified())
+                .setLastModified(ue.getLastModified())
+                .build());
+    }
+
+
 }
 
 

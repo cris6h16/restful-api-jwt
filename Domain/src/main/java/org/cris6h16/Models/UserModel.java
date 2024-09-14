@@ -12,7 +12,14 @@ public class UserModel {
     private Boolean emailVerified;
     private Long lastModified;
 
-    private UserModel(Long id, String username, String password, String email, Set<ERoles> roles, Boolean active, Boolean emailVerified, Long lastModified) {
+    public UserModel(Long id,
+                     String username,
+                     String password,
+                     String email,
+                     Set<ERoles> roles,
+                     Boolean active,
+                     Boolean emailVerified,
+                     Long lastModified) {
         this.id = id;
         this.username = username;
         this.password = password;
@@ -23,7 +30,7 @@ public class UserModel {
         this.lastModified = lastModified;
     }
 
-    private UserModel() {
+    public UserModel() {
     }
 
 

@@ -80,6 +80,8 @@ jwt:
         secs: 1296000 # 15 days
       access:
         secs: 1800 # 30 minutes
+        cookie:
+          name: accessToken
       verification:
         email:
           secs: 86400 # 1 day todo: add to docs this change ( initiallly was 5 minutes)

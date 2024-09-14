@@ -43,7 +43,10 @@ public class UserEntity {
     )
     private String email;
 
-    @ElementCollection(targetClass = ERoles.class)
+    @ElementCollection(
+            targetClass = ERoles.class,
+            fetch = FetchType.EAGER
+    )
     @CollectionTable(
             name = "users_roles",
             joinColumns = @JoinColumn(name = "user_id"),

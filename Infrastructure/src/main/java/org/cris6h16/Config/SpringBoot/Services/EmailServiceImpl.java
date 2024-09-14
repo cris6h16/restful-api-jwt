@@ -59,7 +59,7 @@ public class EmailServiceImpl implements EmailService {
         // Send email in async way ( non-blocking ) -> also I can use a ExecutorService
         CompletableFuture.runAsync(() -> {
             try {
-                String token = jwtUtils.genToken(userModel.getUsername(), null, EMAIL_VERIFICATION_TOKEN_TIME_LIVE);
+                String token = jwtUtils.genToken(userModel.getId(), null, EMAIL_VERIFICATION_TOKEN_TIME_LIVE);
                 sendEmail(userModel.getEmail(), EmailContent.HTML_SIGNUP_SUBJECT, EmailContent.getSignUpHtmlBody(token), true);
             } catch (Exception e) {
                 log.error("Error sending email: {}", e.toString());

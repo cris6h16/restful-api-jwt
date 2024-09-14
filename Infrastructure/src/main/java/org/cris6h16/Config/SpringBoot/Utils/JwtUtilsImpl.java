@@ -6,7 +6,6 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.cris6h16.Utils.JwtUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -22,9 +21,9 @@ public class JwtUtilsImpl implements JwtUtils {
     private String secretKey;
 
     @Override
-    public String genToken(String subject, Map<String, String> claims, long timeExpirationMillis) {
+    public String genToken(Long subject, Map<String, String> claims, long timeExpirationMillis) {
         JwtBuilder jwtBuilder = Jwts.builder()
-                .subject(subject)
+                .subject(String.valueOf(subject))
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + timeExpirationMillis))
                 .signWith(getSign());
@@ -52,13 +51,14 @@ public class JwtUtilsImpl implements JwtUtils {
         }
     }
 
+    @Override
+    public Long getId(String token) {
+        return Long.valueOf(getAClaim(token, claims -> claims.getSubject()));
+    }
+
     public <T> T getAClaim(String token, Function<Claims, T> individualClaim) {
         Claims claims = getClaims(token);
         return individualClaim.apply(claims);
-    }
-
-    public String getUsername(String token) {
-        return getAClaim(token, Claims::getSubject);
     }
 
 

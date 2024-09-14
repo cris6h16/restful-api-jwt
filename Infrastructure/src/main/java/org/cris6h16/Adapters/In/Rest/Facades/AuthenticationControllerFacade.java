@@ -3,7 +3,7 @@ package org.cris6h16.Adapters.In.Rest.Facades;
 import lombok.extern.slf4j.Slf4j;
 import org.cris6h16.Adapters.In.Rest.DTOs.CreateAccountDTO;
 import org.cris6h16.Adapters.In.Rest.DTOs.LoginDTO;
-import org.cris6h16.Config.SpringBoot.Security.CustomUserDetails.UserDetailsWithId;
+import org.cris6h16.Config.SpringBoot.Security.UserDetails.UserDetailsWithId;
 import org.cris6h16.Exceptions.Impls.AlreadyExistException;
 import org.cris6h16.Exceptions.Impls.EmailNotVerifiedException;
 import org.cris6h16.Exceptions.Impls.InvalidAttributeException;
@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
@@ -41,7 +42,7 @@ public class AuthenticationControllerFacade {
                                           VerifyEmailPort verifyEmailPort,
                                           LoginPort loginPort,
                                           @Value("${jwt.expiration.token.refresh.secs}") long refreshTokenExpTimeSecs,
-                                          @Value("${jwt.expiration.token.access.secs}")  long accessTokenExpTimeSecs) {
+                                          @Value("${jwt.expiration.token.access.secs}") long accessTokenExpTimeSecs) {
         this.createAccountPort = createAccountPort;
         this.verifyEmailPort = verifyEmailPort;
         this.loginPort = loginPort;
@@ -71,8 +72,13 @@ public class AuthenticationControllerFacade {
         try {
             Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
             return ((UserDetailsWithId) principal).getId();
+
         } catch (Exception e) {
-            log.debug("Exception trying to get user id: {}", e.toString());
+            if (e instanceof ClassCastException) {
+                log.error("Principal is not an instance of UserDetailsWithId: {}", e.toString());
+            } else {
+                log.debug("Exception trying to get user id: {}", e.toString());
+            }
             throw new MyResponseStatusException("Failed to get user id, possibly you're not authenticated", HttpStatus.UNAUTHORIZED);
         }
     }
@@ -89,7 +95,7 @@ public class AuthenticationControllerFacade {
             throw new MyResponseStatusException(e.getMessage(), HttpStatus.NOT_FOUND);
         } catch (EmailNotVerifiedException e) {
             throw new MyResponseStatusException(e.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY); // semantic error
-        }catch (Exception e) { // & ImplementationException
+        } catch (Exception e) { // & ImplementationException
             log.error("Unexpected error: {}", e.toString());
             throw new MyResponseStatusException("An unexpected error happened, try later", HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -131,7 +137,9 @@ public class AuthenticationControllerFacade {
                 .maxAge(REFRESH_TOKEN_EXP_TIME_SECS)
                 .build();
 
-
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok()
+                .header("Set-Cookie", cookieAccessToken.toString())
+                .header("Set-Cookie", cookieRefreshToken.toString())
+                .build();
     }
 }

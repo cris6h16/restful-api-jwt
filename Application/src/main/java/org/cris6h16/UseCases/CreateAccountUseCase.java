@@ -1,6 +1,5 @@
 package org.cris6h16.UseCases;
 
-import org.cris6h16.Constants.EmailContent;
 import org.cris6h16.Exceptions.Impls.AlreadyExistException;
 import org.cris6h16.Exceptions.Impls.ImplementationException;
 import org.cris6h16.Exceptions.Impls.InvalidAttributeException;
@@ -16,7 +15,6 @@ import org.cris6h16.Utils.JwtUtils;
 import org.cris6h16.Services.MyPasswordEncoder;
 
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
 
 public class CreateAccountUseCase implements CreateAccountPort {
@@ -59,15 +57,15 @@ public class CreateAccountUseCase implements CreateAccountPort {
                 .setLastModified(System.currentTimeMillis())
                 .build();
 
-        transactionManager.executeInTransaction(EIsolationLevel.READ_COMMITTED, () -> {
-            if (userRepository.existsByUsername(userModel.getUsername())) {
+        transactionManager.readCommitted(() -> {
+            if (userRepository.existsByUsernameCustom(userModel.getUsername())) {
                 throw new AlreadyExistException("Username already exists");
             }
-            if (userRepository.existsByEmail(userModel.getEmail())) {
+            if (userRepository.existsByEmailCustom(userModel.getEmail())) {
                 throw new AlreadyExistException("Email already exists");
             }
 
-            userRepository.save(userModel);
+            userRepository.saveCustom(userModel);
         });
 
        emailService.sendAsychVerificationEmail(userModel); // non-blocking

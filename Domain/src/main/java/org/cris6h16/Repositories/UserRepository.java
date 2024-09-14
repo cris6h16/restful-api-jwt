@@ -6,15 +6,18 @@ import java.util.Optional;
 
 // port
 public interface UserRepository {
-    void save(UserModel userModel);
+    void saveCustom(UserModel userModel);
 
-    boolean existsByUsername(String username);
+    boolean existsByUsernameCustom(String username);
 
-    boolean existsByEmail(String email);
+    boolean existsByEmailCustom(String email);
 
-    boolean existsById(Long id);
+    boolean existsByIdCustom(Long id);
 
-    void updateEmailVerifiedById(Long id, boolean isVerified);
+    void updateEmailVerifiedByIdCustom(Long id, boolean isVerified);
 
-    Optional<UserModel> findByEmail(String email);
+    Optional<UserModel> findByEmailCustom(String email);
+
+    Optional<UserModel> findByIdCustom(Long id);
+
 }

@@ -4,6 +4,9 @@ import java.util.Map;
 
 public interface JwtUtils {
 
-    public String genToken(String subject, Map<String, String> claims, long timeExpirationMillis);
+    public String genToken(Long subject, Map<String, String> claims, long timeExpirationMillis);
 
+    boolean validate(String token);
+
+    Long getId(String token);
 }

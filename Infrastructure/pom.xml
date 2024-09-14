@@ -95,6 +95,8 @@
             <scope>runtime</scope>
         </dependency>
         <!-- https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-root -->
+
+
     </dependencies>
 
     <build>

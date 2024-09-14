@@ -22,11 +22,11 @@ public class VerifyEmailUseCase implements VerifyEmailPort {
     @Override
     public void verifyEmailById(Long id) {
         validateId(id);
-        transactionManager.executeInTransaction(EIsolationLevel.READ_COMMITTED, () -> {
-            if (!userRepository.existsById(id)) {
+        transactionManager.readCommitted(() -> {
+            if (!userRepository.existsByIdCustom(id)) {
                 throw new NotFoundException("User not found");
             }
-            userRepository.updateEmailVerifiedById(id, true);
+            userRepository.updateEmailVerifiedByIdCustom(id, true);
         });
     }
 

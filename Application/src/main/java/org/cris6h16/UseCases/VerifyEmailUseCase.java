@@ -31,9 +31,8 @@ public class VerifyEmailUseCase implements VerifyEmailPort {
             if (!userRepository.existsByIdCustom(id)) { // todo: for docs-> small & low frequent & impact operation, no need to be cached
                 throw new NotFoundException("User not found");
             }
-            // write-through inverse, update cache if db is successfully updated
-            userRepository.updateEmailVerifiedByIdCustom(id, true);
             cacheService.updateEmailVerifiedIfExists(id, true);
+            userRepository.updateEmailVerifiedByIdCustom(id, true);
         });
     }
 

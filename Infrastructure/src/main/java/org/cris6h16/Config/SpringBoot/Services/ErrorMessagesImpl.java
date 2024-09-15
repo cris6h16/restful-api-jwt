@@ -22,7 +22,7 @@ public class ErrorMessagesImpl implements ErrorMessages {
     @Value("${error.messages.invalid.email}")
     private String EMAIL_INVALID_MSG;
 
-    @Value("${error.messages.invalid.id.null}")
+    @Value("${error.messages.invalid.id.null-val}")
     private String ID_CANNOT_BE_NULL_MSG;
 
     @Value("${error.messages.invalid.roles.empty}")

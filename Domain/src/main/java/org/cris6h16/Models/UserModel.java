@@ -70,6 +70,10 @@ public class UserModel {
         this.id = id;
     }
 
+    public void setEmailVerified(boolean isVerified) {
+        this.emailVerified = isVerified;
+    }
+
     public static class Builder {
         private Long id;
         private String username;

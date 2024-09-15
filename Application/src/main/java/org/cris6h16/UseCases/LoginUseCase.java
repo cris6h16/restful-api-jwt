@@ -23,7 +23,6 @@ public class LoginUseCase implements LoginPort {
 
 
     private final UserRepository userRepository;
-    private final CacheService cacheService;
     private final MyPasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
     private final TransactionManager transactionManager;
@@ -32,9 +31,8 @@ public class LoginUseCase implements LoginPort {
     private final long REFRESH_TOKEN_EXP_TIME_SECS;
     private final long ACCESS_TOKEN_EXP_TIME_SECS;
 
-    public LoginUseCase(UserRepository userRepository, CacheService cacheService, MyPasswordEncoder passwordEncoder, JwtUtils jwtUtils, TransactionManager transactionManager, EmailService emailService, UserValidator userValidator, long refreshTokenExpTimeSecs, long accessTokenExpTimeSecs) {
+    public LoginUseCase(UserRepository userRepository, MyPasswordEncoder passwordEncoder, JwtUtils jwtUtils, TransactionManager transactionManager, EmailService emailService, UserValidator userValidator, long refreshTokenExpTimeSecs, long accessTokenExpTimeSecs) {
         this.userRepository = userRepository;
-        this.cacheService = cacheService;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtils = jwtUtils;
         this.transactionManager = transactionManager;
@@ -54,10 +52,10 @@ public class LoginUseCase implements LoginPort {
 
         transactionManager.readCommitted(() ->
                 user.set(
-                        cacheService.getByEmail(email).orElse(null) // cached & used later e.g. for get details
+                        userRepository.findByEmailCustom(email).orElse(null)
                 )
         );
-        UserModel userModel = user.get();
+        UserModel userModel = user.get(); // not cached because load to the cache can be unnecessary
 
         if (userModel == null || !passwordEncoder.matches(password, userModel.getPassword()) || !userModel.getActive()) {
             throw new NotFoundException("Invalid email or password");

@@ -56,11 +56,10 @@ public class CreateAccountUseCase implements CreateAccountPort {
                 .build();
 
         transactionManager.readCommitted(() -> {
-            checkCacheForDuplicates(userModel);
+            checkDBForDuplicates(userModel);
 
-            // inverse (write-through), we need an id for cache completely
-            userRepository.saveCustom(userModel);
             cacheService.putUserModelToCache(userModel.getId().toString(), userModel);
+            userRepository.saveCustom(userModel);
         });
 
         emailService.sendAsychVerificationEmail(userModel); // non-blocking
@@ -86,12 +85,12 @@ public class CreateAccountUseCase implements CreateAccountPort {
         );
     }
 
-    // mid-frequency operation & not expensive, cache is optional
-    private void checkCacheForDuplicates(UserModel userModel) {
-        if (cacheService.existsByUsername(userModel.getUsername())) {
+    // minimal operations shouldn't be cached
+    private void checkDBForDuplicates(UserModel userModel) {
+        if (userRepository.existsByUsernameCustom(userModel.getUsername())) {
             throw new AlreadyExistException(errorMessages.getUsernameAlreadyExistsMessage());
         }
-        if (cacheService.existsByEmail(userModel.getEmail())) {
+        if (userRepository.existsByEmailCustom(userModel.getEmail())) {
             throw new AlreadyExistException(errorMessages.getEmailAlreadyExistsMessage());
         }
     }

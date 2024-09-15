@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -46,8 +47,8 @@ public class Beans {
 
     @Bean
     @Scope("singleton")
-    public CacheService cacheService() {
-        return new CacheServiceImpl();
+    public CacheService cacheService(RedisTemplate<String, Object> redisTemplate) {
+        return new CacheServiceImpl(redisTemplate);
     }
 
 
@@ -93,12 +94,12 @@ public class Beans {
     public RequestResetPasswordPort requestResetPasswordPort(EmailService emailService,
                                                              TransactionManager transactionManager,
                                                              UserValidator userValidator,
-                                                             CacheService cacheService) {
+                                                             UserRepository userRepository) {
         return new RequestResetPasswordUseCase(
                 emailService,
                 transactionManager,
                 userValidator,
-                cacheService
+                userRepository
         );
     }
 
@@ -115,7 +116,6 @@ public class Beans {
                                @Value("${jwt.expiration.token.access.secs}") long accessTokenExpTimeSecs) {
         return new LoginUseCase(
                 userRepository,
-                cacheService,
                 passwordEncoder,
                 jwtUtils,
                 transactionManager,

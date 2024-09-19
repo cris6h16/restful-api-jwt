@@ -54,10 +54,10 @@ public class RedisConfig {
                 .build();
     }
 
-    @Bean
-    public PlatformTransactionManager transactionManager(DataSource dataSource) throws SQLException {
-        return new DataSourceTransactionManager(dataSource);
-    }
+//    @Bean
+//    public PlatformTransactionManager transactionManager(DataSource dataSource) throws SQLException {
+//        return new DataSourceTransactionManager(dataSource);
+//    }
     /*
     considerations:
     - read operations must be run out of transactions

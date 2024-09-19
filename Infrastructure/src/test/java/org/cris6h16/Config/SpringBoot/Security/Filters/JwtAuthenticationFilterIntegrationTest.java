@@ -64,7 +64,7 @@ public class JwtAuthenticationFilterIntegrationTest {
         // Act
         mockMvc.perform(put("/api/v1/auth/verify-email")
                         .cookie(accessTokenCookie))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
 
         // Assert
         verify(verifyEmailPort, times(1)).verifyEmailById(1L);

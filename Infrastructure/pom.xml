@@ -12,7 +12,7 @@
     <groupId>org.cris6h16</groupId>
     <artifactId>Infrastructure</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>restful-api-jwt</name>
+<!--    <name>restful-api-jwt</name>-->
     <description>Demo project for Spring Boot</description>
     <url/>
     <licenses>

@@ -166,8 +166,9 @@ as we know, we can use redis as a distributed cache, applying the most convenien
 
 <hr>
 
-**IN THIS PROJECT:**
-I am going to use **Write-Through** & **Read-Through** strategies, using Redis.
+**IN THIS PROJECT:**   
+
+I am going to use **Cache-Aside** strategy, using Redis.
 
 ### 1.5 Design Architecture
 
@@ -340,6 +341,6 @@ Guide to Software Structure and Design"_ by Robert C. Martin.
 
 ### 1.6 Sequences
 
-![Sequences diagram](docs/imgs/sequences.jpg)
+![Sequences diagram](docs/imgs/sequences.png)
 
 

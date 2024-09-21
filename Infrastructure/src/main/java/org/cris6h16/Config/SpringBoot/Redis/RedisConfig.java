@@ -1,7 +1,6 @@
 package org.cris6h16.Config.SpringBoot.Redis;
 
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
@@ -11,17 +10,12 @@ import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactor
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
-import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-import javax.sql.DataSource;
-import java.sql.SQLException;
 import java.time.Duration;
-import java.util.Collections;
 
 @Configuration
-@EnableTransactionManagement // be part of @Transactional instead use the SessionCallbacks ( simplified )
+@EnableTransactionManagement
 public class RedisConfig {
 
     @Bean

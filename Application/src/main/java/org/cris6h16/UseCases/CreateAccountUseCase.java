@@ -58,8 +58,8 @@ public class CreateAccountUseCase implements CreateAccountPort {
         transactionManager.readCommitted(() -> {
             checkDBForDuplicates(userModel);
 
-            cacheService.putUserModelToCache(userModel.getId().toString(), userModel);
             userRepository.saveCustom(userModel);
+            cacheService.putUserModelToCache(userModel.getId().toString(), userModel);
         });
 
         emailService.sendAsychVerificationEmail(userModel); // non-blocking

@@ -40,6 +40,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         Cookie[] cookies = request.getCookies();
         String tkCookie = null;
 
+        // todo: cookie cannot be null
+
         for (Cookie cookie : cookies) {
             if (cookie.getName().equals(accessTokenCookieName)) {
                 tkCookie = cookie.getValue();

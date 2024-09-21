@@ -1,0 +1,74 @@
+services:
+  backend:
+    image: restfulapi:test
+    container_name: backend
+    hostname: backend
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8080"
+    restart: no # todo: change
+    environment:
+      - PSQL_USER=$PSQL_USER
+      - PSQL_PASS=$PSQL_PASS
+      - MAIL_USER=$MAIL_USER
+      - MAIL_PASS=$MAIL_PASS
+      - JWT_SECRET_KEY=$JWT_SECRET_KEY
+      - KEY_STORE_PASS=$KEY_STORE_PASS
+      - PSQL_URL=db:5432/restful-api-jwt
+      - REDIS_HOST=server-cache
+      - REDIS_PORT=6379
+    networks:
+      - private
+      - public
+    depends_on:
+        - db
+        - server-cache
+    volumes:
+      - backend-data:/var/log/restful-api-jwt.log
+
+
+  db:
+    image: postgres:latest
+    container_name: db
+    hostname: db
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - private
+    environment:
+      POSTGRES_USER: $PSQL_USER
+      POSTGRES_PASSWORD: $PSQL_PASS
+      POSTGRES_DB: restful-api-jwt
+    restart: always
+
+
+
+
+  server-cache:
+    image: redis:latest
+    container_name: server-cache
+    hostname: server-cache
+    volumes:
+      -  redis-data:/data
+    networks:
+      - private
+    restart: always
+
+
+
+
+networks:
+  private:
+  public:
+
+
+
+volumes:
+  postgres-data:
+  redis-data:
+  backend-data:
+
+
+

@@ -1,28 +1,42 @@
 spring:
+
   application:
     name: restful-api-jwt
 
   datasource:
-    url: jdbc:postgresql://${PSQL_URL}
+    url: jdbc:postgresql://localhost:5432/restful-api-jwt
     driver-class-name: org.postgresql.Driver
-    username: ${PSQL_USER}
-    password: ${PSQL_PASS}
+    username: postgres
+    password: 12345678
     hikari:
-      schema: public
-#      maximum-pool-size: 20
-#      minimum-idle: 5
-#      idle-timeout: 30000
-#      connection-timeout: 20000
-#      leak-detection-threshold: 15000
+      schema: dev
 
   jpa:
-    show-sql: false
+    show-sql: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     properties:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
+  # My ISP is blocking port 587, so I have to use port 465
+  #  mail:
+  #    host: smtp.gmail.com
+  #    port: 587
+  #    username: ${MAIL_USER}
+  #    password: ${MAIL_PASS}
+  #    protocol: smtp
+  #    properties:
+  #      mail:
+  #        debug: true
+  #        transport:
+  #          protocol: smtp
+  #        smtp:
+  #          auth: true
+  #          starttls:
+  #            enable: true
+  #            required: true
+
   mail:
     host: smtp.gmail.com
     port: 465
@@ -39,8 +53,8 @@ spring:
         debug: false
   data:
     redis:
-      host: ${REDIS_HOST}
-      port: ${REDIS_PORT}
+      host: localhost
+      port: 6379
 
 server:
   port: 8080
@@ -54,20 +68,16 @@ server:
     key-store-type: PKCS12
     key-alias: cris6h16
     enabled: true
-  compression:
-    enabled: true
-    mime-types: application/json
-    min-response-size: 2048
 
-logging:
-  level:
-    root: INFO
-  file:
-    path: /var/log/restful-api-jwt.log
+
+
 
 jwt:
   secret:
-    key: ${JWT_SECRET_KEY}
+    key: 123456789987654321123456789987654321123456789
+
+
+
   expiration:
     token:
       refresh:
@@ -76,6 +86,7 @@ jwt:
         secs: 1800 # 30 minutes
         cookie:
           name: accessToken
+
       request:
         email:
           verification:

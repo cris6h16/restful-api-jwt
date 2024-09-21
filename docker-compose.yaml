@@ -48,13 +48,17 @@ services:
 
   server-cache:
     image: redis:latest
-    container_name: server-cache
-    hostname: server-cache
+    container_name: redis
+    hostname: redis
+    restart: always
     volumes:
       -  redis-data:/data
+    environment:
+      REDIS_ARGS: --requirepass admin
+    ports:
+      - "6379:6379"
     networks:
       - private
-    restart: always
 
 
 

@@ -8,4 +8,8 @@ public interface EmailService {
     void sendAsychVerificationEmail(UserModel userModel);
 
     void sendAsychResetPasswordEmail(UserModel userModel);
+
+    void sendAsychRequestDeleteAccountEmail(UserModel user);
+
+    void sendAsychRequestUpdateEmail(UserModel user);
 }

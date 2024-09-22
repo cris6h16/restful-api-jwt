@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import java.time.Duration;
 
 @Configuration
-@EnableTransactionManagement
+//@EnableTransactionManagement
 public class RedisConfig {
 
     @Bean
@@ -30,7 +30,7 @@ public class RedisConfig {
         template.setConnectionFactory(connectionFactory);
         template.setKeySerializer(new StringRedisSerializer());
         template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
-        template.setEnableTransactionSupport(true);
+//        template.setEnableTransactionSupport(true);
         return template;
     }
 
@@ -38,13 +38,13 @@ public class RedisConfig {
     @Bean
     public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory) {
         RedisCacheConfiguration cacheConfiguration = RedisCacheConfiguration.defaultCacheConfig()
-                .entryTtl(Duration.ofMinutes(1))
-                .disableCachingNullValues()
-                .enableTimeToIdle();
+                .entryTtl(Duration.ofMinutes(1)) //todo: change
+                .disableCachingNullValues();
+//                .enableTimeToIdle();
 
         return RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(cacheConfiguration)
-                .transactionAware()
+//                .transactionAware()
                 .build();
     }
 

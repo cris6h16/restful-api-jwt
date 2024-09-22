@@ -26,18 +26,22 @@ public class RequestResetPasswordUseCase implements RequestResetPasswordPort {
 
 
     @Override
-    public void requestResetPassword(String email) {
+    public void handle(String email) {
         userValidator.validateEmail(email);
 
         AtomicReference<UserModel> reference = new AtomicReference<>();
         transactionManager.readCommitted(() -> {
-            reference.set(userRepository.findByEmailCustom(email)
-                    .orElseThrow(() -> new NotFoundException("User not found"))
-            );
+            reference.set(findByEmailElseThrow(email));
         });
 
         UserModel user = reference.get();
         // non-blocking
         emailService.sendAsychResetPasswordEmail(user);
+    }
+
+    private UserModel findByEmailElseThrow(String email) {
+        return userRepository
+                .findByEmailCustom(email)
+                .orElseThrow(() -> new NotFoundException("User not found"));
     }
 }

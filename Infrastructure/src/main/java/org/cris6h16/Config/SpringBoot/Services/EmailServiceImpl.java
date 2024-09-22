@@ -57,6 +57,7 @@ public class EmailServiceImpl implements EmailService {
         }
     }
 
+    // todo: used when user sign up & updated email
     @Override
     public void sendAsychVerificationEmail(UserModel userModel) {
         // Send email in async way ( non-blocking ) -> also I can use a ExecutorService

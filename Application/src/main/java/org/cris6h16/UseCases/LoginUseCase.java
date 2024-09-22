@@ -1,17 +1,14 @@
 package org.cris6h16.UseCases;
 
 import org.cris6h16.Exceptions.Impls.EmailNotVerifiedException;
-import org.cris6h16.Exceptions.Impls.InvalidAttributeException;
 import org.cris6h16.Exceptions.Impls.NotFoundException;
 import org.cris6h16.In.Ports.LoginPort;
 import org.cris6h16.In.Results.ResultLogin;
 import org.cris6h16.Models.UserModel;
 import org.cris6h16.Repositories.UserRepository;
-import org.cris6h16.Services.CacheService;
 import org.cris6h16.Services.EmailService;
 import org.cris6h16.Services.MyPasswordEncoder;
 import org.cris6h16.Services.TransactionManager;
-import org.cris6h16.Utils.ErrorMessages;
 import org.cris6h16.Utils.JwtUtils;
 import org.cris6h16.Utils.UserValidator;
 
@@ -43,21 +40,20 @@ public class LoginUseCase implements LoginPort {
     }
 
     @Override
-    public ResultLogin login(String email, String password) {
+    public ResultLogin handle(String email, String password) {
         userValidator.validateEmail(email);
         userValidator.validatePassword(password);
 
+        AtomicReference<UserModel> ref = new AtomicReference<>(); // necessary for lambdas
+        transactionManager.readCommitted(() -> ref.set(findUserByEmailElseNull(email)));
+        UserModel um = ref.get();
+        verifyUser(um, password);
 
-        AtomicReference<UserModel> user = new AtomicReference<>(); // necessary for lambdas
+        return toResultLogin(um);
+    }
 
-        transactionManager.readCommitted(() ->
-                user.set(
-                        userRepository.findByEmailCustom(email).orElse(null)
-                )
-        );
-        UserModel userModel = user.get(); // not cached because load to the cache can be unnecessary
-
-        if (userModel == null || !passwordEncoder.matches(password, userModel.getPassword()) || !userModel.getActive()) {
+    private void verifyUser(UserModel userModel, String password) {
+        if (userModel == null || !userModel.getActive() || !passwordEncoder.matches(password, userModel.getPassword())) {
             throw new NotFoundException("Invalid email or password");
         }
 
@@ -65,11 +61,10 @@ public class LoginUseCase implements LoginPort {
             emailService.sendAsychVerificationEmail(userModel);
             throw new EmailNotVerifiedException("Email is not verified, please go to your email and verify it");
         }
+    }
 
-
-        return
-
-                toResultLogin(userModel);
+    private UserModel findUserByEmailElseNull(String email) {
+        return userRepository.findByEmailCustom(email).orElse(null);
     }
 
     private ResultLogin toResultLogin(UserModel userModel) {

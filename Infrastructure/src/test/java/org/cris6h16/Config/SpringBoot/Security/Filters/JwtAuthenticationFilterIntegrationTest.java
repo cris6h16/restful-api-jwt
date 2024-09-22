@@ -67,7 +67,7 @@ public class JwtAuthenticationFilterIntegrationTest {
                 .andExpect(status().isNoContent());
 
         // Assert
-        verify(verifyEmailPort, times(1)).verifyEmailById(1L);
+        verify(verifyEmailPort, times(1)).handle(1L);
     }
 
     private Collection<GrantedAuthority> userAuthority() {

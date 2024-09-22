@@ -20,7 +20,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
@@ -57,7 +56,7 @@ public class AuthenticationControllerFacade {
         Set<ERoles> defaultRoles = new HashSet<>(Set.of(ERoles.ROLE_USER));
         CreateAccountCommand cmd = new CreateAccountCommand(dto.getUsername(), dto.getPassword(), dto.getEmail(), defaultRoles);
         AtomicReference<Long> id = new AtomicReference<>(); // thread-safe: eg update without explicit synchronization, required for lambdas
-        Runnable createAccount = () -> id.set(createAccountPort.createAccount(cmd));
+        Runnable createAccount = () -> id.set(createAccountPort.handle(cmd));
         handleExceptions(createAccount);
 
         URI location = URI.create("/v1/users/me");  //.../me because my app is JWT based
@@ -67,7 +66,7 @@ public class AuthenticationControllerFacade {
 
     public ResponseEntity<Void> verifyMyEmail() {
         Long id = getPrincipalId();
-        handleExceptions(() -> verifyEmailPort.verifyEmailById(id));
+        handleExceptions(() -> verifyEmailPort.handle(id));
         return ResponseEntity.noContent().build();
     }
 
@@ -110,7 +109,7 @@ public class AuthenticationControllerFacade {
         AtomicReference<ResultLogin> resultLogin = new AtomicReference<>();
 
         handleExceptions(() -> resultLogin.set(
-                loginPort.login(
+                loginPort.handle(
                         dto.getEmail(),
                         dto.getPassword()
                 )
@@ -147,7 +146,7 @@ public class AuthenticationControllerFacade {
     }
 
     public ResponseEntity<Void> requestPasswordReset(String email) {
-        handleExceptions(() -> requestResetPasswordPort.requestResetPassword(email));
+        handleExceptions(() -> requestResetPasswordPort.handle(email));
         return ResponseEntity.accepted().build();
     }
 }

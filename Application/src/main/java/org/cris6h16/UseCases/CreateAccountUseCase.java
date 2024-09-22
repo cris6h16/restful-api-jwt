@@ -1,7 +1,7 @@
 package org.cris6h16.UseCases;
 
 import org.cris6h16.Exceptions.Impls.AlreadyExistException;
-import org.cris6h16.Exceptions.Impls.ImplementationException;
+import org.cris6h16.Exceptions.Impls.UnexpectedException;
 import org.cris6h16.In.Commands.CreateAccountCommand;
 import org.cris6h16.In.Ports.CreateAccountPort;
 import org.cris6h16.Models.ERoles;
@@ -25,7 +25,6 @@ public class CreateAccountUseCase implements CreateAccountPort {
     private final MyPasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final TransactionManager transactionManager;
-    private final CacheService cacheService;
 
     public CreateAccountUseCase(UserRepository userRepository, MyPasswordEncoder passwordEncoder, EmailService emailService, JwtUtils jwtUtils, ErrorMessages constants, UserValidator userValidator, TransactionManager transactionManager, CacheService cacheService) {
         this.userRepository = userRepository;
@@ -34,10 +33,9 @@ public class CreateAccountUseCase implements CreateAccountPort {
         this.errorMessages = constants;
         this.userValidator = userValidator;
         this.transactionManager = transactionManager;
-        this.cacheService = cacheService;
     }
 
-    public Long createAccount(CreateAccountCommand command) {
+    public Long handle(CreateAccountCommand command) {
         command = validateAndCleanCommand(command);
 
         String username = command.getUsername();
@@ -57,9 +55,7 @@ public class CreateAccountUseCase implements CreateAccountPort {
 
         transactionManager.readCommitted(() -> {
             checkDBForDuplicates(userModel);
-
             userRepository.saveCustom(userModel);
-            cacheService.putUserModelToCache(userModel.getId().toString(), userModel);
         });
 
         emailService.sendAsychVerificationEmail(userModel); // non-blocking
@@ -69,7 +65,7 @@ public class CreateAccountUseCase implements CreateAccountPort {
 
     private CreateAccountCommand validateAndCleanCommand(CreateAccountCommand cmd) {
         if (cmd == null) {
-            throw new ImplementationException("Command cannot be null");
+            throw new UnexpectedException("Command cannot be null");
         }
 
         userValidator.validateUsername(cmd.getUsername());
@@ -85,7 +81,6 @@ public class CreateAccountUseCase implements CreateAccountPort {
         );
     }
 
-    // minimal operations shouldn't be cached
     private void checkDBForDuplicates(UserModel userModel) {
         if (userRepository.existsByUsernameCustom(userModel.getUsername())) {
             throw new AlreadyExistException(errorMessages.getUsernameAlreadyExistsMessage());

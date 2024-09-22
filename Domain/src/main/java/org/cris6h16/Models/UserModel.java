@@ -70,6 +70,34 @@ public class UserModel {
         this.id = id;
     }
 
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setRoles(Set<ERoles> roles) {
+        this.roles = roles;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
+
+    public void setEmailVerified(Boolean emailVerified) {
+        this.emailVerified = emailVerified;
+    }
+
+    public void setLastModified(Long lastModified) {
+        this.lastModified = lastModified;
+    }
+
     public void setEmailVerified(boolean isVerified) {
         this.emailVerified = isVerified;
     }

@@ -3,18 +3,15 @@ package org.cris6h16.UseCases;
 import org.cris6h16.Exceptions.Impls.NotFoundException;
 import org.cris6h16.In.Ports.VerifyEmailPort;
 import org.cris6h16.Repositories.UserRepository;
-import org.cris6h16.Services.TransactionManager;
 import org.cris6h16.Utils.UserValidator;
 
 public class VerifyEmailUseCase implements VerifyEmailPort {
     private final UserRepository userRepository;
-    private final TransactionManager transactionManager;
     private final UserValidator userValidator;
     //todo: add loggers
 
-    public VerifyEmailUseCase(UserRepository userRepository, TransactionManager transactionManager, UserValidator userValidator) {
+    public VerifyEmailUseCase(UserRepository userRepository, UserValidator userValidator) {
         this.userRepository = userRepository;
-        this.transactionManager = transactionManager;
         this.userValidator = userValidator;
     }
 
@@ -22,12 +19,10 @@ public class VerifyEmailUseCase implements VerifyEmailPort {
     public void handle(Long id) {
         userValidator.validateId(id);
 
-        transactionManager.readCommitted(() -> {
-            if (!userRepository.existsByIdCustom(id)) {
-                throw new NotFoundException("User not found");
-            }
-            userRepository.updateEmailVerifiedByIdCustom(id, true);
-        });
+        if (!userRepository.existsByIdCustom(id)) {
+            throw new NotFoundException("User not found");
+        }
+        userRepository.updateEmailVerifiedByIdCustom(id, true);
     }
 
 

@@ -1,15 +1,14 @@
 package org.cris6h16.Services;
 
-import org.cris6h16.Models.UserModel;
-
 public interface EmailService {
     void sendEmail(String email, String subject, String text, boolean isHTML);
 
-    void sendAsychVerificationEmail(UserModel userModel);
+    // todo: if in yaml i put email.asyc: true i send it asych (non-blocking)
+    void sendVerificationEmail(String username, String email);
 
-    void sendAsychResetPasswordEmail(UserModel userModel);
+    void sendAsychResetPasswordEmail(String username, String email);
 
-    void sendAsychRequestDeleteAccountEmail(UserModel user);
+    void sendAsychRequestDeleteAccountEmail(String username, String email);
 
-    void sendAsychRequestUpdateEmail(UserModel user);
+    void sendAsychRequestUpdateEmail(String username, String email);
 }

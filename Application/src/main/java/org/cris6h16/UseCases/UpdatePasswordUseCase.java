@@ -5,21 +5,18 @@ import org.cris6h16.Exceptions.Impls.NotFoundException;
 import org.cris6h16.In.Ports.UpdatePasswordPort;
 import org.cris6h16.Repositories.UserRepository;
 import org.cris6h16.Services.MyPasswordEncoder;
-import org.cris6h16.Services.TransactionManager;
 import org.cris6h16.Utils.UserValidator;
+
 public class UpdatePasswordUseCase implements UpdatePasswordPort {
     private final UserValidator userValidator;
-    private final TransactionManager transactionManager;
     private final UserRepository userRepository;
     private final MyPasswordEncoder myPasswordEncoder;
 
     public UpdatePasswordUseCase(
             UserValidator userValidator,
-            TransactionManager transactionManager,
             UserRepository userRepository,
             MyPasswordEncoder myPasswordEncoder) {
         this.userValidator = userValidator;
-        this.transactionManager = transactionManager;
         this.userRepository = userRepository;
         this.myPasswordEncoder = myPasswordEncoder;
     }
@@ -28,11 +25,9 @@ public class UpdatePasswordUseCase implements UpdatePasswordPort {
     public void handle(Long id, String currentPassword, String newPassword) {
         validateInputs(id, currentPassword, newPassword);
 
-        transactionManager.readCommitted(() -> {
-            validateUserExists(id);
-            validateCurrentPassword(id, currentPassword);
-            updatePassword(id, newPassword);
-        });
+        validateUserExists(id);
+        validateCurrentPassword(id, currentPassword);
+        updatePassword(id, newPassword);
     }
 
     private void validateInputs(Long id, String currentPassword, String newPassword) {

@@ -1,7 +1,6 @@
 package org.cris6h16.Config.SpringBoot.Services;
 
 import org.cris6h16.Models.UserModel;
-import org.cris6h16.Services.CacheService;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 

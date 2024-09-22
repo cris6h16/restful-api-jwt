@@ -5,7 +5,6 @@ import org.cris6h16.In.Ports.RequestResetPasswordPort;
 import org.cris6h16.Models.UserModel;
 import org.cris6h16.Repositories.UserRepository;
 import org.cris6h16.Services.EmailService;
-import org.cris6h16.Services.TransactionManager;
 import org.cris6h16.Utils.UserValidator;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -13,13 +12,11 @@ import java.util.concurrent.atomic.AtomicReference;
 public class RequestResetPasswordUseCase implements RequestResetPasswordPort {
 
     private final EmailService emailService;
-    private final TransactionManager transactionManager;
     private final UserValidator userValidator;
     private final UserRepository userRepository;
 
-    public RequestResetPasswordUseCase(EmailService emailService, TransactionManager transactionManager, UserValidator userValidator, UserRepository userRepository) {
+    public RequestResetPasswordUseCase(EmailService emailService, UserValidator userValidator, UserRepository userRepository) {
         this.emailService = emailService;
-        this.transactionManager = transactionManager;
         this.userValidator = userValidator;
         this.userRepository = userRepository;
     }
@@ -29,14 +26,9 @@ public class RequestResetPasswordUseCase implements RequestResetPasswordPort {
     public void handle(String email) {
         userValidator.validateEmail(email);
 
-        AtomicReference<UserModel> reference = new AtomicReference<>();
-        transactionManager.readCommitted(() -> {
-            reference.set(findByEmailElseThrow(email));
-        });
-
-        UserModel user = reference.get();
+        UserModel user = findByEmailElseThrow(email);
         // non-blocking
-        emailService.sendAsychResetPasswordEmail(user);
+        emailService.sendAsychResetPasswordEmail(user.getUsername(), user.getEmail());
     }
 
     private UserModel findByEmailElseThrow(String email) {

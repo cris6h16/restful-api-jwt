@@ -32,4 +32,20 @@ public class CreateAccountCommand {
     public Set<ERoles> getRoles() {
         return roles;
     }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setRoles(Set<ERoles> roles) {
+        this.roles = roles;
+    }
 }

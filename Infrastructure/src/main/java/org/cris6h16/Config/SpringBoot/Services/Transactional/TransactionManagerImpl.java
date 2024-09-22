@@ -1,6 +1,5 @@
 package org.cris6h16.Config.SpringBoot.Services.Transactional;
 
-import org.cris6h16.Services.TransactionManager;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;

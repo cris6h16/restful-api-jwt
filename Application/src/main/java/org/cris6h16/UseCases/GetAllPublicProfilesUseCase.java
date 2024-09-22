@@ -3,49 +3,51 @@ package org.cris6h16.UseCases;
 import org.cris6h16.Exceptions.Impls.UnexpectedException;
 import org.cris6h16.In.Commands.GetAllPublicProfilesCommand;
 import org.cris6h16.In.Ports.GetAllPublicProfilesPort;
-import org.cris6h16.In.Results.ResultPublicProfile;
+import org.cris6h16.In.Results.GetAllPublicProfilesOutput;
+import org.cris6h16.In.Results.GetPublicProfileOutput;
 import org.cris6h16.Models.UserModel;
+import org.cris6h16.Repositories.Page.Page;
+import org.cris6h16.Repositories.Page.PageRequest;
 import org.cris6h16.Repositories.UserRepository;
-import org.cris6h16.Services.TransactionManager;
 import org.cris6h16.Utils.UserValidator;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class GetAllPublicProfilesUseCase implements GetAllPublicProfilesPort {
     private final UserValidator userValidator;
-    private final TransactionManager transactionManager;
     private final UserRepository userRepository;
 
-    public GetAllPublicProfilesUseCase(UserValidator userValidator, TransactionManager transactionManager, UserRepository userRepository) {
+    public GetAllPublicProfilesUseCase(UserValidator userValidator, UserRepository userRepository) {
         this.userValidator = userValidator;
-        this.transactionManager = transactionManager;
         this.userRepository = userRepository;
     }
 
 
     @Override
-    public List<ResultPublicProfile> getPublicProfilesPage(GetAllPublicProfilesCommand cmd) {
+    public GetAllPublicProfilesOutput getPublicProfilesPage(GetAllPublicProfilesCommand cmd) {
         cmdNotNull(cmd);
+        return toGetAllPublicProfilesOutput(findPage(cmd));
+    }
 
-        AtomicReference<List<UserModel>> ref = new AtomicReference<>();
-        transactionManager.readCommitted(() -> ref.set(findPage(cmd)));
-        return ref.get().stream()
-                .map(this::toResultPublicProfile)
+    private GetAllPublicProfilesOutput toGetAllPublicProfilesOutput(Page<UserModel> page) {
+        List<GetPublicProfileOutput> ppo = page.getContent().stream()
+                .map(u -> new GetPublicProfileOutput.Builder()
+                        .id(u.getId())
+                        .username(u.getUsername())
+                        .email(u.getEmail())
+                        .roles(u.getRoles())
+                        .active(u.getActive())
+                        .emailVerified(u.getEmailVerified())
+                        .lastModified(u.getLastModified())
+                        .build())
                 .toList();
+
+        return new GetAllPublicProfilesOutput(new Page<>(ppo, page.getRequest()));
     }
 
-    private ResultPublicProfile toResultPublicProfile(UserModel userModel) {
-        return null;
-    }
-
-    private List<UserModel> findPage(GetAllPublicProfilesCommand cmd) {
-        return userRepository.findAllCustom(
-                cmd.getPage(),
-                cmd.getPageSize(),
-                cmd.getSortBy(),
-                cmd.getSortDirection()
-        );
+    private Page<UserModel> findPage(GetAllPublicProfilesCommand cmd) {
+        PageRequest req = new PageRequest(cmd.getPage(), cmd.getPageSize(), cmd.getSortBy(), cmd.getSortDirection());
+        return userRepository.findPageCustom(req);
     }
 
     private void cmdNotNull(GetAllPublicProfilesCommand cmd) {

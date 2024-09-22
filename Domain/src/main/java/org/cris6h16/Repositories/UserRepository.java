@@ -1,13 +1,14 @@
 package org.cris6h16.Repositories;
 
 import org.cris6h16.Models.UserModel;
+import org.cris6h16.Repositories.Page.Page;
+import org.cris6h16.Repositories.Page.PageRequest;
 
-import java.util.List;
 import java.util.Optional;
 
 // port
 public interface UserRepository {
-    void saveCustom(UserModel userModel);
+    UserModel saveCustom(UserModel userModel);
 
     boolean existsByUsernameCustom(String username);
 
@@ -29,5 +30,5 @@ public interface UserRepository {
 
     void updatePasswordByIdCustom(Long id, String newPassword);
 
-    List<UserModel> findAllCustom(int page, int pageSize, String sortBy, String sortDirection);
+    Page<UserModel> findPageCustom(PageRequest request);
 }

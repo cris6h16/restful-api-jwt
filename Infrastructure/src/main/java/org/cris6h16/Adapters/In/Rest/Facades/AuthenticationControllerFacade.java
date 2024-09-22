@@ -14,7 +14,7 @@ import org.cris6h16.In.Ports.CreateAccountPort;
 import org.cris6h16.In.Ports.LoginPort;
 import org.cris6h16.In.Ports.RequestResetPasswordPort;
 import org.cris6h16.In.Ports.VerifyEmailPort;
-import org.cris6h16.In.Results.ResultLogin;
+import org.cris6h16.In.Results.LoginOutput;
 import org.cris6h16.Models.ERoles;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -106,7 +106,7 @@ public class AuthenticationControllerFacade {
     public ResponseEntity<Void> login(LoginDTO dto) {
         String accessToken;
         String refreshToken;
-        AtomicReference<ResultLogin> resultLogin = new AtomicReference<>();
+        AtomicReference<LoginOutput> resultLogin = new AtomicReference<>();
 
         handleExceptions(() -> resultLogin.set(
                 loginPort.handle(
@@ -115,8 +115,8 @@ public class AuthenticationControllerFacade {
                 )
         ));
 
-        accessToken = resultLogin.get().getAccessToken();
-        refreshToken = resultLogin.get().getRefreshToken();
+        accessToken = resultLogin.get().accessToken();
+        refreshToken = resultLogin.get().refreshToken();
 
         if (accessToken == null || refreshToken == null) {
             log.error("Login failed, accessToken or refreshToken are null, accessToken: {}, refreshToken: {}", accessToken, refreshToken);

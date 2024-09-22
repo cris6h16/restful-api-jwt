@@ -1,7 +1,7 @@
 package org.cris6h16.In.Ports;
 
-import org.cris6h16.In.Results.ResultLogin;
+import org.cris6h16.In.Results.LoginOutput;
 
 public interface LoginPort {
-    ResultLogin handle(String email, String password);
+    LoginOutput handle(String email, String password);
 }

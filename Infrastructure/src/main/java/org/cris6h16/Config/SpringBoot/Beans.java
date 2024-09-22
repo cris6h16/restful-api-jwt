@@ -1,6 +1,5 @@
 package org.cris6h16.Config.SpringBoot;
 
-import org.cris6h16.Adapters.Out.SpringData.UserJpaRepository;
 import org.cris6h16.Config.SpringBoot.Security.PasswordEncoderImpl;
 import org.cris6h16.Config.SpringBoot.Security.UserDetails.UserDetailsServiceImpl;
 import org.cris6h16.Config.SpringBoot.Services.CacheServiceImpl;
@@ -10,9 +9,7 @@ import org.cris6h16.In.Ports.LoginPort;
 import org.cris6h16.In.Ports.RequestResetPasswordPort;
 import org.cris6h16.In.Ports.VerifyEmailPort;
 import org.cris6h16.Repositories.UserRepository;
-import org.cris6h16.Services.CacheService;
 import org.cris6h16.Services.EmailService;
-import org.cris6h16.Services.TransactionManager;
 import org.cris6h16.UseCases.CreateAccountUseCase;
 import org.cris6h16.UseCases.LoginUseCase;
 import org.cris6h16.UseCases.RequestResetPasswordUseCase;

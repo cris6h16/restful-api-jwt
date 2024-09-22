@@ -7,15 +7,14 @@ import org.cris6h16.In.Ports.CreateAccountPort;
 import org.cris6h16.Models.ERoles;
 import org.cris6h16.Models.UserModel;
 import org.cris6h16.Repositories.UserRepository;
-import org.cris6h16.Services.CacheService;
 import org.cris6h16.Services.EmailService;
-import org.cris6h16.Services.TransactionManager;
 import org.cris6h16.Utils.ErrorMessages;
 import org.cris6h16.Utils.JwtUtils;
 import org.cris6h16.Services.MyPasswordEncoder;
 import org.cris6h16.Utils.UserValidator;
 
 import java.util.Set; // todo:add logger
+
 
 public class CreateAccountUseCase implements CreateAccountPort {
 
@@ -24,15 +23,13 @@ public class CreateAccountUseCase implements CreateAccountPort {
     private final UserRepository userRepository;
     private final MyPasswordEncoder passwordEncoder;
     private final EmailService emailService;
-    private final TransactionManager transactionManager;
 
-    public CreateAccountUseCase(UserRepository userRepository, MyPasswordEncoder passwordEncoder, EmailService emailService, JwtUtils jwtUtils, ErrorMessages constants, UserValidator userValidator, TransactionManager transactionManager, CacheService cacheService) {
+    public CreateAccountUseCase(UserRepository userRepository, MyPasswordEncoder passwordEncoder, EmailService emailService, JwtUtils jwtUtils, ErrorMessages constants, UserValidator userValidator) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
         this.errorMessages = constants;
         this.userValidator = userValidator;
-        this.transactionManager = transactionManager;
     }
 
     public Long handle(CreateAccountCommand command) {
@@ -53,12 +50,10 @@ public class CreateAccountUseCase implements CreateAccountPort {
                 .setLastModified(System.currentTimeMillis())
                 .build();
 
-        transactionManager.readCommitted(() -> {
-            checkDBForDuplicates(userModel);
-            userRepository.saveCustom(userModel);
-        });
+        checkDBForDuplicates(userModel);
+        userModel = userRepository.saveCustom(userModel);
 
-        emailService.sendAsychVerificationEmail(userModel); // non-blocking
+        emailService.sendVerificationEmail(userModel.getUsername(), userModel.getEmail());
 
         return userModel.getId();
     }

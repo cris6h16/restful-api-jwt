@@ -5,20 +5,15 @@ import org.cris6h16.In.Ports.UpdateEmailPort;
 import org.cris6h16.Models.UserModel;
 import org.cris6h16.Repositories.UserRepository;
 import org.cris6h16.Services.EmailService;
-import org.cris6h16.Services.TransactionManager;
 import org.cris6h16.Utils.UserValidator;
-
-import java.util.concurrent.atomic.AtomicReference;
 
 public class UpdateEmailUseCase implements UpdateEmailPort {
     private final UserValidator userValidator;
-    private final TransactionManager transactionManager;
     private final UserRepository userRepository;
     private final EmailService emailService;
 
-    public UpdateEmailUseCase(UserValidator userValidator, TransactionManager transactionManager, UserRepository userRepository, EmailService emailService) {
+    public UpdateEmailUseCase(UserValidator userValidator, UserRepository userRepository, EmailService emailService) {
         this.userValidator = userValidator;
-        this.transactionManager = transactionManager;
         this.userRepository = userRepository;
         this.emailService = emailService;
     }
@@ -29,17 +24,12 @@ public class UpdateEmailUseCase implements UpdateEmailPort {
         userValidator.validateId(id);
         userValidator.validateEmail(email);
 
-        AtomicReference<UserModel> ref = new AtomicReference<>();
-        transactionManager.readCommitted(() -> {
-            UserModel user = findByIdElseThrow(id);
-            user.setEmail(email);
-            userRepository.saveCustom(user);
-
-            ref.set(user);
-        });
+        UserModel u = findByIdElseThrow(id);
+        u.setEmail(email);
+        userRepository.saveCustom(u);
 
         // non-blocking
-        emailService.sendAsychVerificationEmail(ref.get());
+        emailService.sendVerificationEmail(u.getUsername(), u.getEmail());
     }
 
     private UserModel findByIdElseThrow(Long id) {

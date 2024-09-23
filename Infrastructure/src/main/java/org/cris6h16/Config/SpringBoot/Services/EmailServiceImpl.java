@@ -59,12 +59,12 @@ public class EmailServiceImpl implements EmailService {
 
     // todo: used when user sign up & updated email
     @Override
-    public void sendAsychVerificationEmail(UserModel userModel) {
+    public void sendVerificationEmail(Long id, String email) {
         // Send email in async way ( non-blocking ) -> also I can use a ExecutorService
         CompletableFuture.runAsync(() -> {
             try {
-                String token = jwtUtils.genToken(userModel.getId(), null, EMAIL_VERIFICATION_TOKEN_TIME_LIVE);
-                sendEmail(userModel.getEmail(), EmailContent.HTML_SIGNUP_SUBJECT, EmailContent.getSignUpHtmlBody(token), true);
+                String token = jwtUtils.genToken(id, null, EMAIL_VERIFICATION_TOKEN_TIME_LIVE);
+                sendEmail(email, EmailContent.HTML_SIGNUP_SUBJECT, EmailContent.getSignUpHtmlBody(token), true);
             } catch (Exception e) {
                 log.error("Error sending email for email verification: {}", e.toString());
             }
@@ -72,15 +72,25 @@ public class EmailServiceImpl implements EmailService {
     }
 
     @Override
-    public void sendAsychResetPasswordEmail(UserModel userModel) {
+    public void sendResetPasswordEmail(Long id, String email) {
         // Send email in async way ( non-blocking ) -> also I can use a ExecutorService
         CompletableFuture.runAsync(() -> {
             try {
-                String token = jwtUtils.genToken(userModel.getId(), null, RESET_PASSWORD_TOKEN_TIME_LIVE);
-                sendEmail(userModel.getEmail(), EmailContent.HTML_RESET_PASSWORD_SUBJECT, EmailContent.getResetPasswordHtmlBody(token), true);
+                String token = jwtUtils.genToken(id, null, RESET_PASSWORD_TOKEN_TIME_LIVE);
+                sendEmail(email, EmailContent.HTML_RESET_PASSWORD_SUBJECT, EmailContent.getResetPasswordHtmlBody(token), true);
             } catch (Exception e) {
                 log.error("Error sending email for request reset password: {}", e.toString());
             }
         });
+    }
+
+    @Override
+    public void sendRequestDeleteAccountEmail(Long id, String email) {
+
+    }
+
+    @Override
+    public void sendRequestUpdateEmail(Long id, String email) {
+
     }
 }

@@ -161,7 +161,7 @@ class CreateAccountUseCaseTest {
             boolean rolesEquals = passedToDb.getRoles().equals(trimmed.getRoles());
             return usernameTrimmed && emailTrimmed && rolesEquals;
         }));
-        verify(emailService).sendVerificationEmail(trimmed.getUsername(), trimmed.getEmail().trim());
+        verify(emailService).sendVerificationEmail(id, trimmed.getEmail().trim());
     }
 
     private CreateAccountCommand trim(CreateAccountCommand cmd) {

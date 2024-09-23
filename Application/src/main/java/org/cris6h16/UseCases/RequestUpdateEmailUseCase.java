@@ -26,7 +26,7 @@ public class RequestUpdateEmailUseCase implements RequestUpdateEmailPort {
         UserModel user = findByIdElseThrow(id);
 
         // non-blocking
-        emailService.sendAsychRequestUpdateEmail(user.getUsername(), user.getEmail());
+        emailService.sendRequestUpdateEmail(user.getId(), user.getEmail());
     }
 
     private UserModel findByIdElseThrow(Long id) {

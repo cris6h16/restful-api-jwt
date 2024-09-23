@@ -62,4 +62,14 @@ public class ErrorMessagesImpl implements ErrorMessages {
     public String getRolesCannotBeEmptyMessage() {
         return  ROLES_CANNOT_BE_EMPTY_MSG;
     }
+
+    @Override
+    public String getUserNotFoundMessage() {
+        return "";
+    }
+
+    @Override
+    public String getEmailNotVerifiedMessage() {
+        return "";
+    }
 }

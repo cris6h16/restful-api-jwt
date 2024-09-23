@@ -53,7 +53,7 @@ public class CreateAccountUseCase implements CreateAccountPort {
         checkDBForDuplicates(userModel);
         userModel = userRepository.saveCustom(userModel);
 
-        emailService.sendVerificationEmail(userModel.getUsername(), userModel.getEmail());
+        emailService.sendVerificationEmail(userModel.getId(), userModel.getEmail());
 
         return userModel.getId();
     }

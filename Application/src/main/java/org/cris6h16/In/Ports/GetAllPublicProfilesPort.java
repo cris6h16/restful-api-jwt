@@ -4,5 +4,5 @@ import org.cris6h16.In.Commands.GetAllPublicProfilesCommand;
 import org.cris6h16.In.Results.GetAllPublicProfilesOutput;
 
 public interface GetAllPublicProfilesPort {
-    GetAllPublicProfilesOutput getPublicProfilesPage(GetAllPublicProfilesCommand cmd);
+    GetAllPublicProfilesOutput handle(GetAllPublicProfilesCommand cmd);
 }

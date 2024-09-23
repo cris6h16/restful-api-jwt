@@ -29,7 +29,7 @@ public class UpdateEmailUseCase implements UpdateEmailPort {
         userRepository.saveCustom(u);
 
         // non-blocking
-        emailService.sendVerificationEmail(u.getUsername(), u.getEmail());
+        emailService.sendVerificationEmail(u.getId(), u.getEmail());
     }
 
     private UserModel findByIdElseThrow(Long id) {

@@ -7,8 +7,6 @@ import org.cris6h16.Repositories.UserRepository;
 import org.cris6h16.Services.EmailService;
 import org.cris6h16.Utils.UserValidator;
 
-import java.util.concurrent.atomic.AtomicReference;
-
 public class RequestResetPasswordUseCase implements RequestResetPasswordPort {
 
     private final EmailService emailService;
@@ -28,7 +26,7 @@ public class RequestResetPasswordUseCase implements RequestResetPasswordPort {
 
         UserModel user = findByEmailElseThrow(email);
         // non-blocking
-        emailService.sendAsychResetPasswordEmail(user.getUsername(), user.getEmail());
+        emailService.sendResetPasswordEmail(user.getId(), user.getEmail());
     }
 
     private UserModel findByEmailElseThrow(String email) {

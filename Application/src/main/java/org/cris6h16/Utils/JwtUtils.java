@@ -1,12 +1,14 @@
 package org.cris6h16.Utils;
 
+import org.cris6h16.Models.ERoles;
+
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public interface JwtUtils {
 
-    public String genToken(Long subject, Map<String, String> claims, long timeExpirationMillis);
+    String genRefreshToken(Long id);
 
-    boolean validate(String token);
-
-    Long getId(String token);
+    String genAccessToken(Long id, Set<ERoles> roles);
 }

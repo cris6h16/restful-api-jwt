@@ -1,7 +1,7 @@
 package org.cris6h16.Repositories;
 
 import org.cris6h16.Models.UserModel;
-import org.cris6h16.Repositories.Page.Page;
+import org.cris6h16.Repositories.Page.PageResult;
 import org.cris6h16.Repositories.Page.PageRequest;
 
 import java.util.Optional;
@@ -30,5 +30,5 @@ public interface UserRepository {
 
     void updatePasswordByIdCustom(Long id, String newPassword);
 
-    Page<UserModel> findPageCustom(PageRequest request);
+    PageResult<UserModel> findPageCustom(PageRequest request);
 }

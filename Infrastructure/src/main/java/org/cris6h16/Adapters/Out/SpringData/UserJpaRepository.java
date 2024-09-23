@@ -29,7 +29,7 @@ public interface UserJpaRepository extends JpaRepository<UserEntity, Long>, User
     Optional<UserEntity> findByEmail(String email);
 
     @Override
-    default void saveCustom(UserModel userModel) {
+    default UserModel saveCustom(UserModel userModel) {
         UserEntity userEntity = UserEntity.builder()
                 .id(userModel.getId())
                 .username(userModel.getUsername())
@@ -43,6 +43,7 @@ public interface UserJpaRepository extends JpaRepository<UserEntity, Long>, User
 
         save(userEntity);
         userModel.setId(userEntity.getId());
+        return userModel;
     }
 
 

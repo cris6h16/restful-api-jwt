@@ -14,4 +14,7 @@ public interface ErrorMessages {
 
     String getRolesCannotBeEmptyMessage();
 
+    String getUserNotFoundMessage();
+
+    String getEmailNotVerifiedMessage();
 }

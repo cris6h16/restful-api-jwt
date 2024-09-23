@@ -29,7 +29,7 @@ public class RequestDeleteAccountUseCase implements RequestDeleteAccountPort {
         UserModel user = findByIdElseThrow(id);
 
         // non-blocking
-        emailService.sendAsychRequestDeleteAccountEmail(user.getUsername(), user.getEmail());
+        emailService.sendRequestDeleteAccountEmail(user.getId(), user.getEmail());
     }
 
     private UserModel findByIdElseThrow(Long id) {

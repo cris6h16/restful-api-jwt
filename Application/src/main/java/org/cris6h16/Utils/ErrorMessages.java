@@ -17,4 +17,7 @@ public interface ErrorMessages {
     String getUserNotFoundMessage();
 
     String getEmailNotVerifiedMessage();
+
+    String getCurrentPasswordNotMacthMessage();
+
 }

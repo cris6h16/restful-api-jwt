@@ -1,31 +1,38 @@
 package org.cris6h16.UseCases;
 
-import org.cris6h16.Exceptions.Impls.InvalidAttributeException;
 import org.cris6h16.Exceptions.Impls.NotFoundException;
+import org.cris6h16.Exceptions.Impls.PasswordNotMatchException;
+import org.cris6h16.Exceptions.Impls.UnexpectedException;
 import org.cris6h16.In.Ports.UpdatePasswordPort;
 import org.cris6h16.Repositories.UserRepository;
 import org.cris6h16.Services.MyPasswordEncoder;
+import org.cris6h16.Utils.ErrorMessages;
 import org.cris6h16.Utils.UserValidator;
 
 public class UpdatePasswordUseCase implements UpdatePasswordPort {
     private final UserValidator userValidator;
     private final UserRepository userRepository;
     private final MyPasswordEncoder myPasswordEncoder;
+    private final ErrorMessages errorMessages;
 
     public UpdatePasswordUseCase(
             UserValidator userValidator,
             UserRepository userRepository,
-            MyPasswordEncoder myPasswordEncoder) {
+            MyPasswordEncoder myPasswordEncoder, ErrorMessages errorMessages) {
         this.userValidator = userValidator;
         this.userRepository = userRepository;
         this.myPasswordEncoder = myPasswordEncoder;
+        this.errorMessages = errorMessages;
     }
 
     @Override
     public void handle(Long id, String currentPassword, String newPassword) {
+        currentPassword = currentPassword.trim();
+        newPassword = newPassword.trim();
+
         validateInputs(id, currentPassword, newPassword);
 
-        validateUserExists(id);
+        userExists(id);
         validateCurrentPassword(id, currentPassword);
         updatePassword(id, newPassword);
     }
@@ -36,18 +43,18 @@ public class UpdatePasswordUseCase implements UpdatePasswordPort {
         userValidator.validatePassword(newPassword);
     }
 
-    private void validateUserExists(Long id) {
+    private void userExists(Long id) {
         if (!userRepository.existsByIdCustom(id)) {
-            throw new NotFoundException("User not found");
+            throw new NotFoundException(errorMessages.getUserNotFoundMessage());
         }
     }
 
     private void validateCurrentPassword(Long id, String currentPassword) {
         String storedPassword = userRepository.findPasswordByIdCustom(id)
-                .orElseThrow(() -> new IllegalStateException("User must have a non-null password"));
+                .orElseThrow(() -> new UnexpectedException("User must have a non-null password"));
 
         if (!myPasswordEncoder.matches(currentPassword, storedPassword)) {
-            throw new InvalidAttributeException("Current password is incorrect");
+            throw new PasswordNotMatchException(errorMessages.getCurrentPasswordNotMacthMessage());
         }
     }
 

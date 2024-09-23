@@ -9,7 +9,6 @@ import org.cris6h16.Repositories.UserRepository;
 import org.cris6h16.Services.EmailService;
 import org.cris6h16.Services.MyPasswordEncoder;
 import org.cris6h16.Utils.ErrorMessages;
-import org.cris6h16.Utils.JwtUtils;
 import org.cris6h16.Utils.UserValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
-class CreateAccountUseCaseTest {
+public class CreateAccountUseCaseTest {
 
     @Mock
     private UserRepository userRepository;
@@ -31,8 +30,6 @@ class CreateAccountUseCaseTest {
     private MyPasswordEncoder passwordEncoder;
     @Mock
     private EmailService emailService;
-    @Mock
-    private JwtUtils jwtUtils;
     @Mock
     private ErrorMessages errorMessages;
     @Mock

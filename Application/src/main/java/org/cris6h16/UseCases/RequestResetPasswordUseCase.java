@@ -5,6 +5,7 @@ import org.cris6h16.In.Ports.RequestResetPasswordPort;
 import org.cris6h16.Models.UserModel;
 import org.cris6h16.Repositories.UserRepository;
 import org.cris6h16.Services.EmailService;
+import org.cris6h16.Utils.ErrorMessages;
 import org.cris6h16.Utils.UserValidator;
 
 public class RequestResetPasswordUseCase implements RequestResetPasswordPort {
@@ -12,11 +13,13 @@ public class RequestResetPasswordUseCase implements RequestResetPasswordPort {
     private final EmailService emailService;
     private final UserValidator userValidator;
     private final UserRepository userRepository;
+    private final ErrorMessages errorMessages;
 
-    public RequestResetPasswordUseCase(EmailService emailService, UserValidator userValidator, UserRepository userRepository) {
+    public RequestResetPasswordUseCase(EmailService emailService, UserValidator userValidator, UserRepository userRepository, ErrorMessages errorMessages) {
         this.emailService = emailService;
         this.userValidator = userValidator;
         this.userRepository = userRepository;
+        this.errorMessages = errorMessages;
     }
 
 
@@ -25,13 +28,12 @@ public class RequestResetPasswordUseCase implements RequestResetPasswordPort {
         userValidator.validateEmail(email);
 
         UserModel user = findByEmailElseThrow(email);
-        // non-blocking
         emailService.sendResetPasswordEmail(user.getId(), user.getEmail());
     }
 
     private UserModel findByEmailElseThrow(String email) {
         return userRepository
                 .findByEmailCustom(email)
-                .orElseThrow(() -> new NotFoundException("User not found"));
+                .orElseThrow(() -> new NotFoundException(errorMessages.getUserNotFoundMessage()));
     }
 }

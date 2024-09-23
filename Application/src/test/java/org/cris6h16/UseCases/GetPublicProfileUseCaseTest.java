@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
-class GetPublicProfileUseCaseTest {
+public class GetPublicProfileUseCaseTest {
 
     @Mock
     private UserValidator userValidator;

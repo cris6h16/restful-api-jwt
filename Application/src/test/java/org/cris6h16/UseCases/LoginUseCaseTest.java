@@ -24,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
-class LoginUseCaseTest {
+public class LoginUseCaseTest {
 
     @Mock
     private UserRepository userRepository;

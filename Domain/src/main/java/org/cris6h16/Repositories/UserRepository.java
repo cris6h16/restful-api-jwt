@@ -31,4 +31,6 @@ public interface UserRepository {
     void updatePasswordByIdCustom(Long id, String newPassword);
 
     PageResult<UserModel> findPageCustom(PageRequest request);
+
+    void updateEmailByIdCustom(Long id, String email);
 }

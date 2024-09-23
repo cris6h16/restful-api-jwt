@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
-class DeleteAccountUseCaseTest {
+public class DeleteAccountUseCaseTest {
     @Mock
     private UserValidator userValidator;
 

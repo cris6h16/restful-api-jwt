@@ -1,6 +1,7 @@
 package org.cris6h16.UseCases;
 
 import org.cris6h16.Exceptions.Impls.EmailNotVerifiedException;
+import org.cris6h16.Exceptions.Impls.InvalidCredentialsException;
 import org.cris6h16.Exceptions.Impls.NotFoundException;
 import org.cris6h16.In.Ports.LoginPort;
 import org.cris6h16.In.Results.LoginOutput;
@@ -47,7 +48,7 @@ public class LoginUseCase implements LoginPort {
 
     private void verifyUser(UserModel userModel, String password) {
         if (userModel == null || !userModel.getActive() || !passwordEncoder.matches(password, userModel.getPassword())) {
-            throw new NotFoundException(errorMessages.getUserNotFoundMessage());
+            throw new InvalidCredentialsException(errorMessages.getUserNotFoundMessage());
         }
 
         if (!userModel.getEmailVerified()) {

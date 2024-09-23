@@ -2,39 +2,41 @@ package org.cris6h16.UseCases;
 
 import org.cris6h16.Exceptions.Impls.NotFoundException;
 import org.cris6h16.In.Ports.UpdateEmailPort;
-import org.cris6h16.Models.UserModel;
 import org.cris6h16.Repositories.UserRepository;
 import org.cris6h16.Services.EmailService;
+import org.cris6h16.Utils.ErrorMessages;
 import org.cris6h16.Utils.UserValidator;
 
 public class UpdateEmailUseCase implements UpdateEmailPort {
     private final UserValidator userValidator;
     private final UserRepository userRepository;
     private final EmailService emailService;
+    private final ErrorMessages errorMessages;
 
-    public UpdateEmailUseCase(UserValidator userValidator, UserRepository userRepository, EmailService emailService) {
+    public UpdateEmailUseCase(UserValidator userValidator, UserRepository userRepository, EmailService emailService, ErrorMessages errorMessages) {
         this.userValidator = userValidator;
         this.userRepository = userRepository;
         this.emailService = emailService;
+        this.errorMessages = errorMessages;
     }
 
 
     @Override
     public void handle(Long id, String email) {
+        email = email.trim();
         userValidator.validateId(id);
         userValidator.validateEmail(email);
 
-        UserModel u = findByIdElseThrow(id);
-        u.setEmail(email);
-        userRepository.saveCustom(u);
+        userExists(id);
+        userRepository.updateEmailByIdCustom(id, email);
+        userRepository.updateEmailVerifiedByIdCustom(id, false);
 
-        // non-blocking
-        emailService.sendVerificationEmail(u.getId(), u.getEmail());
+        emailService.sendVerificationEmail(id, email);
     }
 
-    private UserModel findByIdElseThrow(Long id) {
-        return userRepository
-                .findByIdCustom(id)
-                .orElseThrow(() -> new NotFoundException("User not found"));
+    private void userExists(Long id) {
+        if (!userRepository.existsByIdCustom(id)) {
+            throw new NotFoundException(errorMessages.getUserNotFoundMessage());
+        }
     }
 }

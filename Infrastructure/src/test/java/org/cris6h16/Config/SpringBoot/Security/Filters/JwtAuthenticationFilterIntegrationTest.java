@@ -4,6 +4,7 @@ package org.cris6h16.Config.SpringBoot.Security.Filters;
 import jakarta.servlet.http.Cookie;
 import org.cris6h16.Config.SpringBoot.Security.UserDetails.CustomUserDetailsService;
 import org.cris6h16.Config.SpringBoot.Security.UserDetails.UserDetailsWithId;
+import org.cris6h16.Config.SpringBoot.Utils.JwtUtilsImpl;
 import org.cris6h16.In.Ports.VerifyEmailPort;
 import org.cris6h16.Models.ERoles;
 import org.cris6h16.Utils.JwtUtils;
@@ -33,7 +34,7 @@ public class JwtAuthenticationFilterIntegrationTest {
     private MockMvc mockMvc;
 
     @MockBean
-    private JwtUtils jwtUtils;
+    private JwtUtilsImpl jwtUtils;
 
     @MockBean
     private VerifyEmailPort verifyEmailPort;

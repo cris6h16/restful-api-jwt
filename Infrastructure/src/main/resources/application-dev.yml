@@ -101,9 +101,15 @@ jwt:
               secs: 1800 # 30 minutes
 error:
   messages:
+    system:
+      unexpected: "Unexpected error, please try again later"
     user:
       not-found: "User not found"
       email-not-verified: "Email not verified, please check your email"
+      updating-password:
+        password-not-match: "Your current password not matches"
+      login:
+        invalid-credentials: "Invalid credentials"
       unique:
         username: "Username already exists"
         email: "Email already exists"
@@ -118,10 +124,7 @@ error:
             tooShort: "Password must be at least 8 characters long"
         roles:
           empty: "A user must have at least one role"
-        updating-password:
-          password-not-match: "Your current password not matches"
-        login:
-          invalid-credentials: "Invalid credentials"
+
 
 controller:
   path:

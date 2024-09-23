@@ -20,7 +20,7 @@ public class AuthenticationController {
             consumes = "application/json"
     )
     public ResponseEntity<Void> signUp(@RequestBody CreateAccountDTO dto) {
-        return facade.signUp(dto);
+        return facade.signup(dto);
     }
 
 

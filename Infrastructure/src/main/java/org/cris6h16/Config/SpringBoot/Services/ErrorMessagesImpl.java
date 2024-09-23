@@ -34,11 +34,14 @@ public class ErrorMessagesImpl implements ErrorMessages {
     @Value("${error.messages.user.email-not-verified}")
     private  String EMAIL_NOT_VERIFIED_MSG ;
 
-    @Value("${error.messages.user.invalid.updating-password.password-not-match}")
+    @Value("${error.messages.user.updating-password.password-not-match}")
     private String PASSWORD_NOT_MATCH_WHEN_UPDATING_PASSWORD_MSG ;
 
     @Value("${error.messages.user.login.invalid-credentials}")
     private String INVALID_CREDENTIAL_WHEN_LOGIN;
+
+    @Value("${error.messages.system.unexpected}")
+    private String UNEXPECTED_ERROR_MSG;
 
     @Override
     public String getUsernameAlreadyExistsMessage() {
@@ -93,5 +96,10 @@ public class ErrorMessagesImpl implements ErrorMessages {
     @Override
     public String getInvalidCredentialsMessage() {
         return INVALID_CREDENTIAL_WHEN_LOGIN;
+    }
+
+    @Override
+    public String getUnexpectedErrorMessage() {
+        return UNEXPECTED_ERROR_MSG;
     }
 }

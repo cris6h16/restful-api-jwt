@@ -22,4 +22,5 @@ public interface ErrorMessages {
 
     String getInvalidCredentialsMessage();
 
+    String getUnexpectedErrorMessage();
 }

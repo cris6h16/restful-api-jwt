@@ -7,26 +7,38 @@ import org.springframework.stereotype.Service;
 @Service
 public class ErrorMessagesImpl implements ErrorMessages {
 
-    @Value("${error.messages.unique.username}")
+    @Value("${error.messages.user.unique.username}")
     private String USERNAME_ALREADY_EXISTS_MSG;
 
-    @Value("${error.messages.unique.email}")
+    @Value("${error.messages.user.unique.email}")
     private String EMAIL_ALREADY_EXISTS_MSG;
 
-    @Value("${error.messages.invalid.username.blank}")
+    @Value("${error.messages.user.invalid.username.blank}")
     private String USERNAME_CANNOT_BE_BLANK_MSG;
 
-    @Value("${error.messages.invalid.password.length.tooShort}")
+    @Value("${error.messages.user.invalid.password.length.tooShort}")
     private String PASSWORD_TOO_SHORT_MSG;
 
-    @Value("${error.messages.invalid.email}")
+    @Value("${error.messages.user.invalid.email}")
     private String EMAIL_INVALID_MSG;
 
-    @Value("${error.messages.invalid.id.null-val}")
+    @Value("${error.messages.user.invalid.id.null-val}")
     private String ID_CANNOT_BE_NULL_MSG;
 
-    @Value("${error.messages.invalid.roles.empty}")
+    @Value("${error.messages.user.invalid.roles.empty}")
     private String ROLES_CANNOT_BE_EMPTY_MSG;
+
+    @Value("${error.messages.user.not-found}")
+    private String USER_NOT_FOUNT_MSG;
+
+    @Value("${error.messages.user.email-not-verified}")
+    private  String EMAIL_NOT_VERIFIED_MSG ;
+
+    @Value("${error.messages.user.invalid.updating-password.password-not-match}")
+    private String PASSWORD_NOT_MATCH_WHEN_UPDATING_PASSWORD_MSG ;
+
+    @Value("${error.messages.user.login.invalid-credentials}")
+    private String INVALID_CREDENTIAL_WHEN_LOGIN;
 
     @Override
     public String getUsernameAlreadyExistsMessage() {
@@ -65,11 +77,21 @@ public class ErrorMessagesImpl implements ErrorMessages {
 
     @Override
     public String getUserNotFoundMessage() {
-        return "";
+        return USER_NOT_FOUNT_MSG;
     }
 
     @Override
     public String getEmailNotVerifiedMessage() {
-        return "";
+        return EMAIL_NOT_VERIFIED_MSG;
+    }
+
+    @Override
+    public String getCurrentPasswordNotMacthMessage() {
+        return PASSWORD_NOT_MATCH_WHEN_UPDATING_PASSWORD_MSG;
+    }
+
+    @Override
+    public String getInvalidCredentialsMessage() {
+        return INVALID_CREDENTIAL_WHEN_LOGIN;
     }
 }

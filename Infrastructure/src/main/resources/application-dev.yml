@@ -84,7 +84,7 @@ jwt:
         secs: 1296000 # 15 days
       cookie:
         name: refreshToken
-        path: auth/refresh-token
+        path: /auth/refresh-token
     access:
       expiration:
         secs: 1800 # 30 minutes
@@ -101,20 +101,27 @@ jwt:
               secs: 1800 # 30 minutes
 error:
   messages:
-    unique:
-      username: "Username already exists"
-      email: "Email already exists"
-    invalid:
-      email: "Invalid email"
-      id:
-        null-val: "Id cannot be null"
-      username:
-        blank: "Username cannot be blank"
-      password:
-        length:
-          tooShort: "Password must be at least 8 characters long"
-      roles:
-        empty: "A user must have at least one role"
+    user:
+      not-found: "User not found"
+      email-not-verified: "Email not verified, please check your email"
+      unique:
+        username: "Username already exists"
+        email: "Email already exists"
+      invalid:
+        email: "Invalid email"
+        id:
+          null-val: "Id cannot be null"
+        username:
+          blank: "Username cannot be blank"
+        password:
+          length:
+            tooShort: "Password must be at least 8 characters long"
+        roles:
+          empty: "A user must have at least one role"
+        updating-password:
+          password-not-match: "Your current password not matches"
+        login:
+          invalid-credentials: "Invalid credentials"
 
 controller:
   path:
@@ -127,3 +134,14 @@ controller:
       request-reset-password: /password/request-reset
       reset-password: /password
       refresh-access-token: /refresh-token
+
+web-front:
+  path:
+    email-verification: frontend.com/auth/verification-email?token={token}
+    reset-password: frontend.com/auth/reset-password?token={token}
+
+logging:
+  level:
+    root: error
+  file:
+    path: ./.idea/restful-api-jwt.log

@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.cris6h16.Adapters.In.Rest.DTOs.CreateAccountDTO;
 import org.cris6h16.Adapters.In.Rest.DTOs.LoginDTO;
 import org.cris6h16.Config.SpringBoot.Security.UserDetails.UserDetailsWithId;
+import org.cris6h16.Config.SpringBoot.Utils.JwtUtilsImpl;
 import org.cris6h16.Exceptions.Impls.*;
 import org.cris6h16.Exceptions.Impls.Rest.MyResponseStatusException;
 import org.cris6h16.In.Commands.CreateAccountCommand;
@@ -34,7 +35,7 @@ public class AuthenticationControllerFacade {
     private final RequestResetPasswordPort requestResetPasswordPort;
     private final ResetPasswordPort resetPasswordPort;
     private final RefreshAccessTokenPort refreshAccessTokenPort;
-    private final JwtUtils jwtUtils;
+    private final JwtUtilsImpl jwtUtilsImpl;
 
     @Value("${jwt.token.refresh.cookie.name}")
     private  String  refreshTokenCookieName;
@@ -51,14 +52,15 @@ public class AuthenticationControllerFacade {
                                           LoginPort loginPort,
                                           RequestResetPasswordPort requestResetPasswordPort,
                                           ResetPasswordPort resetPasswordPort,
-                                          RefreshAccessTokenPort refreshAccessTokenPort, JwtUtils jwtUtils) {
+                                          RefreshAccessTokenPort refreshAccessTokenPort,
+                                          JwtUtilsImpl jwtUtilsImpl) {
         this.createAccountPort = createAccountPort;
         this.verifyEmailPort = verifyEmailPort;
         this.loginPort = loginPort;
         this.requestResetPasswordPort = requestResetPasswordPort;
         this.resetPasswordPort = resetPasswordPort;
         this.refreshAccessTokenPort = refreshAccessTokenPort;
-        this.jwtUtils = jwtUtils;
+        this.jwtUtilsImpl = jwtUtilsImpl;
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
@@ -131,7 +133,7 @@ public class AuthenticationControllerFacade {
                 .sameSite("Strict")
                 .secure(true)
                 .path(refreshTokenCookiePath)
-                .maxAge(jwtUtils.getRefreshTokenExpTimeSecs())
+                .maxAge(jwtUtilsImpl.getRefreshTokenExpTimeSecs())
                 .build();
 
         return ResponseEntity.ok()
@@ -146,7 +148,7 @@ public class AuthenticationControllerFacade {
                 .sameSite("Strict")
                 .secure(true)  // todo: add in docs info about HTTPS and a reverse proxy
                 .path(accessTokenCookiePath)
-                .maxAge(jwtUtils.getAccessTokenExpTimeSecs())
+                .maxAge(jwtUtilsImpl.getAccessTokenExpTimeSecs())
                 .build();
     }
 

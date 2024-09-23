@@ -85,18 +85,19 @@ jwt:
               secs: 1800 # 30 minutes
 error:
   messages:
-    unique:
-      username: "Username already exists"
-      email: "Email already exists"
-    invalid:
-      email: "Invalid email"
-      id:
-        null-val: "Id cannot be null"
-      username:
-        blank: "Username cannot be blank"
-      password:
-        length:
-          tooShort: "Password must be at least 8 characters long"
-      roles:
-        empty: "A user must have at least one role"
+    user:
+      unique:
+        username: "Username already exists"
+        email: "Email already exists"
+      invalid:
+        email: "Invalid email"
+        id:
+          null-val: "Id cannot be null"
+        username:
+          blank: "Username cannot be blank"
+        password:
+          length:
+            tooShort: "Password must be at least 8 characters long"
+        roles:
+          empty: "A user must have at least one role"
 

@@ -3,6 +3,7 @@ package org.cris6h16.Config.SpringBoot;
 import org.cris6h16.Config.SpringBoot.Security.PasswordEncoderImpl;
 import org.cris6h16.Config.SpringBoot.Security.UserDetails.UserDetailsServiceImpl;
 import org.cris6h16.Config.SpringBoot.Services.ErrorMessagesImpl;
+import org.cris6h16.Config.SpringBoot.Utils.JwtUtilsImpl;
 import org.cris6h16.In.Ports.CreateAccountPort;
 import org.cris6h16.In.Ports.LoginPort;
 import org.cris6h16.In.Ports.RequestResetPasswordPort;
@@ -17,6 +18,7 @@ import org.cris6h16.UseCases.VerifyEmailUseCase;
 import org.cris6h16.Utils.ErrorMessages;
 import org.cris6h16.Utils.JwtUtils;
 import org.cris6h16.Utils.UserValidator;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -41,13 +43,12 @@ public class Beans {
     }
 
 
-
     @Bean
     @Scope("singleton")
     public CreateAccountPort createAccountPort(UserRepository userRepository,
                                                MyPasswordEncoder passwordEncoder,
                                                EmailService emailService,
-                                               JwtUtils jwtUtils,
+                                               @Qualifier("JwtUtils") JwtUtils jwtUtils,
                                                ErrorMessages errorMessages,
                                                UserValidator userValidator) {
         return new CreateAccountUseCase(
@@ -63,11 +64,13 @@ public class Beans {
     @Bean
     @Scope("singleton")
     public VerifyEmailPort verifyEmailPort(UserRepository userRepository,
-                                           UserValidator userValidator
+                                           UserValidator userValidator,
+                                           ErrorMessages errorMessages
     ) {
         return new VerifyEmailUseCase(
                 userRepository,
-                userValidator
+                userValidator,
+                errorMessages
         );
     }
 
@@ -75,11 +78,13 @@ public class Beans {
     @Scope("singleton")
     public RequestResetPasswordPort requestResetPasswordPort(EmailService emailService,
                                                              UserValidator userValidator,
-                                                             UserRepository userRepository) {
+                                                             UserRepository userRepository,
+                                                             ErrorMessages errorMessages) {
         return new RequestResetPasswordUseCase(
                 emailService,
                 userValidator,
-                userRepository
+                userRepository,
+                errorMessages
         );
     }
 
@@ -87,21 +92,17 @@ public class Beans {
     @Scope("singleton")
     public LoginPort loginPort(UserRepository userRepository,
                                MyPasswordEncoder passwordEncoder,
-                               JwtUtils jwtUtils,
+                               @Qualifier("JwtUtils") JwtUtils jwtUtils,
                                EmailService emailService,
-                                 ErrorMessages errorMessages,
-                                 UserValidator userValidator,
-                               @Value("${jwt.expiration.token.refresh.secs}") long refreshTokenExpTimeSecs,
-                               @Value("${jwt.expiration.token.access.secs}") long accessTokenExpTimeSecs) {
+                               ErrorMessages errorMessages,
+                               UserValidator userValidator) {
         return new LoginUseCase(
                 userRepository,
                 passwordEncoder,
                 jwtUtils,
                 emailService,
                 errorMessages,
-                userValidator,
-                refreshTokenExpTimeSecs,
-                accessTokenExpTimeSecs
+                userValidator
         );
     }
 
@@ -118,12 +119,28 @@ public class Beans {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 
-    // todo: classify better the beans
 
     @Bean
     @Scope("singleton")
     public UserDetailsService userDetailsService(UserRepository userRepository) {
         return new UserDetailsServiceImpl(userRepository);
+    }
+
+    @Bean("JwtUtils")
+    @Scope("singleton")
+    public JwtUtils jwtUtils(@Value("${jwt.secret.key}") String secretKey,
+                             @Value("${jwt.token.access.expiration.secs}") long accessTokenExpTimeSecs,
+                             @Value("${jwt.token.refresh.expiration.secs}") long refreshTokenExpTimeSecs) {
+        return new JwtUtilsImpl(secretKey, accessTokenExpTimeSecs, refreshTokenExpTimeSecs);
+    }
+
+    // used in infrastructure, contains methods like validate, getId, etc.
+    @Bean("JwtUtilsImpl")
+    @Scope("singleton")
+    public JwtUtilsImpl jwtUtilsImpl(@Value("${jwt.secret.key}") String secretKey,
+                                     @Value("${jwt.token.access.expiration.secs}") long accessTokenExpTimeSecs,
+                                     @Value("${jwt.token.refresh.expiration.secs}") long refreshTokenExpTimeSecs) {
+        return new JwtUtilsImpl(secretKey, accessTokenExpTimeSecs, refreshTokenExpTimeSecs);
     }
 }
 

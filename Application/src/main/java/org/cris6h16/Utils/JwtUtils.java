@@ -11,4 +11,5 @@ public interface JwtUtils {
     String genRefreshToken(Long id);
 
     String genAccessToken(Long id, Set<ERoles> roles);
+
 }

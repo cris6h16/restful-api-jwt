@@ -20,4 +20,6 @@ public interface ErrorMessages {
 
     String getCurrentPasswordNotMacthMessage();
 
+    String getInvalidCredentialsMessage();
+
 }

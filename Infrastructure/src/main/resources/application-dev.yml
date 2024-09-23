@@ -78,14 +78,19 @@ jwt:
 
 
 
-  expiration:
-    token:
-      refresh:
+  token:
+    refresh:
+      expiration:
         secs: 1296000 # 15 days
-      access:
+      cookie:
+        name: refreshToken
+        path: auth/refresh-token
+    access:
+      expiration:
         secs: 1800 # 30 minutes
-        cookie:
-          name: accessToken
+      cookie:
+        name: accessToken
+        path: /
 
       request:
         email:
@@ -111,3 +116,14 @@ error:
       roles:
         empty: "A user must have at least one role"
 
+controller:
+  path:
+    core: /api/v1
+    authentication:
+      core: /auth
+      signup: /signup
+      login: /login
+      verify-email: /verify-email
+      request-reset-password: /password/request-reset
+      reset-password: /password
+      refresh-access-token: /refresh-token

@@ -7,7 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.cris6h16.Config.SpringBoot.Security.UserDetails.CustomUserDetailsService;
 import org.cris6h16.Config.SpringBoot.Security.UserDetails.UserDetailsWithId;
-import org.cris6h16.Utils.JwtUtils;
+import org.cris6h16.Config.SpringBoot.Utils.JwtUtilsImpl;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -17,17 +17,18 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+// as a component and not instantiated directly due to this need beans an env properties ( less complexity )
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtUtils jwtUtils;
+    private final JwtUtilsImpl jwtUtilsImpl;
     private final CustomUserDetailsService userDetailsService;
 
     @Value("${jwt.expiration.token.access.cookie.name}")
     private String accessTokenCookieName;
 
-    public JwtAuthenticationFilter(JwtUtils jwtUtils, CustomUserDetailsService userDetailsService) {
-        this.jwtUtils = jwtUtils;
+    public JwtAuthenticationFilter(JwtUtilsImpl jwtUtilsImpl, CustomUserDetailsService userDetailsService) {
+        this.jwtUtilsImpl = jwtUtilsImpl;
         this.userDetailsService = userDetailsService;
     }
 
@@ -40,7 +41,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         Cookie[] cookies = request.getCookies();
         String tkCookie = null;
 
-        // todo: cookie cannot be null
+        if (cookies == null) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         for (Cookie cookie : cookies) {
             if (cookie.getName().equals(accessTokenCookieName)) {
@@ -48,8 +52,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         }
 
-        if (jwtUtils.validate(tkCookie)) {
-            Long id = jwtUtils.getId(tkCookie);
+        if (jwtUtilsImpl.validate(tkCookie)) {
+            Long id = jwtUtilsImpl.getId(tkCookie);
             UserDetailsWithId user = userDetailsService.loadUserById(id);
 
 //            Principal principal =

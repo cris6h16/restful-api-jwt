@@ -48,7 +48,7 @@ public class LoginUseCase implements LoginPort {
 
     private void verifyUser(UserModel userModel, String password) {
         if (userModel == null || !userModel.getActive() || !passwordEncoder.matches(password, userModel.getPassword())) {
-            throw new InvalidCredentialsException(errorMessages.getUserNotFoundMessage());
+            throw new InvalidCredentialsException(errorMessages.getInvalidCredentialsMessage());
         }
 
         if (!userModel.getEmailVerified()) {

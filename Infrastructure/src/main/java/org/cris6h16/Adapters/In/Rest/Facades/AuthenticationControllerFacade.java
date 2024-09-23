@@ -4,29 +4,25 @@ import lombok.extern.slf4j.Slf4j;
 import org.cris6h16.Adapters.In.Rest.DTOs.CreateAccountDTO;
 import org.cris6h16.Adapters.In.Rest.DTOs.LoginDTO;
 import org.cris6h16.Config.SpringBoot.Security.UserDetails.UserDetailsWithId;
-import org.cris6h16.Exceptions.Impls.AlreadyExistException;
-import org.cris6h16.Exceptions.Impls.EmailNotVerifiedException;
-import org.cris6h16.Exceptions.Impls.InvalidAttributeException;
-import org.cris6h16.Exceptions.Impls.NotFoundException;
+import org.cris6h16.Exceptions.Impls.*;
 import org.cris6h16.Exceptions.Impls.Rest.MyResponseStatusException;
 import org.cris6h16.In.Commands.CreateAccountCommand;
-import org.cris6h16.In.Ports.CreateAccountPort;
-import org.cris6h16.In.Ports.LoginPort;
-import org.cris6h16.In.Ports.RequestResetPasswordPort;
-import org.cris6h16.In.Ports.VerifyEmailPort;
+import org.cris6h16.In.Ports.*;
 import org.cris6h16.In.Results.LoginOutput;
 import org.cris6h16.Models.ERoles;
+import org.cris6h16.Utils.JwtUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 
 @Component
 @Slf4j
@@ -36,38 +32,188 @@ public class AuthenticationControllerFacade {
     private final VerifyEmailPort verifyEmailPort;
     private final LoginPort loginPort;
     private final RequestResetPasswordPort requestResetPasswordPort;
-    private final long REFRESH_TOKEN_EXP_TIME_SECS;
-    private final long ACCESS_TOKEN_EXP_TIME_SECS;
+    private final ResetPasswordPort resetPasswordPort;
+    private final RefreshAccessTokenPort refreshAccessTokenPort;
+    private final JwtUtils jwtUtils;
+
+    @Value("${jwt.token.refresh.cookie.name}")
+    private  String  refreshTokenCookieName;
+    @Value("${jwt.token.refresh.cookie.path}")
+    private  String  refreshTokenCookiePath;
+
+    @Value("${jwt.token.access.cookie.name}")
+    private  String  accessTokenCookieName;
+    @Value("${jwt.token.access.cookie.path}")
+    private  String  accessTokenCookiePath;
 
     public AuthenticationControllerFacade(CreateAccountPort createAccountPort,
                                           VerifyEmailPort verifyEmailPort,
-                                          LoginPort loginPort, RequestResetPasswordPort requestResetPasswordPort,
-                                          @Value("${jwt.expiration.token.refresh.secs}") long refreshTokenExpTimeSecs,
-                                          @Value("${jwt.expiration.token.access.secs}") long accessTokenExpTimeSecs) {
+                                          LoginPort loginPort,
+                                          RequestResetPasswordPort requestResetPasswordPort,
+                                          ResetPasswordPort resetPasswordPort,
+                                          RefreshAccessTokenPort refreshAccessTokenPort, JwtUtils jwtUtils) {
         this.createAccountPort = createAccountPort;
         this.verifyEmailPort = verifyEmailPort;
         this.loginPort = loginPort;
         this.requestResetPasswordPort = requestResetPasswordPort;
-        REFRESH_TOKEN_EXP_TIME_SECS = refreshTokenExpTimeSecs;
-        ACCESS_TOKEN_EXP_TIME_SECS = accessTokenExpTimeSecs;
+        this.resetPasswordPort = resetPasswordPort;
+        this.refreshAccessTokenPort = refreshAccessTokenPort;
+        this.jwtUtils = jwtUtils;
     }
 
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public ResponseEntity<Void> signUp(CreateAccountDTO dto) {
         Set<ERoles> defaultRoles = new HashSet<>(Set.of(ERoles.ROLE_USER));
-        CreateAccountCommand cmd = new CreateAccountCommand(dto.getUsername(), dto.getPassword(), dto.getEmail(), defaultRoles);
-        AtomicReference<Long> id = new AtomicReference<>(); // thread-safe: eg update without explicit synchronization, required for lambdas
-        Runnable createAccount = () -> id.set(createAccountPort.handle(cmd));
-        handleExceptions(createAccount);
+        CreateAccountCommand cmd = new CreateAccountCommand(
+                dto.getUsername(),
+                dto.getPassword(),
+                dto.getEmail(),
+                defaultRoles
+        );
+        Long id = _signup(cmd);
 
-        URI location = URI.create("/v1/users/me");  //.../me because my app is JWT based
+        URI location = URI.create("/v1/users/me");  //.../me because my app is JWT based ( principal with id )
         return ResponseEntity.created(location).build();
     }
 
+    private Long _signup(CreateAccountCommand cmd) {
+        try {
+            return createAccountPort.handle(cmd);
 
+        } catch (InvalidAttributeException e) {
+            throw new MyResponseStatusException(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (AlreadyExistException e) {
+            throw new MyResponseStatusException(e.getMessage(), HttpStatus.CONFLICT);
+        } catch (Exception e) {
+            log.error("Unhandled exception in: {}", e.toString());
+            throw new MyResponseStatusException("An unexpected error happened, try later", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public ResponseEntity<Void> verifyMyEmail() {
         Long id = getPrincipalId();
-        handleExceptions(() -> verifyEmailPort.handle(id));
+        _verifyEmail(id);
         return ResponseEntity.noContent().build();
+    }
+
+    private void _verifyEmail(Long id) {
+        try {
+            verifyEmailPort.handle(id);
+
+        } catch (InvalidAttributeException e) {
+            throw new MyResponseStatusException(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (NotFoundException e) {
+            throw new MyResponseStatusException(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            log.error("Unhandled exception in: {}", e.toString());
+            throw new MyResponseStatusException("An unexpected error happened, try later", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    // read-only operation (no transactional)
+    public ResponseEntity<Void> login(LoginDTO dto) {
+        LoginOutput loginOutput = _login(dto.getEmail(), dto.getPassword());
+        String accessToken = loginOutput.accessToken();
+        String refreshToken = loginOutput.refreshToken();
+
+        if (accessToken == null || refreshToken == null) {
+            log.error("Login failed, accessToken or refreshToken are null, accessToken: {}, refreshToken: {}", accessToken, refreshToken);
+            throw new MyResponseStatusException("An unexpected error occurred, try again later", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        ResponseCookie cookieAccessToken = createAccessTokenCookie(accessToken);
+
+        ResponseCookie cookieRefreshToken = ResponseCookie.from(refreshTokenCookieName, refreshToken)
+                .httpOnly(true)
+                .sameSite("Strict")
+                .secure(true)
+                .path(refreshTokenCookiePath)
+                .maxAge(jwtUtils.getRefreshTokenExpTimeSecs())
+                .build();
+
+        return ResponseEntity.ok()
+                .header("Set-Cookie", cookieAccessToken.toString())
+                .header("Set-Cookie", cookieRefreshToken.toString())
+                .build();
+    }
+
+    private ResponseCookie createAccessTokenCookie(String accessToken) {
+        return ResponseCookie.from(accessTokenCookieName, accessToken)
+                .httpOnly(true)
+                .sameSite("Strict")
+                .secure(true)  // todo: add in docs info about HTTPS and a reverse proxy
+                .path(accessTokenCookiePath)
+                .maxAge(jwtUtils.getAccessTokenExpTimeSecs())
+                .build();
+    }
+
+    private LoginOutput _login(String email, String password) {
+        try {
+            return loginPort.handle(email, password);
+
+        } catch (InvalidAttributeException e) {
+            throw new MyResponseStatusException(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (InvalidCredentialsException e) {
+            throw new MyResponseStatusException(e.getMessage(), HttpStatus.UNAUTHORIZED);
+        } catch (EmailNotVerifiedException e) {
+            throw new MyResponseStatusException(e.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
+        } catch (Exception e) {
+            log.error("Unhandled exception in: {}", e.toString());
+            throw new MyResponseStatusException("An unexpected error happened, try later", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // read-only operation (no transactional)
+    public ResponseEntity<Void> requestPasswordReset(String email) {
+        _requestPasswordReset(email);
+        return ResponseEntity.accepted().build();
+    }
+
+    private void _requestPasswordReset(String email) {
+        try {
+            requestResetPasswordPort.handle(email);
+
+        } catch (InvalidAttributeException e) {
+            throw new MyResponseStatusException(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } /*catch (NotFoundException e) { // I shouldn't say if the email exists or not in the request reset password
+            throw new MyResponseStatusException(e.getMessage(), HttpStatus.NOT_FOUND);
+        }*/ catch (Exception e) {
+            log.error("Unhandled exception in: {}", e.toString());
+            throw new MyResponseStatusException("An unexpected error happened, try later", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public ResponseEntity<Void> resetPassword(String newPassword) {
+        Long id = getPrincipalId();
+        _resetPassword(id, newPassword);
+        return ResponseEntity.noContent().build();
+    }
+
+    private void _resetPassword(Long id, String newPassword) {
+        try {
+            resetPasswordPort.handle(id, newPassword);
+
+        } catch (InvalidAttributeException e) {
+            throw new MyResponseStatusException(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (NotFoundException e) {
+            throw new MyResponseStatusException(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            log.error("Unhandled exception in: {}", e.toString());
+            throw new MyResponseStatusException("An unexpected error happened, try later", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // no transactional because it's a read-only operation
+    public ResponseEntity<Void> refreshAccessToken() {
+        String accessToken = refreshAccessTokenPort.handle(getPrincipalId());
+
+        return ResponseEntity.ok()
+                .header("Set-Cookie", createAccessTokenCookie(accessToken).toString())
+                .build();
     }
 
     private Long getPrincipalId() {
@@ -83,70 +229,5 @@ public class AuthenticationControllerFacade {
             }
             throw new MyResponseStatusException("Failed to get user id, possibly you're not authenticated", HttpStatus.UNAUTHORIZED);
         }
-    }
-
-    private void handleExceptions(Runnable runnable) {
-        try {
-            runnable.run();
-
-        } catch (AlreadyExistException e) {
-            throw new MyResponseStatusException(e.getMessage(), HttpStatus.CONFLICT);
-        } catch (InvalidAttributeException e) {
-            throw new MyResponseStatusException(e.getMessage(), HttpStatus.BAD_REQUEST);
-        } catch (NotFoundException e) {
-            throw new MyResponseStatusException(e.getMessage(), HttpStatus.NOT_FOUND);
-        } catch (EmailNotVerifiedException e) {
-            throw new MyResponseStatusException(e.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY); // semantic error
-        } catch (Exception e) { // & ImplementationException
-            log.error("Unexpected error: {}", e.toString());
-            throw new MyResponseStatusException("An unexpected error happened, try later", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    public ResponseEntity<Void> login(LoginDTO dto) {
-        String accessToken;
-        String refreshToken;
-        AtomicReference<LoginOutput> resultLogin = new AtomicReference<>();
-
-        handleExceptions(() -> resultLogin.set(
-                loginPort.handle(
-                        dto.getEmail(),
-                        dto.getPassword()
-                )
-        ));
-
-        accessToken = resultLogin.get().accessToken();
-        refreshToken = resultLogin.get().refreshToken();
-
-        if (accessToken == null || refreshToken == null) {
-            log.error("Login failed, accessToken or refreshToken are null, accessToken: {}, refreshToken: {}", accessToken, refreshToken);
-            throw new MyResponseStatusException("An unexpected error occurred, try again later", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        ResponseCookie cookieAccessToken = ResponseCookie.from("accessToken", accessToken)
-                .httpOnly(true)
-                .sameSite("Strict")
-                .secure(true)  // todo: add in docs info about HTTPS and a reverse proxy
-                .path("/")
-                .maxAge(ACCESS_TOKEN_EXP_TIME_SECS)
-                .build();
-
-        ResponseCookie cookieRefreshToken = ResponseCookie.from("refreshToken", refreshToken)
-                .httpOnly(true)
-                .sameSite("Strict")
-                .secure(true)
-                .path("/...") //todo: add the centrilized path
-                .maxAge(REFRESH_TOKEN_EXP_TIME_SECS)
-                .build();
-
-        return ResponseEntity.ok()
-                .header("Set-Cookie", cookieAccessToken.toString())
-                .header("Set-Cookie", cookieRefreshToken.toString())
-                .build();
-    }
-
-    public ResponseEntity<Void> requestPasswordReset(String email) {
-        handleExceptions(() -> requestResetPasswordPort.handle(email));
-        return ResponseEntity.accepted().build();
     }
 }

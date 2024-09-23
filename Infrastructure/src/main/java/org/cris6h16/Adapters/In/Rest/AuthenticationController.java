@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping(value = "/api/v1/auth")
+@RequestMapping(value = "${controller.path.core}${controller.path.authentication.core}")
 public class AuthenticationController {
     private final AuthenticationControllerFacade facade;
 
@@ -16,7 +16,7 @@ public class AuthenticationController {
     }
 
     @PostMapping(
-            value = "/signup",
+            value = "${controller.path.authentication.signup}",
             consumes = "application/json"
     )
     public ResponseEntity<Void> signUp(@RequestBody CreateAccountDTO dto) {
@@ -25,7 +25,7 @@ public class AuthenticationController {
 
 
     @PostMapping(
-            value = "/login",
+            value = "${controller.path.authentication.login}",
             consumes = "application/json"
     )
     public ResponseEntity<Void> login(@RequestBody LoginDTO dto) { //todo: if is logged in, say something
@@ -33,18 +33,34 @@ public class AuthenticationController {
     }
 
     @PutMapping(
-            value = "/verify-email"
+            value = "${controller.path.authentication.verify-email}"
     )
     public ResponseEntity<Void> verifyMyEmail() { //todo: test this
         return facade.verifyMyEmail();
     }
 
     @PostMapping(
-            value = "/password/request-reset",
+            value = "${controller.path.authentication.request-reset-password}",
             consumes = "application/json"
     )
     public ResponseEntity<Void> requestPasswordReset(@RequestBody String email) {
         return facade.requestPasswordReset(email);
+    }
+
+    @PatchMapping(
+            value = "${controller.path.authentication.reset-password}",
+            consumes = "application/json"
+    )
+    public ResponseEntity<Void> resetPassword(@RequestBody String newPassword) {
+        return facade.resetPassword(newPassword);
+    }
+
+    @PostMapping(
+            value = "${controller.path.authentication.refresh-access-token}",
+            produces = "application/json"
+    )
+    public ResponseEntity<Void> refreshAccessToken() {
+        return facade.refreshAccessToken();
     }
 
 

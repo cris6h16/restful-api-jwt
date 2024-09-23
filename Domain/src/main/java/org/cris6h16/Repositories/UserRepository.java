@@ -1,10 +1,12 @@
 package org.cris6h16.Repositories;
 
+import org.cris6h16.Models.ERoles;
 import org.cris6h16.Models.UserModel;
 import org.cris6h16.Repositories.Page.PageResult;
 import org.cris6h16.Repositories.Page.PageRequest;
 
 import java.util.Optional;
+import java.util.Set;
 
 // port
 public interface UserRepository {
@@ -33,4 +35,6 @@ public interface UserRepository {
     PageResult<UserModel> findPageCustom(PageRequest request);
 
     void updateEmailByIdCustom(Long id, String email);
+
+    Set<ERoles> getRolesByIdCustom(Long id);
 }

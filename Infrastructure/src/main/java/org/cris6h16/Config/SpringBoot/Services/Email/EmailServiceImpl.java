@@ -1,11 +1,9 @@
-package org.cris6h16.Config.SpringBoot.Services;
+package org.cris6h16.Config.SpringBoot.Services.Email;
 
 import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
-import org.cris6h16.Constants.EmailContent;
-import org.cris6h16.Models.UserModel;
+import org.cris6h16.Config.SpringBoot.Utils.JwtUtilsImpl;
 import org.cris6h16.Services.EmailService;
-import org.cris6h16.Utils.JwtUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -20,14 +18,14 @@ import java.util.concurrent.CompletableFuture;
 public class EmailServiceImpl implements EmailService {
 
     private final JavaMailSender mailSender;
-    private final JwtUtils jwtUtils;
+    private final JwtUtilsImpl jwtUtils;
     @Value("${jwt.expiration.token.request.email.verification.secs}")
     private long EMAIL_VERIFICATION_TOKEN_TIME_LIVE;
 
     @Value("${jwt.expiration.token.request.email.password.reset.secs}")
     private long RESET_PASSWORD_TOKEN_TIME_LIVE;
 
-    public EmailServiceImpl(JavaMailSender mailSender, JwtUtils jwtUtils) {
+    public EmailServiceImpl(JavaMailSender mailSender, JwtUtilsImpl jwtUtils) {
         this.mailSender = mailSender;
         this.jwtUtils = jwtUtils;
     }

@@ -1,6 +1,8 @@
 package org.cris6h16.Config.SpringBoot.Redis;
 
 
+import org.cris6h16.In.Commands.GetAllPublicProfilesCommand;
+import org.cris6h16.In.Results.GetAllPublicProfilesOutput;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.Page;
@@ -24,10 +26,10 @@ public class RedisConfig {
         return new LettuceConnectionFactory();
     }
 
-    @Bean
-    RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
+    @Bean(name = "getAllPublicProfilesTemplate")
+    RedisTemplate<GetAllPublicProfilesCommand, GetAllPublicProfilesOutput> getAllTemplate(RedisConnectionFactory connectionFactory) {
 
-        RedisTemplate<String, Object> template = new RedisTemplate<>();
+        RedisTemplate<GetAllPublicProfilesCommand, GetAllPublicProfilesOutput> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
         template.setKeySerializer(new StringRedisSerializer());
         template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
@@ -53,12 +55,10 @@ public class RedisConfig {
 //    public PlatformTransactionManager transactionManager(DataSource dataSource) throws SQLException {
 //        return new DataSourceTransactionManager(dataSource);
 //    }
-    /*
-    considerations:
-    - read operations must be run out of transactions
-    - read a value set in within a transaction will return null until the transaction is committed ( queued )
-     */
+//    /*
+//    considerations:
+//    - read operations must be run out of transactions
+//    - read a value set in within a transaction will return null until the transaction is committed ( queued )
+//     */
 
 }
-
-// todo: add super class audited to User entity

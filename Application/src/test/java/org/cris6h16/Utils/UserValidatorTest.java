@@ -1,8 +1,7 @@
 package org.cris6h16.Utils;
+
 import org.cris6h16.Exceptions.Impls.InvalidAttributeException;
 import org.cris6h16.Models.ERoles;
-import org.cris6h16.Utils.ErrorMessages;
-import org.cris6h16.Utils.UserValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -27,7 +26,6 @@ public class UserValidatorTest {
         MockitoAnnotations.openMocks(this);
     }
 
-    // Username validation tests
     @Test
     void validateUsername_shouldThrowException_whenUsernameIsNull() {
         when(errorMessages.getUsernameCannotBeBlankMessage()).thenReturn("Username cannot be blank");
@@ -138,7 +136,6 @@ public class UserValidatorTest {
         userValidator.validateRoles(Set.of(ERoles.ROLE_USER));
     }
 
-    // ID validation tests
     @Test
     void validateId_shouldThrowException_whenIdIsNull() {
         when(errorMessages.getIdCannotBeNullMessage()).thenReturn("ID cannot be null");

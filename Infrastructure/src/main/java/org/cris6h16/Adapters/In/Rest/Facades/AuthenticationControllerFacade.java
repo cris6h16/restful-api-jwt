@@ -225,7 +225,7 @@ public class AuthenticationControllerFacade {
                 .build();
     }
 
-    private Long getPrincipalId() {
+    protected Long getPrincipalId() {
         try {
             Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
             return ((UserDetailsWithId) principal).getId();

@@ -399,8 +399,97 @@ class AuthenticationControllerFacadeTest {
     }
 
     @Test
-    void resetPassword_nullPassword(){
+    void resetPassword_thrownInvalidAttributeExceptionThenBadRequest(){
+        // Arrange
+        Authentication a = mock(Authentication.class);
+        UserDetailsWithId user = mock(UserDetailsWithId.class);
+        when(user.getId()).thenReturn(999L);
+        when(a.getPrincipal()).thenReturn(user);
+        SecurityContextHolder.getContext().setAuthentication(a);
 
+        doThrow(new InvalidAttributeException("invalid something..."))
+                .when(resetPasswordPort).handle(any(), any());
+
+        assertThatThrownBy(()-> authenticationControllerFacade.resetPassword(null))
+                .isInstanceOf(MyResponseStatusException.class)
+                .hasMessage("invalid something...")
+                .hasFieldOrPropertyWithValue("status", HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    void resetPassword_thrownNotFoundExceptionThenNotFound(){
+        // Arrange
+        Authentication a = mock(Authentication.class);
+        UserDetailsWithId user = mock(UserDetailsWithId.class);
+        when(user.getId()).thenReturn(999L);
+        when(a.getPrincipal()).thenReturn(user);
+        SecurityContextHolder.getContext().setAuthentication(a);
+
+        doThrow(new NotFoundException("not found etc etc..."))
+                .when(resetPasswordPort).handle(any(), any());
+
+        assertThatThrownBy(()-> authenticationControllerFacade.resetPassword(null))
+                .isInstanceOf(MyResponseStatusException.class)
+                .hasMessage("not found etc etc...")
+                .hasFieldOrPropertyWithValue("status", HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    void resetPassword_thrownAnyExceptionThenInternalServerError(){
+        // Arrange
+        Authentication a = mock(Authentication.class);
+        UserDetailsWithId user = mock(UserDetailsWithId.class);
+        when(user.getId()).thenReturn(999L);
+        when(a.getPrincipal()).thenReturn(user);
+        SecurityContextHolder.getContext().setAuthentication(a);
+
+        doThrow(new IndexOutOfBoundsException("Internal error in database etc etc"))
+                .when(resetPasswordPort).handle(any(), any());
+        when(errorMessages.getUnexpectedErrorMessage()).thenReturn("generic fail msg");
+
+
+        assertThatThrownBy(()-> authenticationControllerFacade.resetPassword(null))
+                .isInstanceOf(MyResponseStatusException.class)
+                .hasMessage("generic fail msg")
+                .hasFieldOrPropertyWithValue("status", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Test
+    void resetPassword_success(){
+        // Arrange
+        Authentication a = mock(Authentication.class);
+        UserDetailsWithId user = mock(UserDetailsWithId.class);
+        when(user.getId()).thenReturn(999L);
+        when(a.getPrincipal()).thenReturn(user);
+        SecurityContextHolder.getContext().setAuthentication(a);
+
+        // Act
+        ResponseEntity<Void> res =  authenticationControllerFacade.resetPassword(null);
+
+        // Assert
+        assertThat(res.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        assertThat(res.getBody()).isNull();
+    }
+
+    @Test
+    void refreshAccessToken_success(){
+        // Arrange
+        Authentication a = mock(Authentication.class);
+        UserDetailsWithId user = mock(UserDetailsWithId.class);
+        when(user.getId()).thenReturn(999L);
+        when(a.getPrincipal()).thenReturn(user);
+        SecurityContextHolder.getContext().setAuthentication(a);
+
+        when(refreshAccessTokenPort.handle(999L))
+                .thenReturn("MockedAccessToken");
+
+        // Act
+        ResponseEntity<Void> res = authenticationControllerFacade.refreshAccessToken();
+
+        // Assert
+        assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(res.getHeaders().get("Set-Cookie").get(0))
+                .isEqualTo(expectedAccessTokenCookie());
     }
 }
 

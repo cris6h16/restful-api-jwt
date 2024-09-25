@@ -62,7 +62,7 @@ public class GetPublicProfileUseCaseTest {
 
         when(errorMessages.getUserNotFoundMessage())
                 .thenReturn("not found 123");
-        when(userRepository.existsByIdCustom(id))
+        when(userRepository.existsById(id))
                 .thenReturn(false);
 
         // Act & Assert
@@ -86,7 +86,7 @@ public class GetPublicProfileUseCaseTest {
                 12345678L
         );
 
-        when(userRepository.findByIdCustom(id))
+        when(userRepository.findById(id))
                 .thenReturn(Optional.of(user));
 
         // Act

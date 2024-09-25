@@ -85,7 +85,7 @@ public class LoginUseCaseTest {
         String password = "pass";
         String email = "email";
 
-        when(userRepository.findByEmailCustom(email))
+        when(userRepository.findByEmail(email))
                 .thenReturn(Optional.empty());
         when(errorMessages.getUserNotFoundMessage())
                 .thenReturn("not found msg123");
@@ -95,7 +95,7 @@ public class LoginUseCaseTest {
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage("not found msg123");
 
-        verify(userRepository).findByEmailCustom(email);
+        verify(userRepository).findByEmail(email);
     }
 
     @Test
@@ -105,7 +105,7 @@ public class LoginUseCaseTest {
         String email = "email";
         UserModel model = new UserModel.Builder().setActive(false).build();
 
-        when(userRepository.findByEmailCustom(email))
+        when(userRepository.findByEmail(email))
                 .thenReturn(Optional.of(model));
         when(errorMessages.getUserNotFoundMessage())
                 .thenReturn("not found msg456");
@@ -125,7 +125,7 @@ public class LoginUseCaseTest {
         String email = "email";
         UserModel model = new UserModel.Builder().setActive(true).setPassword("encoded").build();
 
-        when(userRepository.findByEmailCustom(email))
+        when(userRepository.findByEmail(email))
                 .thenReturn(Optional.of(model));
         when(passwordEncoder.matches(password, "encoded"))
                 .thenReturn(false);
@@ -149,7 +149,7 @@ public class LoginUseCaseTest {
         String email = "email";
         UserModel model = new UserModel.Builder().setActive(true).setEmailVerified(false).build();
 
-        when(userRepository.findByEmailCustom(any()))
+        when(userRepository.findByEmail(any()))
                 .thenReturn(Optional.of(model));
         when(passwordEncoder.matches(any(), any()))
                 .thenReturn(true);
@@ -177,7 +177,7 @@ public class LoginUseCaseTest {
                 .setRoles(Collections.singleton(ERoles.ROLE_USER))
                 .build();
 
-        when(userRepository.findByEmailCustom(any())).thenReturn(Optional.of(model));
+        when(userRepository.findByEmail(any())).thenReturn(Optional.of(model));
         when(passwordEncoder.matches(any(), any())).thenReturn(true);
         when(jwtUtils.genRefreshToken(1L)).thenReturn("refresh");
         when(jwtUtils.genAccessToken(1L, model.getRoles())).thenReturn("access");

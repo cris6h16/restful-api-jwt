@@ -90,7 +90,7 @@ class UpdatePasswordUseCaseTest {
         String currentPassword = "currentPassword";
         String newPassword = "newPassword";
 
-        when(userRepository.existsByIdCustom(id))
+        when(userRepository.existsById(id))
                 .thenReturn(false);
         when(errorMessages.getUserNotFoundMessage())
                 .thenReturn("any msg");
@@ -108,9 +108,9 @@ class UpdatePasswordUseCaseTest {
         String currentPassword = "currentPassword";
         String newPassword = "newPassword";
 
-        when(userRepository.existsByIdCustom(id))
+        when(userRepository.existsById(id))
                 .thenReturn(true);
-        when(userRepository.findPasswordByIdCustom(id))
+        when(userRepository.findPasswordById(id))
                 .thenReturn(Optional.empty());
 
         // Act & Assert
@@ -126,9 +126,9 @@ class UpdatePasswordUseCaseTest {
         String currentPassword = "currentPassword";
         String newPassword = "newPassword";
 
-        when(userRepository.existsByIdCustom(id))
+        when(userRepository.existsById(id))
                 .thenReturn(true);
-        when(userRepository.findPasswordByIdCustom(id))
+        when(userRepository.findPasswordById(id))
                 .thenReturn(Optional.of("storedPassword"));
         when(myPasswordEncoder.matches(currentPassword, "storedPassword"))
                 .thenReturn(false);
@@ -148,9 +148,9 @@ class UpdatePasswordUseCaseTest {
         String currentPassword = "  currentPassword   ";
         String newPassword = "      newPassword    ";
 
-        when(userRepository.existsByIdCustom(id))
+        when(userRepository.existsById(id))
                 .thenReturn(true);
-        when(userRepository.findPasswordByIdCustom(id))
+        when(userRepository.findPasswordById(id))
                 .thenReturn(Optional.of("storedPassword"));
         when(myPasswordEncoder.matches(currentPassword.trim(), "storedPassword"))
                 .thenReturn(true);
@@ -161,11 +161,11 @@ class UpdatePasswordUseCaseTest {
         updatePasswordUseCase.handle(id, currentPassword, newPassword);
 
         // Assert
-        verify(userRepository).updatePasswordByIdCustom(id, "encodedNewPassword");
+        verify(userRepository).updatePasswordById(id, "encodedNewPassword");
         verify(myPasswordEncoder).encode(newPassword.trim());
         verify(myPasswordEncoder).matches(currentPassword.trim(), "storedPassword");
-        verify(userRepository).findPasswordByIdCustom(id);
-        verify(userRepository).existsByIdCustom(id);
+        verify(userRepository).findPasswordById(id);
+        verify(userRepository).existsById(id);
         verify(userValidator).validateId(id);
         verify(userValidator).validatePassword(newPassword.trim());
         verify(userValidator).validatePassword(currentPassword.trim());

@@ -28,7 +28,7 @@ public class GetPublicProfileUseCase implements GetPublicProfilePort {
 
     private UserModel findByIdElseThrow(Long id) {
         return userRepository
-                .findByIdCustom(id)
+                .findById(id)
                 .orElseThrow(() -> new NotFoundException(errorMessages.getUserNotFoundMessage()));
     }
 

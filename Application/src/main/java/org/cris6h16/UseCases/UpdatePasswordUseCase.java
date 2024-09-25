@@ -44,13 +44,13 @@ public class UpdatePasswordUseCase implements UpdatePasswordPort {
     }
 
     private void userExists(Long id) {
-        if (!userRepository.existsByIdCustom(id)) {
+        if (!userRepository.existsById(id)) {
             throw new NotFoundException(errorMessages.getUserNotFoundMessage());
         }
     }
 
     private void validateCurrentPassword(Long id, String currentPassword) {
-        String storedPassword = userRepository.findPasswordByIdCustom(id)
+        String storedPassword = userRepository.findPasswordById(id)
                 .orElseThrow(() -> new UnexpectedException("User must have a non-null password"));
 
         if (!myPasswordEncoder.matches(currentPassword, storedPassword)) {
@@ -60,6 +60,6 @@ public class UpdatePasswordUseCase implements UpdatePasswordPort {
 
     private void updatePassword(Long id, String newPassword) {
         String encodedNewPassword = myPasswordEncoder.encode(newPassword);
-        userRepository.updatePasswordByIdCustom(id, encodedNewPassword);
+        userRepository.updatePasswordById(id, encodedNewPassword);
     }
 }

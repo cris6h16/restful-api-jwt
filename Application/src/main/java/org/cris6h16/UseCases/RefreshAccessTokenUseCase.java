@@ -29,12 +29,12 @@ public class RefreshAccessTokenUseCase implements RefreshAccessTokenPort {
         userValidator.validateId(id);
 
         userExists(id);
-        Set<ERoles> roles = userRepository.getRolesByIdCustom(id);
+        Set<ERoles> roles = userRepository.getRolesById(id);
         return jwtUtils.genAccessToken(id, roles);
     }
 
     private void userExists(Long id) {
-        if (!userRepository.existsByIdCustom(id)) {
+        if (!userRepository.existsById(id)) {
             throw new NotFoundException(errorMessages.getUserNotFoundMessage());
         }
     }

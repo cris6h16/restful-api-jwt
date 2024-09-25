@@ -54,7 +54,7 @@ public class RequestResetPasswordUseCaseTest {
         // Arrange
         String email = "email";
 
-        when(userRepository.findByEmailCustom(email))
+        when(userRepository.findByEmail(email))
                 .thenReturn(Optional.empty());
         when(errorMessages.getUserNotFoundMessage())
                 .thenReturn("Optional.empty()");
@@ -73,7 +73,7 @@ public class RequestResetPasswordUseCaseTest {
         user.setId(1L);
         user.setEmail(email);
 
-        when(userRepository.findByEmailCustom(email))
+        when(userRepository.findByEmail(email))
                 .thenReturn(Optional.of(user));
 
         // Act

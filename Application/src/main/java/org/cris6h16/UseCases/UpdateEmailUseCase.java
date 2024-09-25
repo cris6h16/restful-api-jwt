@@ -28,14 +28,14 @@ public class UpdateEmailUseCase implements UpdateEmailPort {
         userValidator.validateEmail(newEmail);
 
         userExists(id);
-        userRepository.updateEmailByIdCustom(id, newEmail);
-        userRepository.updateEmailVerifiedByIdCustom(id, false);
+        userRepository.updateEmailById(id, newEmail);
+        userRepository.updateEmailVerifiedById(id, false);
 
         emailService.sendVerificationEmail(id, newEmail);
     }
 
     private void userExists(Long id) {
-        if (!userRepository.existsByIdCustom(id)) {
+        if (!userRepository.existsById(id)) {
             throw new NotFoundException(errorMessages.getUserNotFoundMessage());
         }
     }

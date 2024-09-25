@@ -29,7 +29,7 @@ public class UserJpaRepositoryTest {
     @Test
     void updateEmailVerifiedByIdCustom() {
         // Arrange
-        userRepository.saveCustom(new UserModel.Builder()
+        userRepository.save(new UserModel.Builder()
                 .setUsername("cris6h16")
                 .setEmail("cristianmherrera21@gmail.com")
                 .setPassword("12345678")
@@ -41,10 +41,10 @@ public class UserJpaRepositoryTest {
         );
 
         // Act
-        userRepository.updateEmailVerifiedByIdCustom(1L, false);
+        userRepository.updateEmailVerifiedById(1L, false);
 
         // Assert
-        UserModel userModel = userRepository.findByIdCustom(1L).orElseThrow();
+        UserModel userModel = userRepository.findById(1L).orElseThrow();
         assertFalse(userModel.getEmailVerified());
     }
 }

@@ -26,11 +26,11 @@ public class UpdateUsernameUseCase implements UpdateUsernamePort {
         userValidator.validateUsername(newUsername);
 
         userExists(id);
-        userRepository.updateUsernameByIdCustom(id, newUsername);
+        userRepository.updateUsernameById(id, newUsername);
     }
 
     private void userExists(Long id) {
-        if (!userRepository.existsByIdCustom(id)) {
+        if (!userRepository.existsById(id)) {
             throw new NotFoundException(errorMessages.getUserNotFoundMessage());
         }
     }

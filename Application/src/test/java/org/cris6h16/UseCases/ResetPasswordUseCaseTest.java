@@ -12,7 +12,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class ResetPasswordUseCaseTest {
@@ -55,7 +54,7 @@ class ResetPasswordUseCaseTest {
         Long id = 1L;
         String password = "password";
 
-        when(userRepository.existsByIdCustom(id))
+        when(userRepository.existsById(id))
                 .thenReturn(false);
         when(errorMessages.getUserNotFoundMessage())
                 .thenReturn("any msg");
@@ -72,7 +71,7 @@ class ResetPasswordUseCaseTest {
         Long id = 1L;
         String password = "   password  ";
 
-        when(userRepository.existsByIdCustom(id))
+        when(userRepository.existsById(id))
                 .thenReturn(true);
         when(passwordEncoder.encode(password.trim()))
                 .thenReturn("encoded");
@@ -81,8 +80,8 @@ class ResetPasswordUseCaseTest {
         resetPasswordUseCase.handle(id, password);
 
         // Assert
-        verify(userRepository).existsByIdCustom(id);
+        verify(userRepository).existsById(id);
         verify(passwordEncoder).encode(password.trim());
-        verify(userRepository).updatePasswordByIdCustom(id, "encoded");
+        verify(userRepository).updatePasswordById(id, "encoded");
     }
 }

@@ -1,7 +1,5 @@
 package org.cris6h16.Config.SpringBoot.Security.UserDetails;
 
-import org.cris6h16.Adapters.Out.SpringData.Entities.UserEntity;
-import org.cris6h16.Adapters.Out.SpringData.UserJpaRepository;
 import org.cris6h16.Models.UserModel;
 import org.cris6h16.Repositories.UserRepository;
 import org.springframework.security.core.GrantedAuthority;
@@ -28,7 +26,7 @@ public class UserDetailsServiceImpl implements UserDetailsService, CustomUserDet
     }
 
     public UserDetailsWithId loadUserById(Long id) {
-        UserModel user = userRepository.findByIdCustom(id)
+        UserModel user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
         Collection<? extends GrantedAuthority> authorities = user.getRoles().stream()
                 .map(role -> new SimpleGrantedAuthority(role.toString()))

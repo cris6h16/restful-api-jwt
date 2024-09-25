@@ -48,7 +48,7 @@ class VerifyEmailUseCaseTest {
         // Arrange
         Long id = 1L;
 
-        when(userRepository.existsByIdCustom(id))
+        when(userRepository.existsById(id))
                 .thenReturn(false);
         when(errorMessages.getUserNotFoundMessage())
                 .thenReturn("Any msg");
@@ -64,13 +64,13 @@ class VerifyEmailUseCaseTest {
         // Arrange
         Long id = 1L;
 
-        when(userRepository.existsByIdCustom(id))
+        when(userRepository.existsById(id))
                 .thenReturn(true);
 
         // Act
         verifyEmailUseCase.handle(id);
 
         // Assert
-        verify(userRepository).updateEmailVerifiedByIdCustom(id, true);
+        verify(userRepository).updateEmailVerifiedById(id, true);
     }
 }

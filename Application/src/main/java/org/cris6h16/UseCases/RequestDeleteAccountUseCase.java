@@ -8,8 +8,6 @@ import org.cris6h16.Services.EmailService;
 import org.cris6h16.Utils.ErrorMessages;
 import org.cris6h16.Utils.UserValidator;
 
-import java.util.concurrent.atomic.AtomicReference;
-
 public class RequestDeleteAccountUseCase implements RequestDeleteAccountPort {
 
     private final UserValidator userValidator;
@@ -35,7 +33,7 @@ public class RequestDeleteAccountUseCase implements RequestDeleteAccountPort {
 
     private UserModel findByIdElseThrow(Long id) {
         return userRepository
-                .findByIdCustom(id)
+                .findById(id)
                 .orElseThrow(() -> new NotFoundException(errorMessages.getUserNotFoundMessage()));
 
     }

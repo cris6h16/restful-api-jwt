@@ -55,7 +55,7 @@ class RequestUpdateEmailUseCaseTest {
         // Arrange
         Long id = 1L;
 
-        when(userRepository.findByIdCustom(id)).thenReturn(Optional.empty());
+        when(userRepository.findById(id)).thenReturn(Optional.empty());
         when(errorMessages.getUserNotFoundMessage()).thenReturn("any msg");
 
         // Act and Assert
@@ -72,7 +72,7 @@ class RequestUpdateEmailUseCaseTest {
                 .setEmail("cristianmherrera21@gmail.com")
                 .build();
 
-        when(userRepository.findByIdCustom(user.getId())).thenReturn(Optional.of(user));
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
 
         // Act
         requestUpdateEmailUseCase.handle(user.getId());

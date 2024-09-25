@@ -33,7 +33,7 @@ public class RequestResetPasswordUseCase implements RequestResetPasswordPort {
 
     private UserModel findByEmailElseThrow(String email) {
         return userRepository
-                .findByEmailCustom(email)
+                .findByEmail(email)
                 .orElseThrow(() -> new NotFoundException(errorMessages.getUserNotFoundMessage()));
     }
 }

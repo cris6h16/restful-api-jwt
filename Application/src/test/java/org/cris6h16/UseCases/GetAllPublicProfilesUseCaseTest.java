@@ -5,8 +5,8 @@ import org.cris6h16.In.Commands.GetAllPublicProfilesCommand;
 import org.cris6h16.In.Results.GetAllPublicProfilesOutput;
 import org.cris6h16.Models.ERoles;
 import org.cris6h16.Models.UserModel;
-import org.cris6h16.Repositories.Page.PageRequest;
-import org.cris6h16.Repositories.Page.PageResult;
+import org.cris6h16.Repositories.Page.MyPageable;
+import org.cris6h16.Repositories.Page.MyPage;
 import org.cris6h16.Repositories.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,12 +43,12 @@ public class GetAllPublicProfilesUseCaseTest {
     }
 
     @Test
-    void handle_emptyPageReturnsEmptyPageResult() {
+    void handle_emptyPageReturnsEmptyPage() {
         // Arrange
-        PageResult<UserModel> emptyPage = PageResult.empty();
+        Page<UserModel> emptyPage = Page.empty();
         GetAllPublicProfilesCommand cmd = createValidCmd();
 
-        when(userRepository.findPageCustom(any(PageRequest.class)))
+        when(userRepository.findPage(any(MyPageable.class)))
                 .thenReturn(emptyPage);
 
         // Act
@@ -76,10 +76,10 @@ public class GetAllPublicProfilesUseCaseTest {
         UserModel user1 = createUserModel(1L, "user1");
         UserModel user2 = createUserModel(2L, "user2");
         List<UserModel> users = List.of(user1, user2);
-        PageResult<UserModel> userPage = new PageResult<>(users.size(), 1, true, true, false, false, null, users);
+        Page<UserModel> userPage = new MyPage<>(users.size(), 1, true, true, false, false, null, users);
         GetAllPublicProfilesCommand cmd = createValidCmd();
 
-        when(userRepository.findPageCustom(any(PageRequest.class)))
+        when(userRepository.findPage(any(MyPageable.class)))
                 .thenReturn(userPage);
 
         // Act
@@ -119,10 +119,10 @@ public class GetAllPublicProfilesUseCaseTest {
     @Test
     void handle_pageWithNullItemsHandlesGracefully() {
         // Arrange
-        PageResult<UserModel> nullItemsPage = new PageResult<>(0, 1, true, true, false, false, null, null);
+        Page<UserModel> nullItemsPage = new MyPage<>(0, 1, true, true, false, false, null, null);
         GetAllPublicProfilesCommand cmd = createValidCmd();
 
-        when(userRepository.findPageCustom(any(PageRequest.class)))
+        when(userRepository.findPage(any(MyPageable.class)))
                 .thenReturn(nullItemsPage);
 
         // Act

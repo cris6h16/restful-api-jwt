@@ -138,7 +138,7 @@ public class CreateAccountUseCaseTest {
         CreateAccountCommand cmd = createValidUntrimmed();
         CreateAccountCommand trimmed = trim(cmd);
         when(passwordEncoder.encode(anyString())).thenReturn("encodedPass");
-        when(userRepository.saveCustom(any())).thenReturn(new UserModel.Builder()
+        when(userRepository.save(any())).thenReturn(new UserModel.Builder()
                 .setId(15L)
                 .setUsername(trimmed.getUsername())
                 .setEmail(trimmed.getEmail())
@@ -150,9 +150,9 @@ public class CreateAccountUseCaseTest {
         // Assert
         assertThat(id).isEqualTo(15L);
         verify(passwordEncoder).encode(trimmed.getPassword());
-        verify(userRepository).existsByUsernameCustom(trimmed.getUsername());// duplicates checked with trimmed
-        verify(userRepository).existsByEmailCustom(trimmed.getEmail());
-        verify(userRepository).saveCustom(argThat(passedToDb -> {
+        verify(userRepository).existsByUsername(trimmed.getUsername());// duplicates checked with trimmed
+        verify(userRepository).existsByEmail(trimmed.getEmail());
+        verify(userRepository).save(argThat(passedToDb -> {
             boolean usernameTrimmed = passedToDb.getUsername().equals(trimmed.getUsername().trim());
             boolean emailTrimmed = passedToDb.getEmail().equals(trimmed.getEmail().trim());
             boolean rolesEquals = passedToDb.getRoles().equals(trimmed.getRoles());
@@ -178,7 +178,7 @@ public class CreateAccountUseCaseTest {
     void handle_usernameAlreadyExistsThenAlreadyExistException() {
         // Arrange
         CreateAccountCommand cmd = createCmd();
-        when(userRepository.existsByUsernameCustom(cmd.getUsername())).thenReturn(true);
+        when(userRepository.existsByUsername(cmd.getUsername())).thenReturn(true);
         when(errorMessages.getUsernameAlreadyExistsMessage()).thenReturn("msg123");
 
         // Act
@@ -191,7 +191,7 @@ public class CreateAccountUseCaseTest {
     void handle_emailAlreadyExistsThenAlreadyExistException() {
         // Arrange
         CreateAccountCommand cmd = createCmd();
-        when(userRepository.existsByEmailCustom(cmd.getEmail())).thenReturn(true);
+        when(userRepository.existsByEmail(cmd.getEmail())).thenReturn(true);
         when(errorMessages.getEmailAlreadyExistsMessage()).thenReturn("msg000");
 
         // Act

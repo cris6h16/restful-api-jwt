@@ -2,7 +2,6 @@ package org.cris6h16.UseCases;
 
 import org.cris6h16.Exceptions.Impls.EmailNotVerifiedException;
 import org.cris6h16.Exceptions.Impls.InvalidCredentialsException;
-import org.cris6h16.Exceptions.Impls.NotFoundException;
 import org.cris6h16.In.Ports.LoginPort;
 import org.cris6h16.In.Results.LoginOutput;
 import org.cris6h16.Models.UserModel;
@@ -12,9 +11,6 @@ import org.cris6h16.Services.MyPasswordEncoder;
 import org.cris6h16.Utils.ErrorMessages;
 import org.cris6h16.Utils.JwtUtils;
 import org.cris6h16.Utils.UserValidator;
-
-import java.util.Arrays;
-import java.util.Map;
 
 public class LoginUseCase implements LoginPort {
 
@@ -58,7 +54,7 @@ public class LoginUseCase implements LoginPort {
     }
 
     private UserModel findUserByEmailElseNull(String email) {
-        return userRepository.findByEmailCustom(email)
+        return userRepository.findByEmail(email)
                 .orElse(null);
     }
 

@@ -51,7 +51,7 @@ public class CreateAccountUseCase implements CreateAccountPort {
                 .build();
 
         checkDBForDuplicates(userModel);
-        userModel = userRepository.saveCustom(userModel);
+        userModel = userRepository.save(userModel);
 
         emailService.sendVerificationEmail(userModel.getId(), userModel.getEmail());
 
@@ -77,10 +77,10 @@ public class CreateAccountUseCase implements CreateAccountPort {
     }
 
     private void checkDBForDuplicates(UserModel userModel) {
-        if (userRepository.existsByUsernameCustom(userModel.getUsername())) {
+        if (userRepository.existsByUsername(userModel.getUsername())) {
             throw new AlreadyExistsException(errorMessages.getUsernameAlreadyExistsMessage());
         }
-        if (userRepository.existsByEmailCustom(userModel.getEmail())) {
+        if (userRepository.existsByEmail(userModel.getEmail())) {
             throw new AlreadyExistsException(errorMessages.getEmailAlreadyExistsMessage());
         }
     }

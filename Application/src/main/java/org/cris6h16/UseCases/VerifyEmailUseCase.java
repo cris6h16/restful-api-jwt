@@ -23,11 +23,11 @@ public class VerifyEmailUseCase implements VerifyEmailPort {
         userValidator.validateId(id);
 
         userExists(id);
-        userRepository.updateEmailVerifiedByIdCustom(id, true);
+        userRepository.updateEmailVerifiedById(id, true);
     }
 
     private void userExists(Long id) {
-        if (!userRepository.existsByIdCustom(id)) {
+        if (!userRepository.existsById(id)) {
             throw new NotFoundException(errorMessages.getUserNotFoundMessage());
         }
     }

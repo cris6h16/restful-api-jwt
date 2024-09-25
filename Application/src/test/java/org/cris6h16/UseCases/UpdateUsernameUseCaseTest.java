@@ -66,7 +66,7 @@ class UpdateUsernameUseCaseTest {
         Long id = 1L;
         String username = "cris6h16";
 
-        when(userRepository.existsByIdCustom(id))
+        when(userRepository.existsById(id))
                 .thenReturn(false);
         when(errorMessages.getUserNotFoundMessage())
                 .thenReturn("Any msg");
@@ -84,14 +84,14 @@ class UpdateUsernameUseCaseTest {
         Long id = 1L;
         String username = " cris6h16    ";
 
-        when(userRepository.existsByIdCustom(id))
+        when(userRepository.existsById(id))
                 .thenReturn(true);
 
         // Act
         updateUsernameUseCase.handle(id, username);
 
         // Assert
-        verify(userRepository).updateUsernameByIdCustom(id, "cris6h16");
+        verify(userRepository).updateUsernameById(id, "cris6h16");
     }
 
 }

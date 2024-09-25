@@ -2,39 +2,39 @@ package org.cris6h16.Repositories;
 
 import org.cris6h16.Models.ERoles;
 import org.cris6h16.Models.UserModel;
-import org.cris6h16.Repositories.Page.PageResult;
-import org.cris6h16.Repositories.Page.PageRequest;
+import org.cris6h16.Repositories.Page.MyPage;
+import org.cris6h16.Repositories.Page.MyPageable;
 
 import java.util.Optional;
 import java.util.Set;
 
 // port
 public interface UserRepository {
-    UserModel saveCustom(UserModel userModel);
+    UserModel save(UserModel userModel);
 
-    boolean existsByUsernameCustom(String username);
+    boolean existsByUsername(String username);
 
-    boolean existsByEmailCustom(String email);
+    boolean existsByEmail(String email);
 
-    boolean existsByIdCustom(Long id);
+    boolean existsById(Long id);
 
-    void updateEmailVerifiedByIdCustom(Long id, boolean isVerified);
+    void updateEmailVerifiedById(Long id, boolean isVerified);
 
-    Optional<UserModel> findByEmailCustom(String email);
+    Optional<UserModel> findByEmail(String email);
 
-    Optional<UserModel> findByIdCustom(Long id);
+    Optional<UserModel> findById(Long id);
 
     void deactivate(Long id);
 
-    void updateUsernameByIdCustom(Long id, String newUsername);
+    void updateUsernameById(Long id, String newUsername);
 
-    Optional<String> findPasswordByIdCustom(Long id);
+    Optional<String> findPasswordById(Long id);
 
-    void updatePasswordByIdCustom(Long id, String newPassword);
+    void updatePasswordById(Long id, String newPassword);
 
-    PageResult<UserModel> findPageCustom(PageRequest request);
+    MyPage<UserModel> findPage(MyPageable request);
 
-    void updateEmailByIdCustom(Long id, String email);
+    void updateEmailById(Long id, String email);
 
-    Set<ERoles> getRolesByIdCustom(Long id);
+    Set<ERoles> getRolesById(Long id);
 }

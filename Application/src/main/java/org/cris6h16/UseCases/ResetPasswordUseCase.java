@@ -25,11 +25,11 @@ public class ResetPasswordUseCase implements ResetPasswordPort {
         userValidator.validateId(id);
 
         userExists(id);
-        userRepository.updatePasswordByIdCustom(id, passwordEncoder.encode(password.trim()));
+        userRepository.updatePasswordById(id, passwordEncoder.encode(password.trim()));
     }
 
     private void userExists(Long id) {
-        if (!userRepository.existsByIdCustom(id)) {
+        if (!userRepository.existsById(id)) {
             throw new NotFoundException(errorMessages.getUserNotFoundMessage());
         }
     }

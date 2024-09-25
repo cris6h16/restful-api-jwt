@@ -55,7 +55,7 @@ public class RequestDeleteAccountUseCaseTest {
         // Arrange
         Long id = 1L;
 
-        when(userRepository.findByIdCustom(id)).thenReturn(Optional.empty());
+        when(userRepository.findById(id)).thenReturn(Optional.empty());
         when(errorMessages.getUserNotFoundMessage()).thenReturn("fail msg");
 
         // Act & Assert
@@ -69,7 +69,7 @@ public class RequestDeleteAccountUseCaseTest {
         // Arrange
         UserModel u  = new UserModel.Builder().setId(1L).setEmail("Hello World").build();
 
-        when(userRepository.findByIdCustom(1L)).thenReturn(Optional.of(u));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(u));
         // Act
         requestDeleteAccountUseCase.handle(1L);
 

@@ -7,6 +7,7 @@ import org.cris6h16.In.Commands.GetAllPublicProfilesCommand;
 import org.cris6h16.In.Ports.*;
 import org.cris6h16.In.Results.GetAllPublicProfilesOutput;
 import org.cris6h16.In.Results.GetPublicProfileOutput;
+import org.cris6h16.Repositories.Page.MySortOrder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -15,7 +16,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import static org.cris6h16.Repositories.Page.MySortOrder.MyDirection.ASC;
+import static org.cris6h16.Repositories.Page.MySortOrder.MyDirection.DESC;
+
 
 public class UserControllerFacade {
 
@@ -90,27 +96,38 @@ public class UserControllerFacade {
 
         GetAllPublicProfilesCommand cmd = _createCmd(pageable);
         GetAllPublicProfilesOutput output = _getAllPublicProfiles(cmd);
-        return ResponseEntity.ok(_createPageImpl(output, pageable)); // todo: if this work as expected, remains a wide refactor
+        return ResponseEntity.ok(_createPageImpl(output));
     }
 
-    private Page<PublicProfileDTO> _createPageImpl(GetAllPublicProfilesOutput output, Pageable pageable) {
-        List<PublicProfileDTO> profiles = output.getProfiles().stream()
-                .map(PublicProfileDTO::new)
+    private Page<PublicProfileDTO> _createPageImpl(GetAllPublicProfilesOutput output) {
+        List<PublicProfileDTO> profiles = output.getItems().stream()
+                .map(PublicProfileDTO::new) // GetPublicProfileOutput --> PublicProfileDTO
                 .toList();
 
-        return new PageImpl<>(profiles, pageable, output.getPageItems());
+        return new PageImpl<>(profiles);
     }
 
-    private GetAllPublicProfilesCommand _createCmd(Pageable pageable) {
-        Sort.Order order = pageable.getSort().stream()
-                .findFirst()  // first sorting order
-                .orElseThrow(() -> new IllegalArgumentException("No sorting order found"));
+    private GetAllPublicProfilesCommand _createCmd(Pageable springPageable) {
+        List<MySortOrder> mySortOrders = new ArrayList<>(1);
+
+        // due to order by multiples properties ( e.g. sort DESC by last_modified  & ASC by Id & DES by username & ...)
+        for (Sort.Order springOrder : springPageable.getSort()) {
+            Sort.Direction springDirection = springOrder.getDirection();
+
+            // spring order to order in my domain
+            MySortOrder.MyDirection myDirection = switch (springDirection) {
+                case ASC -> ASC;
+                case DESC -> DESC;
+            };
+
+            MySortOrder current = new MySortOrder(springOrder.getProperty(), myDirection);
+            mySortOrders.add(current);
+        }
 
         return new GetAllPublicProfilesCommand(
-                pageable.getPageNumber(),
-                pageable.getPageSize(),
-                order.getProperty().trim().toLowerCase(),
-                order.getDirection().isAscending()
+                springPageable.getPageNumber(),
+                springPageable.getPageSize(),
+                mySortOrders
         );
     }
 

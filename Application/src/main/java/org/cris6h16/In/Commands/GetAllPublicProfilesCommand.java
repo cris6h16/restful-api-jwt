@@ -1,32 +1,18 @@
 package org.cris6h16.In.Commands;
 
 
+import org.cris6h16.Repositories.Page.MySortOrder;
+
+import java.util.List;
+
 public class GetAllPublicProfilesCommand {
-    private final int page;
+    private final int pageNumber;
     private final int pageSize;
-    private final String sortBy;
-    private final boolean isAscending;
+    private final List<MySortOrder> mySortOrders;
 
-    public GetAllPublicProfilesCommand(int page, int pageSize, String sortBy, boolean isAscending) {
-        this.page = page;
+    public GetAllPublicProfilesCommand(int pageNumber, int pageSize, List<MySortOrder> mySortOrders) {
+        this.pageNumber = pageNumber;
         this.pageSize = pageSize;
-        this.sortBy = sortBy;
-        this.isAscending = isAscending;
-    }
-
-    public int getPage() {
-        return page;
-    }
-
-    public int getPageSize() {
-        return pageSize;
-    }
-
-    public String getSortBy() {
-        return sortBy;
-    }
-
-    public boolean getSortDirection() {
-        return isAscending;
+        this.mySortOrders = mySortOrders;
     }
 }

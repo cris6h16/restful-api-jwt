@@ -32,7 +32,7 @@ public class RequestUpdateEmailUseCase implements RequestUpdateEmailPort {
 
     private UserModel findByIdElseThrow(Long id) {
         return userRepository
-                .findByIdCustom(id)
+                .findById(id)
                 .orElseThrow(() -> new NotFoundException(errorMessages.getUserNotFoundMessage()));
     }
 }

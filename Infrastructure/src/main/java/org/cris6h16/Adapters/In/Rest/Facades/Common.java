@@ -5,6 +5,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 // package protected, common only for facades
 class Common {
+    private Common() {
+    }
+
     protected static Long getPrincipalId() {
         try {
             Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();

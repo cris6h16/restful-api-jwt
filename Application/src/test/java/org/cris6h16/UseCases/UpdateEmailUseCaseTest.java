@@ -68,7 +68,7 @@ class UpdateEmailUseCaseTest {
         Long id = 1L;
         String email = "email";
 
-        when(userRepository.existsByIdCustom(id)).thenReturn(false);
+        when(userRepository.existsById(id)).thenReturn(false);
         when(errorMessages.getUserNotFoundMessage()).thenReturn("Any msg");
 
         // Act & Assert
@@ -83,14 +83,14 @@ class UpdateEmailUseCaseTest {
         Long id = 1L;
         String email = "      email   ";
 
-        when(userRepository.existsByIdCustom(id)).thenReturn(true);
+        when(userRepository.existsById(id)).thenReturn(true);
 
         // Act
         updateEmailUseCase.handle(id, email);
 
         // Assert
-        verify(userRepository).updateEmailByIdCustom(id, email.trim());
-        verify(userRepository).updateEmailVerifiedByIdCustom(id, false);
+        verify(userRepository).updateEmailById(id, email.trim());
+        verify(userRepository).updateEmailVerifiedById(id, false);
         verify(emailService).sendVerificationEmail(id, email.trim());
     }
 }

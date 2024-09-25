@@ -3,6 +3,10 @@ package org.cris6h16.Adapters.In.Rest;
 import org.cris6h16.Adapters.In.Rest.DTOs.PublicProfileDTO;
 import org.cris6h16.Adapters.In.Rest.DTOs.UpdateMyPasswordDTO;
 import org.cris6h16.Adapters.In.Rest.Facades.UserControllerFacade;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -79,5 +83,18 @@ public class UserController {
     )
     public ResponseEntity<PublicProfileDTO> getMyAccount() {
         return userControllerFacade.getMyAccount();
+    }
+
+    @GetMapping(
+            value = "${controller.path.user.account.core}",
+            produces = "application/json"
+    )
+    public ResponseEntity<Page<PublicProfileDTO>> getAllUsers(@PageableDefault(
+            size = 50,
+            sort = {"id"},
+            direction = Sort.Direction.ASC,
+            page = 0
+    ) Pageable pageable) {
+        return userControllerFacade.getAllUsers(pageable);
     }
 }

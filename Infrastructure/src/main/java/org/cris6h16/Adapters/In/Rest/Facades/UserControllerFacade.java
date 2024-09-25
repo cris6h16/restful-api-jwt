@@ -2,11 +2,20 @@ package org.cris6h16.Adapters.In.Rest.Facades;
 
 import org.cris6h16.Adapters.In.Rest.DTOs.PublicProfileDTO;
 import org.cris6h16.Adapters.In.Rest.DTOs.UpdateMyPasswordDTO;
+import org.cris6h16.Config.SpringBoot.Services.CacheService;
+import org.cris6h16.In.Commands.GetAllPublicProfilesCommand;
 import org.cris6h16.In.Ports.*;
+import org.cris6h16.In.Results.GetAllPublicProfilesOutput;
 import org.cris6h16.In.Results.GetPublicProfileOutput;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 public class UserControllerFacade {
 
@@ -17,8 +26,10 @@ public class UserControllerFacade {
     private final UpdateEmailPort updateEmailPort;
     private final RequestUpdateEmailPort requestUpdateEmailPort;
     private final GetPublicProfilePort getPublicProfilePort;
+    private final GetAllPublicProfilesPort getAllPublicProfilesPort;
+    private final CacheService cacheService;
 
-    public UserControllerFacade(RequestDeleteAccountPort requestDeleteAccountPort, DeleteAccountPort deleteAccountPort, UpdateUsernamePort updateUsernamePort, UpdatePasswordPort updatePasswordPort, UpdateEmailPort updateEmailPort, RequestUpdateEmailPort requestUpdateEmailPort, GetPublicProfilePort getPublicProfilePort) {
+    public UserControllerFacade(RequestDeleteAccountPort requestDeleteAccountPort, DeleteAccountPort deleteAccountPort, UpdateUsernamePort updateUsernamePort, UpdatePasswordPort updatePasswordPort, UpdateEmailPort updateEmailPort, RequestUpdateEmailPort requestUpdateEmailPort, GetPublicProfilePort getPublicProfilePort, GetAllPublicProfilesPort getAllPublicProfilesPort, CacheService cacheService) {
         this.requestDeleteAccountPort = requestDeleteAccountPort;
         this.deleteAccountPort = deleteAccountPort;
         this.updateUsernamePort = updateUsernamePort;
@@ -26,6 +37,8 @@ public class UserControllerFacade {
         this.updateEmailPort = updateEmailPort;
         this.requestUpdateEmailPort = requestUpdateEmailPort;
         this.getPublicProfilePort = getPublicProfilePort;
+        this.getAllPublicProfilesPort = getAllPublicProfilesPort;
+        this.cacheService = cacheService;
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
@@ -69,5 +82,43 @@ public class UserControllerFacade {
     public ResponseEntity<PublicProfileDTO> getMyAccount() {
         GetPublicProfileOutput output = getPublicProfilePort.handle(Common.getPrincipalId());
         return ResponseEntity.ok(new PublicProfileDTO(output));
+    }
+
+    // read-only ( non-transactional )
+    public ResponseEntity<Page<PublicProfileDTO>> getAllUsers(Pageable pageable) {
+        if (pageable == null) throw new IllegalArgumentException("Pageable cannot be null");
+
+        GetAllPublicProfilesCommand cmd = _createCmd(pageable);
+        GetAllPublicProfilesOutput output = _getAllPublicProfiles(cmd);
+        return ResponseEntity.ok(_createPageImpl(output, pageable)); // todo: if this work as expected, remains a wide refactor
+    }
+
+    private Page<PublicProfileDTO> _createPageImpl(GetAllPublicProfilesOutput output, Pageable pageable) {
+        List<PublicProfileDTO> profiles = output.getProfiles().stream()
+                .map(PublicProfileDTO::new)
+                .toList();
+
+        return new PageImpl<>(profiles, pageable, output.getPageItems());
+    }
+
+    private GetAllPublicProfilesCommand _createCmd(Pageable pageable) {
+        Sort.Order order = pageable.getSort().stream()
+                .findFirst()  // first sorting order
+                .orElseThrow(() -> new IllegalArgumentException("No sorting order found"));
+
+        return new GetAllPublicProfilesCommand(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                order.getProperty().trim().toLowerCase(),
+                order.getDirection().isAscending()
+        );
+    }
+
+    // caching applied
+    private GetAllPublicProfilesOutput _getAllPublicProfiles(GetAllPublicProfilesCommand cmd) {
+        GetAllPublicProfilesOutput output = cacheService.getAllUsers(cmd);
+        if (output == null) output = getAllPublicProfilesPort.handle(cmd);
+        cacheService.putAllUsers(cmd, output);
+        return output;
     }
 }

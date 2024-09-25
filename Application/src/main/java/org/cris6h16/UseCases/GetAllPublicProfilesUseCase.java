@@ -39,7 +39,12 @@ public class GetAllPublicProfilesUseCase implements GetAllPublicProfilesPort {
     }
 
     private PageResult<UserModel> findPage(GetAllPublicProfilesCommand cmd) {
-        PageRequest req = new PageRequest(cmd.getPage(), cmd.getPageSize(), cmd.getSortBy(), cmd.getSortDirection());
+        PageRequest req = new PageRequest(
+                cmd.getPage(),
+                cmd.getPageSize(),
+                cmd.getSortBy(),
+                cmd.getSortDirection()
+        );
         return userRepository.findPageCustom(req);
     }
 

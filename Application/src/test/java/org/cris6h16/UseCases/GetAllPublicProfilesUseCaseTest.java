@@ -3,13 +3,10 @@ package org.cris6h16.UseCases;
 import org.cris6h16.Exceptions.Impls.UnexpectedException;
 import org.cris6h16.In.Commands.GetAllPublicProfilesCommand;
 import org.cris6h16.In.Results.GetAllPublicProfilesOutput;
-import org.cris6h16.In.Results.GetPublicProfileOutput;
 import org.cris6h16.Models.ERoles;
 import org.cris6h16.Models.UserModel;
-import org.cris6h16.Repositories.Page.Order;
 import org.cris6h16.Repositories.Page.PageRequest;
 import org.cris6h16.Repositories.Page.PageResult;
-import org.cris6h16.Repositories.Page.SortBy;
 import org.cris6h16.Repositories.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -139,8 +136,8 @@ public class GetAllPublicProfilesUseCaseTest {
         return new GetAllPublicProfilesCommand(
                 1, // page number
                 12, // page size
-                SortBy.id,
-                Order.ASC
+                "id",
+                true
         );
     }
 

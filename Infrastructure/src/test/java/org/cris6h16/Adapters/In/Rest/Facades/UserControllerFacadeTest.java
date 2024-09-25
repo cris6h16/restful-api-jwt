@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -20,6 +21,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 class UserControllerFacadeTest {
@@ -177,5 +179,16 @@ class UserControllerFacadeTest {
         when(a.getPrincipal()).thenReturn(user);
         SecurityContextHolder.getContext().setAuthentication(a);
         return user;
+    }
+
+    @Test
+    void getAllUsers_pageableNullThenIllegalArgumentException(){
+        // Arrange
+        Pageable pageable = null;
+
+        // Act & Assert
+        assertThatThrownBy(() -> userControllerFacade.getAllUsers(pageable))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Pageable cannot be null");
     }
 }

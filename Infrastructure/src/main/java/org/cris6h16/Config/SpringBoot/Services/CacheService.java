@@ -14,4 +14,12 @@ public class CacheService {
     public CacheService(RedisTemplate<GetAllPublicProfilesCommand, GetAllPublicProfilesOutput> getAllUsersTemplate) {
         this.getAllUsersTemplate = getAllUsersTemplate;
     }
+
+    public GetAllPublicProfilesOutput getAllUsers(GetAllPublicProfilesCommand command) {
+        return getAllUsersTemplate.opsForValue().get(command);
+    }
+
+    public void putAllUsers(GetAllPublicProfilesCommand command, GetAllPublicProfilesOutput output) {
+        getAllUsersTemplate.opsForValue().set(command, output);
+    }
 }

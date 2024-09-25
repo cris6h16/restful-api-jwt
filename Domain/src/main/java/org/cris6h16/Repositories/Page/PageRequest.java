@@ -3,14 +3,14 @@ package org.cris6h16.Repositories.Page;
 public class PageRequest {
     private int page;
     private int pageSize;
-    private SortBy sortBy;
-    private Order direction ;
+    private String sortBy;
+    private boolean isAscending ;
 
-    public PageRequest(int page, int pageSize, SortBy sortBy, Order direction) {
+    public PageRequest(int page, int pageSize, String sortBy, boolean isAscending) {
         this.page = page;
         this.pageSize = pageSize;
         this.sortBy = sortBy;
-        this.direction = direction;
+        this.isAscending = isAscending;
     }
 
     public int getPage() {
@@ -21,11 +21,11 @@ public class PageRequest {
         return pageSize;
     }
 
-    public SortBy getSortBy() {
+    public String getSortBy() {
         return sortBy;
     }
 
-    public Order getDirection() {
-        return direction;
+    public boolean isAscending() {
+        return isAscending;
     }
 }

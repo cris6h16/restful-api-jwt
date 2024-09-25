@@ -1,19 +1,17 @@
 package org.cris6h16.In.Commands;
 
-import org.cris6h16.Repositories.Page.Order;
-import org.cris6h16.Repositories.Page.SortBy;
 
 public class GetAllPublicProfilesCommand {
     private final int page;
     private final int pageSize;
-    private final SortBy sortBy;
-    private final Order sortDirection;
+    private final String sortBy;
+    private final boolean isAscending;
 
-    public GetAllPublicProfilesCommand(int page, int pageSize, SortBy sortBy, Order sortDirection) {
+    public GetAllPublicProfilesCommand(int page, int pageSize, String sortBy, boolean isAscending) {
         this.page = page;
         this.pageSize = pageSize;
         this.sortBy = sortBy;
-        this.sortDirection = sortDirection;
+        this.isAscending = isAscending;
     }
 
     public int getPage() {
@@ -24,11 +22,11 @@ public class GetAllPublicProfilesCommand {
         return pageSize;
     }
 
-    public SortBy getSortBy() {
+    public String getSortBy() {
         return sortBy;
     }
 
-    public Order getSortDirection() {
-        return sortDirection;
+    public boolean getSortDirection() {
+        return isAscending;
     }
 }

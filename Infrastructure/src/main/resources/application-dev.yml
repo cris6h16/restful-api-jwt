@@ -137,6 +137,20 @@ controller:
       request-reset-password: /password/request-reset
       reset-password: /password
       refresh-access-token: /refresh-token
+    user:
+      core: /user
+      account:
+        core: /account
+        request:
+          core: /request
+          delete: /delete
+          update-email: /update-email
+        delete: /delete
+        update:
+          core: /update
+          username: /username
+          password: /password
+          email: /email
 
 web-front:
   path:

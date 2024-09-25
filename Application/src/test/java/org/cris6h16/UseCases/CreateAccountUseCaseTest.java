@@ -1,6 +1,6 @@
 package org.cris6h16.UseCases;
 
-import org.cris6h16.Exceptions.Impls.AlreadyExistException;
+import org.cris6h16.Exceptions.Impls.AlreadyExistsException;
 import org.cris6h16.Exceptions.Impls.UnexpectedException;
 import org.cris6h16.In.Commands.CreateAccountCommand;
 import org.cris6h16.Models.ERoles;
@@ -183,7 +183,7 @@ public class CreateAccountUseCaseTest {
 
         // Act
         assertThatThrownBy(() -> createAccountUseCase.handle(cmd))
-                .isInstanceOf(AlreadyExistException.class)
+                .isInstanceOf(AlreadyExistsException.class)
                 .hasMessage("msg123");
     }
 
@@ -196,7 +196,7 @@ public class CreateAccountUseCaseTest {
 
         // Act
         assertThatThrownBy(() -> createAccountUseCase.handle(cmd))
-                .isInstanceOf(AlreadyExistException.class)
+                .isInstanceOf(AlreadyExistsException.class)
                 .hasMessage("msg000");
     }
 

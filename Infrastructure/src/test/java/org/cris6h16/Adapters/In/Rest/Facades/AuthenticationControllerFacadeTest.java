@@ -75,45 +75,6 @@ class AuthenticationControllerFacadeTest {
                 .hasMessage("dto cannot be null");
     }
 
-    @Test
-    void signup_throwsInvalidAttributeExceptionThenSuccessfullyHandled() {
-        // Arrange
-        CreateAccountDTO dto = new CreateAccountDTO(null, null, null);
-        doThrow(new InvalidAttributeException("msg 123")).when(createAccountPort).handle(any());
-
-        // Act & Assert
-        assertThatThrownBy(() -> authenticationControllerFacade.signup(dto))
-                .isInstanceOf(MyResponseStatusException.class)
-                .hasMessage("msg 123")
-                .hasFieldOrPropertyWithValue("status", HttpStatus.BAD_REQUEST);
-    }
-
-    @Test
-    void signup_throwsAlreadyExistExceptionThenSuccessfullyHandled() {
-        // Arrange
-        CreateAccountDTO dto = new CreateAccountDTO(null, null, null);
-        doThrow(new AlreadyExistException("msg 456")).when(createAccountPort).handle(any());
-
-        // Act & Assert
-        assertThatThrownBy(() -> authenticationControllerFacade.signup(dto))
-                .isInstanceOf(MyResponseStatusException.class)
-                .hasMessage("msg 456")
-                .hasFieldOrPropertyWithValue("status", HttpStatus.CONFLICT);
-    }
-
-    @Test
-    void signup_throwsAnyExceptionThenSuccessfullyHandled() {
-        // Arrange
-        CreateAccountDTO dto = new CreateAccountDTO(null, null, null);
-        doThrow(new RuntimeException("Internal Fail Msg")).when(createAccountPort).handle(any());
-        when(errorMessages.getUnexpectedErrorMessage()).thenReturn("generic fail msg");
-        // Act & Assert
-        assertThatThrownBy(() -> authenticationControllerFacade.signup(dto))
-                .isInstanceOf(MyResponseStatusException.class)
-                .hasMessage("generic fail msg")
-                .hasFieldOrPropertyWithValue("status", HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
     @ParameterizedTest
     @ValueSource(strings = {"password", "username", "email"})
     void signup_anyAttributeNullThenSuccess(String now) { // concern of use case
@@ -145,60 +106,6 @@ class AuthenticationControllerFacadeTest {
     }
 
 
-    @Test
-    void verifyEmail_throwsInvalidAttributeExceptionThenSuccessfullyHandled() {
-        // Arrange
-        Authentication a = mock(Authentication.class);
-        UserDetailsWithId user = mock(UserDetailsWithId.class);
-        when(user.getId()).thenReturn(10L);
-        when(a.getPrincipal()).thenReturn(user);
-        SecurityContextHolder.getContext().setAuthentication(a);
-
-        doThrow(new InvalidAttributeException("msg 123")).when(verifyEmailPort).handle(anyLong());
-
-        // Act & Assert
-        assertThatThrownBy(() -> authenticationControllerFacade.verifyMyEmail())
-                .isInstanceOf(MyResponseStatusException.class)
-                .hasMessage("msg 123")
-                .hasFieldOrPropertyWithValue("status", HttpStatus.BAD_REQUEST);
-    }
-
-    @Test
-    void verifyEmail_throwsNotFoundExceptionThenSuccessfullyHandled() {
-        // Arrange
-        Authentication a = mock(Authentication.class);
-        UserDetailsWithId user = mock(UserDetailsWithId.class);
-        when(user.getId()).thenReturn(10L);
-        when(a.getPrincipal()).thenReturn(user);
-        SecurityContextHolder.getContext().setAuthentication(a);
-
-        doThrow(new NotFoundException("msg 456")).when(verifyEmailPort).handle(anyLong());
-
-        // Act & Assert
-        assertThatThrownBy(() -> authenticationControllerFacade.verifyMyEmail())
-                .isInstanceOf(MyResponseStatusException.class)
-                .hasMessage("msg 456")
-                .hasFieldOrPropertyWithValue("status", HttpStatus.NOT_FOUND);
-    }
-
-    @Test
-    void verifyEmail_throwsAnyExceptionThenSuccessfullyHandled() {
-        // Arrange
-        Authentication a = mock(Authentication.class);
-        UserDetailsWithId user = mock(UserDetailsWithId.class);
-        when(user.getId()).thenReturn(10L);
-        when(a.getPrincipal()).thenReturn(user);
-        SecurityContextHolder.getContext().setAuthentication(a);
-
-        doThrow(new RuntimeException("Internal Exception Msg")).when(verifyEmailPort).handle(anyLong());
-        when(errorMessages.getUnexpectedErrorMessage()).thenReturn("generic fail msg");
-
-        // Act & Assert
-        assertThatThrownBy(() -> authenticationControllerFacade.verifyMyEmail())
-                .isInstanceOf(MyResponseStatusException.class)
-                .hasMessage("generic fail msg")
-                .hasFieldOrPropertyWithValue("status", HttpStatus.INTERNAL_SERVER_ERROR);
-    }
 
     @Test
     void verifyEmail_successfulThenNoContent() {
@@ -226,64 +133,6 @@ class AuthenticationControllerFacadeTest {
         assertThatThrownBy(() -> authenticationControllerFacade.login(dto))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("dto cannot be null");
-    }
-
-    @Test
-    void login_throwsInvalidAttributeExceptionThenBadRequest() {
-        // Arrange
-        LoginDTO dto = new LoginDTO();
-        doThrow(new InvalidAttributeException("msg 123"))
-                .when(loginPort).handle(any(), any());
-
-        // Act & Assert
-        assertThatThrownBy(() -> authenticationControllerFacade.login(dto))
-                .isInstanceOf(MyResponseStatusException.class)
-                .hasMessage("msg 123")
-                .hasFieldOrPropertyWithValue("status", HttpStatus.BAD_REQUEST);
-    }
-
-    @Test
-    void login_throwsInvalidCredentialsExceptionThenUnauthorized() {
-        // Arrange
-        LoginDTO dto = new LoginDTO();
-        doThrow(new InvalidCredentialsException("invalid credentials"))
-                .when(loginPort).handle(any(), any());
-
-        // Act & Assert
-        assertThatThrownBy(() -> authenticationControllerFacade.login(dto))
-                .isInstanceOf(MyResponseStatusException.class)
-                .hasMessage("invalid credentials")
-                .hasFieldOrPropertyWithValue("status", HttpStatus.UNAUTHORIZED);
-    }
-
-    @Test
-    void login_throwsEmailNotVerifiedExceptionThenUnprocessableEntity() {
-        // Arrange
-        LoginDTO dto = new LoginDTO();
-        doThrow(new EmailNotVerifiedException("see you email, we recent it etc etc"))
-                .when(loginPort).handle(any(), any());
-
-        // Act & Assert
-        assertThatThrownBy(() -> authenticationControllerFacade.login(dto))
-                .isInstanceOf(MyResponseStatusException.class)
-                .hasMessage("see you email, we recent it etc etc")
-                .hasFieldOrPropertyWithValue("status", HttpStatus.UNPROCESSABLE_ENTITY);
-    }
-
-    @Test
-    void login_throwsAnyExceptionThenInternalServerError() {
-        // Arrange
-        LoginDTO dto = new LoginDTO();
-        doThrow(new RuntimeException("Internal exception msg..."))
-                .when(loginPort).handle(any(), any());
-        when(errorMessages.getUnexpectedErrorMessage()).thenReturn("generic fail msg");
-
-
-        // Act & Assert
-        assertThatThrownBy(() -> authenticationControllerFacade.login(dto))
-                .isInstanceOf(MyResponseStatusException.class)
-                .hasMessage("generic fail msg")
-                .hasFieldOrPropertyWithValue("status", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Test
@@ -341,19 +190,6 @@ class AuthenticationControllerFacadeTest {
     }
 
     @Test
-    void requestPasswordReset_thrownInvalidAttributeExceptionThenBadRequest() {
-        // Arrange
-        String email = "email";
-        doThrow(new InvalidAttributeException("email invalid etc etc"))
-                .when(requestResetPasswordPort).handle(email);
-
-        assertThatThrownBy(() -> authenticationControllerFacade.requestPasswordReset(email))
-                .isInstanceOf(MyResponseStatusException.class)
-                .hasMessage("email invalid etc etc")
-                .hasFieldOrPropertyWithValue("status", HttpStatus.BAD_REQUEST);
-    }
-
-    @Test
     void requestPasswordReset_thrownNotFoundExceptionThenAccepted() { // when someone requests reset its password, it shouldn't know if that email exists in the system
         // Arrange
         String email = "email";
@@ -368,22 +204,6 @@ class AuthenticationControllerFacadeTest {
         assertThat(res.getBody()).isNull();
     }
 
-    @Test
-    void requestPasswordReset_thrownAnyExceptionThenInternalServerError() {
-        // Arrange
-        String email = "email";
-        doThrow(new NullPointerException("Internal exception msg"))
-                .when(requestResetPasswordPort).handle(email);
-        when(errorMessages.getUnexpectedErrorMessage())
-                .thenReturn("generic fail msg");
-
-
-        // Act & Assert
-        assertThatThrownBy(() -> authenticationControllerFacade.requestPasswordReset(email))
-                .isInstanceOf(MyResponseStatusException.class)
-                .hasMessage("generic fail msg")
-                .hasFieldOrPropertyWithValue("status", HttpStatus.INTERNAL_SERVER_ERROR);
-    }
 
     @Test
     void requestPasswordReset_successful() {
@@ -398,61 +218,6 @@ class AuthenticationControllerFacadeTest {
         verify(requestResetPasswordPort).handle(email);
     }
 
-    @Test
-    void resetPassword_thrownInvalidAttributeExceptionThenBadRequest(){
-        // Arrange
-        Authentication a = mock(Authentication.class);
-        UserDetailsWithId user = mock(UserDetailsWithId.class);
-        when(user.getId()).thenReturn(999L);
-        when(a.getPrincipal()).thenReturn(user);
-        SecurityContextHolder.getContext().setAuthentication(a);
-
-        doThrow(new InvalidAttributeException("invalid something..."))
-                .when(resetPasswordPort).handle(any(), any());
-
-        assertThatThrownBy(()-> authenticationControllerFacade.resetPassword(null))
-                .isInstanceOf(MyResponseStatusException.class)
-                .hasMessage("invalid something...")
-                .hasFieldOrPropertyWithValue("status", HttpStatus.BAD_REQUEST);
-    }
-
-    @Test
-    void resetPassword_thrownNotFoundExceptionThenNotFound(){
-        // Arrange
-        Authentication a = mock(Authentication.class);
-        UserDetailsWithId user = mock(UserDetailsWithId.class);
-        when(user.getId()).thenReturn(999L);
-        when(a.getPrincipal()).thenReturn(user);
-        SecurityContextHolder.getContext().setAuthentication(a);
-
-        doThrow(new NotFoundException("not found etc etc..."))
-                .when(resetPasswordPort).handle(any(), any());
-
-        assertThatThrownBy(()-> authenticationControllerFacade.resetPassword(null))
-                .isInstanceOf(MyResponseStatusException.class)
-                .hasMessage("not found etc etc...")
-                .hasFieldOrPropertyWithValue("status", HttpStatus.NOT_FOUND);
-    }
-
-    @Test
-    void resetPassword_thrownAnyExceptionThenInternalServerError(){
-        // Arrange
-        Authentication a = mock(Authentication.class);
-        UserDetailsWithId user = mock(UserDetailsWithId.class);
-        when(user.getId()).thenReturn(999L);
-        when(a.getPrincipal()).thenReturn(user);
-        SecurityContextHolder.getContext().setAuthentication(a);
-
-        doThrow(new IndexOutOfBoundsException("Internal error in database etc etc"))
-                .when(resetPasswordPort).handle(any(), any());
-        when(errorMessages.getUnexpectedErrorMessage()).thenReturn("generic fail msg");
-
-
-        assertThatThrownBy(()-> authenticationControllerFacade.resetPassword(null))
-                .isInstanceOf(MyResponseStatusException.class)
-                .hasMessage("generic fail msg")
-                .hasFieldOrPropertyWithValue("status", HttpStatus.INTERNAL_SERVER_ERROR);
-    }
 
     @Test
     void resetPassword_success(){

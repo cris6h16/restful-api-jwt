@@ -1,6 +1,6 @@
 package org.cris6h16.UseCases;
 
-import org.cris6h16.Exceptions.Impls.AlreadyExistException;
+import org.cris6h16.Exceptions.Impls.AlreadyExistsException;
 import org.cris6h16.Exceptions.Impls.UnexpectedException;
 import org.cris6h16.In.Commands.CreateAccountCommand;
 import org.cris6h16.In.Ports.CreateAccountPort;
@@ -78,10 +78,10 @@ public class CreateAccountUseCase implements CreateAccountPort {
 
     private void checkDBForDuplicates(UserModel userModel) {
         if (userRepository.existsByUsernameCustom(userModel.getUsername())) {
-            throw new AlreadyExistException(errorMessages.getUsernameAlreadyExistsMessage());
+            throw new AlreadyExistsException(errorMessages.getUsernameAlreadyExistsMessage());
         }
         if (userRepository.existsByEmailCustom(userModel.getEmail())) {
-            throw new AlreadyExistException(errorMessages.getEmailAlreadyExistsMessage());
+            throw new AlreadyExistsException(errorMessages.getEmailAlreadyExistsMessage());
         }
     }
 

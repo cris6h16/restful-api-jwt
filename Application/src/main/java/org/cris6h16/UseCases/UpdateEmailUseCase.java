@@ -22,16 +22,16 @@ public class UpdateEmailUseCase implements UpdateEmailPort {
 
 
     @Override
-    public void handle(Long id, String email) {
-        email = email.trim();
+    public void handle(Long id, String newEmail) {
+        newEmail = newEmail.trim();
         userValidator.validateId(id);
-        userValidator.validateEmail(email);
+        userValidator.validateEmail(newEmail);
 
         userExists(id);
-        userRepository.updateEmailByIdCustom(id, email);
+        userRepository.updateEmailByIdCustom(id, newEmail);
         userRepository.updateEmailVerifiedByIdCustom(id, false);
 
-        emailService.sendVerificationEmail(id, email);
+        emailService.sendVerificationEmail(id, newEmail);
     }
 
     private void userExists(Long id) {

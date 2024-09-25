@@ -19,14 +19,14 @@ public class UpdateUsernameUseCase implements UpdateUsernamePort {
 
 
     @Override
-    public void handle(Long id, String username) {
-        username = username.trim();
+    public void handle(Long id, String newUsername) {
+        newUsername = newUsername.trim();
 
         userValidator.validateId(id);
-        userValidator.validateUsername(username);
+        userValidator.validateUsername(newUsername);
 
         userExists(id);
-        userRepository.updateUsernameByIdCustom(id, username);
+        userRepository.updateUsernameByIdCustom(id, newUsername);
     }
 
     private void userExists(Long id) {

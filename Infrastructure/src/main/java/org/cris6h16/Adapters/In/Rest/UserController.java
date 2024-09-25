@@ -1,6 +1,7 @@
 package org.cris6h16.Adapters.In.Rest;
 
 import org.cris6h16.Adapters.In.Rest.DTOs.PublicProfileDTO;
+import org.cris6h16.Adapters.In.Rest.DTOs.UpdateMyPasswordDTO;
 import org.cris6h16.Adapters.In.Rest.Facades.UserControllerFacade;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -48,8 +49,8 @@ public class UserController {
                     "${controller.path.user.account.update.password}",
             consumes = "application/json"
     )
-    public ResponseEntity<Void> updateMyPassword(@RequestBody String newPassword) {
-        return userControllerFacade.updateMyPassword(newPassword);
+    public ResponseEntity<Void> updateMyPassword(@RequestBody UpdateMyPasswordDTO dto) {
+        return userControllerFacade.updateMyPassword(dto);
     }
 
     @PostMapping(

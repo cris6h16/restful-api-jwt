@@ -59,7 +59,6 @@ class AuthenticationControllerFacadeTest {
                 requestResetPasswordPort,
                 resetPasswordPort,
                 refreshAccessTokenPort,
-                errorMessages,
                 jwtUtilsImpl,
                 "refreshTokenCookieName",
                 "refreshTokenCookiePath",

@@ -1,8 +1,11 @@
 package org.cris6h16.Adapters.In.Rest.DTOs;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import org.cris6h16.In.Results.GetPublicProfileOutput;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -10,7 +13,9 @@ import java.util.stream.Collectors;
 
 
 @EqualsAndHashCode
-public class PublicProfileDTO {
+@NoArgsConstructor
+@JsonSerialize
+public class PublicProfileDTO implements Serializable {
 
     private String id;
     private String username;

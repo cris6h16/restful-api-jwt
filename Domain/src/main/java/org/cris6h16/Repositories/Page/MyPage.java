@@ -4,16 +4,13 @@ import java.util.List;
 public class MyPage<T>{
 
     private final int totalPages;
-    /**
-     * total elements in the current page ( useful when is the last page )
-     */
-    private final long pageElements;
+    private final long totalElementsAll;
     private final MyPageable pageRequest;
     private final List<T> items;
 
-    public MyPage(int totalPages, long pageElements, MyPageable pageRequest, List<T> items) {
+    public MyPage(int totalPages, long totalElementsAll, MyPageable pageRequest, List<T> items) {
         this.totalPages = totalPages;
-        this.pageElements = pageElements;
+        this.totalElementsAll = totalElementsAll;
         this.pageRequest = pageRequest;
         this.items = items;
     }
@@ -22,8 +19,8 @@ public class MyPage<T>{
         return totalPages;
     }
 
-    public long getPageElements() {
-        return pageElements;
+    public long getTotalElementsAll() {
+        return totalElementsAll;
     }
 
     public MyPageable getPageRequest() {

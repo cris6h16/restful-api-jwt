@@ -96,15 +96,15 @@ public class UserControllerFacade {
 
         GetAllPublicProfilesCommand cmd = _createCmd(pageable);
         GetAllPublicProfilesOutput output = _getAllPublicProfiles(cmd);
-        return ResponseEntity.ok(_createPageImpl(output));
+        return ResponseEntity.ok(_createPageImpl(output, pageable));
     }
 
-    private Page<PublicProfileDTO> _createPageImpl(GetAllPublicProfilesOutput output) {
+    private Page<PublicProfileDTO> _createPageImpl(GetAllPublicProfilesOutput output, Pageable pageable) {
         List<PublicProfileDTO> profiles = output.getItems().stream()
                 .map(PublicProfileDTO::new) // GetPublicProfileOutput --> PublicProfileDTO
                 .toList();
 
-        return new PageImpl<>(profiles);
+        return new PageImpl<>(profiles, pageable, output.getTotalElements());
     }
 
     private GetAllPublicProfilesCommand _createCmd(Pageable springPageable) {
@@ -134,8 +134,10 @@ public class UserControllerFacade {
     // caching applied
     private GetAllPublicProfilesOutput _getAllPublicProfiles(GetAllPublicProfilesCommand cmd) {
         GetAllPublicProfilesOutput output = cacheService.getAllUsers(cmd);
-        if (output == null) output = getAllPublicProfilesPort.handle(cmd);
-        cacheService.putAllUsers(cmd, output);
+        if (output == null) {
+            output = getAllPublicProfilesPort.handle(cmd);
+            cacheService.putAllUsers(cmd, output);
+        }
         return output;
     }
 }

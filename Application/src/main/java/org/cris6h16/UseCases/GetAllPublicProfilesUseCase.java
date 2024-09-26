@@ -6,6 +6,7 @@ import org.cris6h16.In.Ports.GetAllPublicProfilesPort;
 import org.cris6h16.In.Results.GetAllPublicProfilesOutput;
 import org.cris6h16.In.Results.GetPublicProfileOutput;
 import org.cris6h16.Models.UserModel;
+import org.cris6h16.Repositories.Page.MyPage;
 import org.cris6h16.Repositories.Page.MyPageable;
 import org.cris6h16.Repositories.UserRepository;
 
@@ -25,24 +26,23 @@ public class GetAllPublicProfilesUseCase implements GetAllPublicProfilesPort {
         return toOutput(findPage(cmd), cmd);
     }
 
-    private GetAllPublicProfilesOutput toOutput(Page<UserModel> page, GetAllPublicProfilesCommand cmd) {
+    private GetAllPublicProfilesOutput toOutput(MyPage<UserModel> page, GetAllPublicProfilesCommand cmd) {
         List<GetPublicProfileOutput> profiles = page.getItems().stream()
                 .map(this::toPublicProfileOutput)
                 .toList();
 
-        return new GetAllPublicProfilesOutput(profiles, page, cmd);
+        return new GetAllPublicProfilesOutput(page.getTotalElementsAll(), profiles);
     }
 
     private GetPublicProfileOutput toPublicProfileOutput(UserModel userModel) {
         return new GetPublicProfileOutput(userModel);
     }
 
-    private Page<UserModel> findPage(GetAllPublicProfilesCommand cmd) {
+    private MyPage<UserModel> findPage(GetAllPublicProfilesCommand cmd) {
         MyPageable req = new MyPageable(
-                cmd.getPage(),
+                cmd.getPageNumber(),
                 cmd.getPageSize(),
-                cmd.getSortBy(),
-                cmd.getSortDirection()
+                cmd.getMySortOrders()
         );
         return userRepository.findPage(req);
     }

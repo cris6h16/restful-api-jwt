@@ -15,4 +15,16 @@ public class GetAllPublicProfilesCommand {
         this.pageSize = pageSize;
         this.mySortOrders = mySortOrders;
     }
+
+    public int getPageNumber() {
+        return pageNumber;
+    }
+
+    public int getPageSize() {
+        return pageSize;
+    }
+
+    public List<MySortOrder> getMySortOrders() {
+        return mySortOrders;
+    }
 }

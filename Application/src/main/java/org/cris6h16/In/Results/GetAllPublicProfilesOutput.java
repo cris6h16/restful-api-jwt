@@ -8,34 +8,19 @@ import org.cris6h16.Repositories.Page.MyPageable;
 import java.util.List;
 
 public class GetAllPublicProfilesOutput {
-    /**
-     * total elements in the current page ( useful when is the last page )
-     */
-    private final long pageElements;
+    private final long totalElements;
     private final List<GetPublicProfileOutput> items;
-    private final GetAllPublicProfilesCommand input;
-    private final int totalPages;
 
-    public GetAllPublicProfilesOutput(long pageElements, List<GetPublicProfileOutput> items, GetAllPublicProfilesCommand input, int totalPages) {
-        this.pageElements = pageElements;
+    public GetAllPublicProfilesOutput(long totalElements, List<GetPublicProfileOutput> items) {
+        this.totalElements = totalElements;
         this.items = items;
-        this.input = input;
-        this.totalPages = totalPages;
     }
 
-    public long getPageElements() {
-        return pageElements;
+    public long getTotalElements() {
+        return totalElements;
     }
 
     public List<GetPublicProfileOutput> getItems() {
         return items;
-    }
-
-    public GetAllPublicProfilesCommand getInput() {
-        return input;
-    }
-
-    public int getTotalPages() {
-        return totalPages;
     }
 }

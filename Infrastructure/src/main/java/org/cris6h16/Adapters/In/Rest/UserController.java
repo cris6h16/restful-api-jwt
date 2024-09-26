@@ -92,7 +92,7 @@ public class UserController {
     public ResponseEntity<Page<PublicProfileDTO>> getAllUsers(@PageableDefault(
             size = 50,
             sort = {"id"},
-            direction = Sort.Direction.ASC,
+            direction = Sort.Direction.DESC,
             page = 0
     ) Pageable pageable) {
         return userControllerFacade.getAllUsers(pageable);

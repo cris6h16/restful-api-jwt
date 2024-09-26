@@ -20,10 +20,10 @@ import static org.cris6h16.Adapters.Out.SpringData.Mapper.Pagination.toSpringPag
 import static org.cris6h16.Adapters.Out.SpringData.Mapper.Pagination.toUserModelPage;
 
 @Repository
-public class UserJpaRepositoryImpl implements UserRepository {
+public class UserRepositoryImpl implements UserRepository {
     private final UserJpaRepository userJpaRepository;
 
-    public UserJpaRepositoryImpl(UserJpaRepository userJpaRepository) {
+    public UserRepositoryImpl(UserJpaRepository userJpaRepository) {
         this.userJpaRepository = userJpaRepository;
     }
 

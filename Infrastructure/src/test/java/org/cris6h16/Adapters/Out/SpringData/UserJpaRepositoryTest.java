@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -22,12 +24,12 @@ public class UserJpaRepositoryTest {
     private UserRepository userRepository;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
 //        userRepository.deleteAll();
     }
 
     @Test
-    void updateEmailVerifiedByIdCustom() {
+    public void updateEmailVerifiedByIdCustom() {
         // Arrange
         userRepository.save(new UserModel.Builder()
                 .setUsername("cris6h16")
@@ -36,7 +38,9 @@ public class UserJpaRepositoryTest {
                 .setActive(true)
                 .setEmailVerified(true)
                 .setRoles(Set.of(ERoles.ROLE_USER))
-                .setLastModified(123456789L)
+                .setLastModified(Instant.now()
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDateTime())  // Removes timezone info
                 .build()
         );
 

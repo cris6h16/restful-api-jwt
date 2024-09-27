@@ -24,6 +24,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -33,7 +35,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
-class UserControllerFacadeTest {
+public class UserControllerFacadeTest {
 
     @Mock
     private RequestDeleteAccountPort requestDeleteAccountPort;
@@ -58,13 +60,13 @@ class UserControllerFacadeTest {
     private UserControllerFacade userControllerFacade;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         MockitoAnnotations.openMocks(this);
     }
 
 
     @Test
-    void requestDeleteMyAccount_success() {
+    public void requestDeleteMyAccount_success() {
         // Arrange
         var principalMocked = mockPrincipalId(17L);
 
@@ -80,7 +82,7 @@ class UserControllerFacadeTest {
 
 
     @Test
-    void deleteMyAccount_success() {
+    public void deleteMyAccount_success() {
         // Arrange
         var principalMocked = mockPrincipalId(756L);
 
@@ -95,7 +97,7 @@ class UserControllerFacadeTest {
     }
 
     @Test
-    void updateMyUsername_success() {
+    public void updateMyUsername_success() {
         // Arrange
         String newUsername = "cris6h16";
         var principalMocked = mockPrincipalId(756L);
@@ -111,7 +113,7 @@ class UserControllerFacadeTest {
     }
 
     @Test
-    void updateMyPassword_success() {
+    public void updateMyPassword_success() {
         // Arrange
         UpdateMyPasswordDTO dto = new UpdateMyPasswordDTO("oldPassword", "newPassword");
         var principalMocked = mockPrincipalId(666L);
@@ -127,7 +129,7 @@ class UserControllerFacadeTest {
     }
 
     @Test
-    void requestUpdateMyEmail_success() {
+    public void requestUpdateMyEmail_success() {
         // Arrange
         String newEmail = "cristianmherrera21@gmail.com";
         var principalMocked = mockPrincipalId(123L);
@@ -143,7 +145,7 @@ class UserControllerFacadeTest {
     }
 
     @Test
-    void updateMyEmail_success() {
+    public void updateMyEmail_success() {
         // Arrange
         String newEmail = "cristianmherrera21@gmail.com";
         var principalMocked = mockPrincipalId(600L);
@@ -159,7 +161,7 @@ class UserControllerFacadeTest {
     }
 
     @Test
-    void getMyAccount_success() {
+    public void getMyAccount_success() {
         // Arrange
         UserModel user = new UserModel.Builder()
                 .setId(97123L)
@@ -168,7 +170,10 @@ class UserControllerFacadeTest {
                 .setPassword("12345678")
                 .setRoles(Set.of(ERoles.ROLE_USER))
                 .setActive(true)
-                .setLastModified(System.currentTimeMillis())
+                .setLastModified(Instant.now()
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDateTime() // Removes timezone info
+                )
                 .setEmailVerified(true)
                 .build();
         GetPublicProfileOutput output = new GetPublicProfileOutput(user);
@@ -197,7 +202,7 @@ class UserControllerFacadeTest {
     }
 
     @Test
-    void getAllUsers_pageableNullThenIllegalArgumentException() {
+    public void getAllUsers_pageableNullThenIllegalArgumentException() {
         // Arrange
         Pageable pageable = null;
 
@@ -208,7 +213,7 @@ class UserControllerFacadeTest {
     }
 
     @Test
-    void getAllUsers_cacheHitThenDoesntCallThePort() {
+    public void getAllUsers_cacheHitThenDoesntCallThePort() {
         // Arrange
         Pageable pageable = createPageable();
         GetAllPublicProfilesOutput output = mock(GetAllPublicProfilesOutput.class);
@@ -226,7 +231,7 @@ class UserControllerFacadeTest {
     }
 
     @Test
-    void getAllUsers_cacheMissThenCallsThePortAndPutInCacheAndSuccessful() {
+    public void getAllUsers_cacheMissThenCallsThePortAndPutInCacheAndSuccessful() {
         // Arrange;
         long inThisPageCount = 8L;
         long mockTotalElementsAllCount = 18L;
@@ -298,7 +303,9 @@ class UserControllerFacadeTest {
                     .setPassword("password" + i)
                     .setRoles(Set.of(ERoles.ROLE_USER))
                     .setActive(true)
-                    .setLastModified(123456789L)
+                    .setLastModified(Instant.now()
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDateTime())  // Removes timezone info
                     .setEmailVerified(true)
                     .build();
 

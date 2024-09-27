@@ -1,6 +1,7 @@
 package org.cris6h16.UseCases;
 
 import org.cris6h16.Exceptions.Impls.EmailNotVerifiedException;
+import org.cris6h16.Exceptions.Impls.InvalidCredentialsException;
 import org.cris6h16.Exceptions.Impls.NotFoundException;
 import org.cris6h16.In.Results.LoginOutput;
 import org.cris6h16.Models.ERoles;
@@ -80,26 +81,26 @@ public class LoginUseCaseTest {
     }
 
     @Test
-    void handle_userNotFoundThenNotFoundException() {
+    void handle_userNotFoundThenInvalidCredentialsException() {
         // Arrange
         String password = "pass";
         String email = "email";
 
         when(userRepository.findByEmail(email))
                 .thenReturn(Optional.empty());
-        when(errorMessages.getUserNotFoundMessage())
-                .thenReturn("not found msg123");
+        when(errorMessages.getInvalidCredentialsMessage())
+                .thenReturn("your crdentiaslare worng etc ect etc");
 
         // Act & Assert
         assertThatThrownBy(() -> loginUseCase.handle(email, password))
-                .isInstanceOf(NotFoundException.class)
-                .hasMessage("not found msg123");
+                .isInstanceOf(InvalidCredentialsException.class)
+                .hasMessage("your crdentiaslare worng etc ect etc");
 
         verify(userRepository).findByEmail(email);
     }
 
     @Test
-    void handle_userIsNotActiveThenNotFoundException() {
+    void handle_userIsNotActiveThenInvalidCredentialsException() {
         // Arrange
         String password = "pass";
         String email = "email";
@@ -107,19 +108,19 @@ public class LoginUseCaseTest {
 
         when(userRepository.findByEmail(email))
                 .thenReturn(Optional.of(model));
-        when(errorMessages.getUserNotFoundMessage())
-                .thenReturn("not found msg456");
+        when(errorMessages.getInvalidCredentialsMessage())
+                .thenReturn("you credentials re wrogn etc etc ");
 
         // Act & Assert
         assertThatThrownBy(() -> loginUseCase.handle(email, password))
-                .isInstanceOf(NotFoundException.class)
-                .hasMessage("not found msg456");
+                .isInstanceOf(InvalidCredentialsException.class)
+                .hasMessage("you credentials re wrogn etc etc ");
 
-        verify(errorMessages).getUserNotFoundMessage();
+        verify(errorMessages).getInvalidCredentialsMessage();
     }
 
     @Test
-    void handle_passwordNotMatchThenNotFoundException() {
+    void handle_passwordNotMatchThenInvalidCredentialsException() {
         // Arrange
         String password = "pass";
         String email = "email";
@@ -129,16 +130,16 @@ public class LoginUseCaseTest {
                 .thenReturn(Optional.of(model));
         when(passwordEncoder.matches(password, "encoded"))
                 .thenReturn(false);
-        when(errorMessages.getUserNotFoundMessage())
-                .thenReturn("not found msg789");
+        when(errorMessages.getInvalidCredentialsMessage())
+                .thenReturn("your credentials are wrong etc etc ");
 
         // Act & Assert
         assertThatThrownBy(() -> loginUseCase.handle(email, password))
-                .isInstanceOf(NotFoundException.class)
-                .hasMessage("not found msg789");
+                .isInstanceOf(InvalidCredentialsException.class)
+                .hasMessage("your credentials are wrong etc etc ");
 
         verify(passwordEncoder).matches(password, "encoded");
-        verify(errorMessages).getUserNotFoundMessage();
+        verify(errorMessages).getInvalidCredentialsMessage();
     }
 
 

@@ -42,11 +42,11 @@ public class JwtAuthenticationFilterIntegrationTest {
     @MockBean
     private CustomUserDetailsService userDetailsService;
 
-    @Value("${jwt.expiration.token.access.cookie.name}")
+    @Value("${jwt.token.access.cookie.name}")
     private String accessTokenCookieName;
 
     @Test
-    void whenRequestWithValidJwt_thenAuthenticated() throws Exception {
+    public void whenRequestWithValidJwt_thenAuthenticated() throws Exception {
         // Arrange
         UserDetailsWithId userDetails = mock(UserDetailsWithId.class);
         String validJwt = "validJwt";
@@ -76,7 +76,7 @@ public class JwtAuthenticationFilterIntegrationTest {
     }
 
     @Test
-    void whenRequestWithInvalidJwt_thenUnauthenticated() throws Exception {
+    public void whenRequestWithInvalidJwt_thenUnauthenticated() throws Exception {
         // Arrange
         String invalidJwt = "invalidJwtToken";
         Cookie accessTokenCookie = new Cookie(accessTokenCookieName, invalidJwt);

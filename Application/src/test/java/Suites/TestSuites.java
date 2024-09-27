@@ -5,7 +5,8 @@ import org.junit.platform.suite.api.Suite;
 
 @Suite
 @SelectPackages({
-        "org.cris6h16.UseCases"
+        "org.cris6h16.UseCases",
+        "org.cris6h16.Utils"
 })
 public class TestSuites {
 }

@@ -4,8 +4,7 @@ import org.cris6h16.Adapters.In.Rest.DTOs.CreateAccountDTO;
 import org.cris6h16.Adapters.In.Rest.DTOs.LoginDTO;
 import org.cris6h16.Config.SpringBoot.Security.UserDetails.UserDetailsWithId;
 import org.cris6h16.Config.SpringBoot.Utils.JwtUtilsImpl;
-import org.cris6h16.Exceptions.Impls.*;
-import org.cris6h16.Exceptions.Impls.Rest.MyResponseStatusException;
+import org.cris6h16.Exceptions.Impls.NotFoundException;
 import org.cris6h16.In.Ports.*;
 import org.cris6h16.In.Results.LoginOutput;
 import org.cris6h16.Utils.ErrorMessages;
@@ -28,7 +27,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-class AuthenticationControllerFacadeTest {
+public class AuthenticationControllerFacadeTest {
     @Mock
     private CreateAccountPort createAccountPort;
     @Mock
@@ -103,7 +102,6 @@ class AuthenticationControllerFacadeTest {
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("Principal is not an instance of UserDetailsWithId");
     }
-
 
 
     @Test
@@ -219,7 +217,7 @@ class AuthenticationControllerFacadeTest {
 
 
     @Test
-    void resetPassword_success(){
+    void resetPassword_success() {
         // Arrange
         Authentication a = mock(Authentication.class);
         UserDetailsWithId user = mock(UserDetailsWithId.class);
@@ -228,7 +226,7 @@ class AuthenticationControllerFacadeTest {
         SecurityContextHolder.getContext().setAuthentication(a);
 
         // Act
-        ResponseEntity<Void> res =  authenticationControllerFacade.resetPassword(null);
+        ResponseEntity<Void> res = authenticationControllerFacade.resetPassword(null);
 
         // Assert
         assertThat(res.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
@@ -236,7 +234,7 @@ class AuthenticationControllerFacadeTest {
     }
 
     @Test
-    void refreshAccessToken_success(){
+    void refreshAccessToken_success() {
         // Arrange
         Authentication a = mock(Authentication.class);
         UserDetailsWithId user = mock(UserDetailsWithId.class);

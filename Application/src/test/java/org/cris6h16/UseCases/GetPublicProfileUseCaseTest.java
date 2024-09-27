@@ -13,6 +13,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.Optional;
 import java.util.Set;
 
@@ -83,7 +85,9 @@ public class GetPublicProfileUseCaseTest {
                 Set.of(ERoles.ROLE_USER),
                 Boolean.TRUE,
                 Boolean.TRUE,
-                12345678L
+                Instant.ofEpochMilli(System.currentTimeMillis())
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDateTime()  // Removes timezone info
         );
 
         when(userRepository.findById(id))

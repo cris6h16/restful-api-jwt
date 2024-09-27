@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.cris6h16.Models.ERoles;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -72,8 +73,7 @@ public class UserEntity {
 
     @Column(
             nullable = false,
-            name = "last_modified",
-            columnDefinition = "BIGINT DEFAULT 0"
+            name = "last_modified"
     )
     private LocalDateTime lastModified;
 

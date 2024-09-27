@@ -38,15 +38,20 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     private void _avoidUpdatesWithTheEntireModel(UserModel userModel) {
-        if (userJpaRepository.existsById(userModel.getId())) {
-            throw new DuplicateKeyException("Id already exists: " + userModel.getId());
+        Long id = userModel.getId();
+        String username = userModel.getUsername();
+        String email = userModel.getEmail();
+
+        if (id != null && userJpaRepository.existsById(id)) {
+            throw new DuplicateKeyException("Id already exists: " + id);
         }
 
-        if (userJpaRepository.existsByUsername(userModel.getUsername())) {
-            throw new DuplicateKeyException("Username already exists: " + userModel.getUsername());
+        if (username != null && userJpaRepository.existsByUsername(username)) {
+            throw new DuplicateKeyException("Username already exists: " + username);
         }
-        if (userJpaRepository.existsByEmail(userModel.getEmail())) {
-            throw new DuplicateKeyException("Email already exists: " + userModel.getEmail());
+
+        if (email != null && userJpaRepository.existsByEmail(email)) {
+            throw new DuplicateKeyException("Email already exists: " + email);
         }
     }
 

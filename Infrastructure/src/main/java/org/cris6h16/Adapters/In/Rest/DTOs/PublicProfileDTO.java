@@ -35,13 +35,6 @@ public class PublicProfileDTO implements Serializable {
                .collect(Collectors.joining(", "));
         this.active = output.getActive();
         this.emailVerified = output.getEmailVerified();
-        this.lastModified = formatDate(output.getLastModified());
-    }
-
-    private String formatDate(Long epochInstant) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
-        return Instant.ofEpochMilli(epochInstant)
-                .atZone(ZoneId.systemDefault())
-                .format(formatter);
+        this.lastModified = String.valueOf(output.getLastModified());
     }
 }

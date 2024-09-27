@@ -4,6 +4,7 @@ import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.cris6h16.Config.SpringBoot.Utils.JwtUtilsImpl;
 import org.cris6h16.Services.EmailService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -29,16 +30,35 @@ public class EmailServiceImpl implements EmailService {
     private final long requestUpdateEmailTokenTimeLive;
     private final String updateEmailLinkTemplate;
 
-    public EmailServiceImpl(SpringTemplateEngine templateEngine, JavaMailSender mailSender, JwtUtilsImpl jwtUtils, long emailVerificationTokenTimeLive, long requestDeleteAccountTokenTimeLive, String emailVerificationLink, String resetPasswordLink, long requestPasswordTokenTimeLive, String deleteAccountLink, long requestUpdateEmailTokenTimeLive, String updateEmailLinkTemplate) {
+    // todo: refactor this
+    public EmailServiceImpl(SpringTemplateEngine templateEngine,
+                            JavaMailSender mailSender,
+                            JwtUtilsImpl jwtUtils,
+                            @Value("${jwt.token.access.request.email.verification.secs}")
+                            long emailVerificationTokenTimeLive,
+                            @Value("${jwt.token.access.request.email.delete-account.secs}")
+                            long requestDeleteAccountTokenTimeLive,
+                            @Value("${web-front.path.email-verification}")
+                            String emailVerificationLinkTemplate,
+                            @Value("${web-front.path.reset-password}")
+                            String resetPasswordLinkTemplate,
+                            @Value("${jwt.token.access.request.email.reset.password.secs}")
+                            long requestResetPasswordTokenTimeLive,
+                            @Value("${web-front.path.delete-account}")
+                            String deleteAccountLinkTemplate,
+                            @Value("${jwt.token.access.request.email.update-email.secs}")
+                            long requestUpdateEmailTokenTimeLive,
+                            @Value("${web-front.path.update-email}")
+                            String updateEmailLinkTemplate) {
         this.templateEngine = templateEngine;
         this.mailSender = mailSender;
         this.jwtUtils = jwtUtils;
         this.emailVerificationTokenTimeLive = emailVerificationTokenTimeLive;
         this.requestDeleteAccountTokenTimeLive = requestDeleteAccountTokenTimeLive;
-        this.emailVerificationLinkTemplate = emailVerificationLink;
-        this.resetPasswordLinkTemplate = resetPasswordLink;
-        this.requestPasswordTokenTimeLive = requestPasswordTokenTimeLive;
-        this.deleteAccountLinkTemplate = deleteAccountLink;
+        this.emailVerificationLinkTemplate = emailVerificationLinkTemplate;
+        this.resetPasswordLinkTemplate = resetPasswordLinkTemplate;
+        this.requestPasswordTokenTimeLive = requestResetPasswordTokenTimeLive;
+        this.deleteAccountLinkTemplate = deleteAccountLinkTemplate;
         this.requestUpdateEmailTokenTimeLive = requestUpdateEmailTokenTimeLive;
         this.updateEmailLinkTemplate = updateEmailLinkTemplate;
     }

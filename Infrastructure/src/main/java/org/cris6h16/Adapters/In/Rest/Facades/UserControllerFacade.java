@@ -13,6 +13,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +24,7 @@ import static org.cris6h16.Repositories.Page.MySortOrder.MyDirection.ASC;
 import static org.cris6h16.Repositories.Page.MySortOrder.MyDirection.DESC;
 
 
+@Component
 public class UserControllerFacade {
 
     private final RequestDeleteAccountPort requestDeleteAccountPort;
@@ -35,7 +37,15 @@ public class UserControllerFacade {
     private final GetAllPublicProfilesPort getAllPublicProfilesPort;
     private final CacheService cacheService;
 
-    public UserControllerFacade(RequestDeleteAccountPort requestDeleteAccountPort, DeleteAccountPort deleteAccountPort, UpdateUsernamePort updateUsernamePort, UpdatePasswordPort updatePasswordPort, UpdateEmailPort updateEmailPort, RequestUpdateEmailPort requestUpdateEmailPort, GetPublicProfilePort getPublicProfilePort, GetAllPublicProfilesPort getAllPublicProfilesPort, CacheService cacheService) {
+    public UserControllerFacade(RequestDeleteAccountPort requestDeleteAccountPort,
+                                DeleteAccountPort deleteAccountPort,
+                                UpdateUsernamePort updateUsernamePort,
+                                UpdatePasswordPort updatePasswordPort,
+                                UpdateEmailPort updateEmailPort,
+                                RequestUpdateEmailPort requestUpdateEmailPort,
+                                GetPublicProfilePort getPublicProfilePort,
+                                GetAllPublicProfilesPort getAllPublicProfilesPort,
+                                CacheService cacheService) {
         this.requestDeleteAccountPort = requestDeleteAccountPort;
         this.deleteAccountPort = deleteAccountPort;
         this.updateUsernamePort = updateUsernamePort;

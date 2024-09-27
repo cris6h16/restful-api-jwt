@@ -22,7 +22,7 @@ public class UserController {
 
     @PostMapping(
             value = "${controller.path.user.account.core}" +
-                    "${controller.path.user.account.request-delete}"
+                    "${controller.path.user.account.request.delete}"
     )
     public ResponseEntity<Void> requestDeleteMyAccount() {
         return userControllerFacade.requestDeleteMyAccount();
@@ -86,7 +86,8 @@ public class UserController {
     }
 
     @GetMapping(
-            value = "${controller.path.user.account.core}",
+            value = "${controller.path.user.account.core}" +
+                    "${controller.path.user.account.all.core}",
             produces = "application/json"
     )
     public ResponseEntity<Page<PublicProfileDTO>> getAllUsers(@PageableDefault(

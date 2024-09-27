@@ -13,6 +13,8 @@ import org.cris6h16.Utils.JwtUtils;
 import org.cris6h16.Services.MyPasswordEncoder;
 import org.cris6h16.Utils.UserValidator;
 
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.Set; // todo:add logger
 
 
@@ -47,7 +49,9 @@ public class CreateAccountUseCase implements CreateAccountPort {
                 .setRoles(roles)
                 .setActive(true)
                 .setEmailVerified(false)
-                .setLastModified(System.currentTimeMillis())
+                .setLastModified(Instant.ofEpochMilli(System.currentTimeMillis())
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDateTime())
                 .build();
 
         checkDBForDuplicates(userModel);

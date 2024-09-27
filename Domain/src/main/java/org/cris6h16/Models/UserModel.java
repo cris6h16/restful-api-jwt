@@ -1,5 +1,6 @@
 package org.cris6h16.Models;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 
 public class UserModel {
@@ -10,7 +11,7 @@ public class UserModel {
     private Set<ERoles> roles;
     private Boolean active;
     private Boolean emailVerified;
-    private Long lastModified;
+    private LocalDateTime  lastModified;
 
     public UserModel(Long id,
                      String username,
@@ -19,7 +20,7 @@ public class UserModel {
                      Set<ERoles> roles,
                      Boolean active,
                      Boolean emailVerified,
-                     Long lastModified) {
+                     LocalDateTime lastModified) {
         this.id = id;
         this.username = username;
         this.password = password;
@@ -62,7 +63,7 @@ public class UserModel {
         return emailVerified;
     }
 
-    public Long getLastModified() {
+    public LocalDateTime  getLastModified() {
         return lastModified;
     }
 
@@ -94,7 +95,7 @@ public class UserModel {
         this.emailVerified = emailVerified;
     }
 
-    public void setLastModified(Long lastModified) {
+    public void setLastModified(LocalDateTime  lastModified) {
         this.lastModified = lastModified;
     }
 
@@ -110,7 +111,7 @@ public class UserModel {
         private Set<ERoles> roles;
         private Boolean active;
         private Boolean emailVerified;
-        private Long lastModified;
+        private LocalDateTime  lastModified;
 
         public Builder setId(Long id) {
             this.id = id;
@@ -147,7 +148,7 @@ public class UserModel {
             return this;
         }
 
-        public Builder setLastModified(Long lastModified) {
+        public Builder setLastModified(LocalDateTime  lastModified) {
             this.lastModified = lastModified;
             return this;
         }

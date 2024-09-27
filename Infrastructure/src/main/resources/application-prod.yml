@@ -18,7 +18,7 @@ spring:
   jpa:
     show-sql: false
     hibernate:
-      ddl-auto: update
+      ddl-auto: update # todo: in docker file make a stage for create, later update for prod
     properties:
       hibernate:
         format_sql: true
@@ -65,17 +65,24 @@ logging:
   file:
     path: /var/log/restful-api-jwt.log
 
+
 jwt:
   secret:
-    key: ${JWT_SECRET_KEY}
-  expiration:
-    token:
-      refresh:
+    key: 123456789987654321123456789987654321123456789
+  token:
+    refresh:
+      expiration:
         secs: 1296000 # 15 days
-      access:
+      cookie:
+        name: refreshToken
+        path: /auth/refresh-token
+    access:
+      expiration:
         secs: 1800 # 30 minutes
-        cookie:
-          name: accessToken
+      cookie:
+        name: accessToken
+        path: /
+
       request:
         email:
           verification:
@@ -85,7 +92,15 @@ jwt:
               secs: 1800 # 30 minutes
 error:
   messages:
+    system:
+      unexpected: "Unexpected error, please try again later"
     user:
+      not-found: "User not found"
+      email-not-verified: "Email not verified, please check your email"
+      updating-password:
+        password-not-match: "Your current password not matches"
+      login:
+        invalid-credentials: "Invalid credentials"
       unique:
         username: "Username already exists"
         email: "Email already exists"
@@ -101,3 +116,34 @@ error:
         roles:
           empty: "A user must have at least one role"
 
+
+controller:
+  path:
+    core: /api/v1
+    authentication:
+      core: /auth
+      signup: /signup
+      login: /login
+      verify-email: /verify-email
+      request-reset-password: /password/request-reset
+      reset-password: /password
+      refresh-access-token: /refresh-token
+    user:
+      core: /user
+      account:
+        core: /account
+        request:
+          core: /request
+          delete: /delete
+          update-email: /update-email
+        delete: /delete
+        update:
+          core: /update
+          username: /username
+          password: /password
+          email: /email
+
+web-front:
+  path:
+    email-verification: frontend.com/auth/verification-email?token={token}
+    reset-password: frontend.com/auth/reset-password?token={token}

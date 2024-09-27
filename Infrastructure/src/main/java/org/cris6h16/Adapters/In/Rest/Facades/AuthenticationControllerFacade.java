@@ -10,6 +10,7 @@ import org.cris6h16.In.Ports.*;
 import org.cris6h16.In.Results.LoginOutput;
 import org.cris6h16.Models.ERoles;
 import org.cris6h16.Utils.ErrorMessages;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -45,9 +46,13 @@ public class AuthenticationControllerFacade {
                                           ResetPasswordPort resetPasswordPort,
                                           RefreshAccessTokenPort refreshAccessTokenPort,
                                           JwtUtilsImpl jwtUtilsImpl,
+                                          @Value("${jwt.token.refresh.cookie.name}")
                                           String refreshTokenCookieName,
+                                          @Value("${jwt.token.refresh.cookie.path}")
                                           String refreshTokenCookiePath,
+                                          @Value("${jwt.token.access.cookie.name}")
                                           String accessTokenCookieName,
+                                          @Value("${jwt.token.access.cookie.path}")
                                           String accessTokenCookiePath) {
         this.createAccountPort = createAccountPort;
         this.verifyEmailPort = verifyEmailPort;

@@ -6,7 +6,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/restful-api-jwt
     driver-class-name: org.postgresql.Driver
-    username: postgres
+    username: cris6h16
     password: 12345678
     hikari:
       schema: dev
@@ -69,15 +69,23 @@ server:
     key-alias: cris6h16
     enabled: true
 
+logging:
+  level:
+    root: error
+  logback:
+    rollingpolicy:
+      file-name-pattern: ./logs/restful-api-jwt.%d{yyyy-MM-dd}.%i.log
+      max-file-size: 10MB
+      max-history: 30  # 30 days
+      total-size-cap: 1GB  # limit for all
+      clean-history-on-start: true
+
 
 
 
 jwt:
   secret:
     key: 123456789987654321123456789987654321123456789
-
-
-
   token:
     refresh:
       expiration:
@@ -96,8 +104,12 @@ jwt:
         email:
           verification:
             secs: 86400 # 1 day todo: add to docs this change ( initiallly was 5 minutes)
-          password:
-            reset:
+          delete-account:
+            secs: 1800 # 30 minutes
+          update-email:
+            secs: 1800 # 30 minutes
+          reset:
+            password:
               secs: 1800 # 30 minutes
 error:
   messages:
@@ -141,11 +153,12 @@ controller:
       core: /user
       account:
         core: /account
+        all:
+          core: /all # pagination
         request:
           core: /request
           delete: /delete
           update-email: /update-email
-        delete: /delete
         update:
           core: /update
           username: /username
@@ -156,9 +169,6 @@ web-front:
   path:
     email-verification: frontend.com/auth/verification-email?token={token}
     reset-password: frontend.com/auth/reset-password?token={token}
+    delete-account: frontend.com/me/delete-account?token={token}
+    update-email: frontend.com/me/update-email?token={token}
 
-logging:
-  level:
-    root: error
-  file:
-    path: ./.idea/restful-api-jwt.log

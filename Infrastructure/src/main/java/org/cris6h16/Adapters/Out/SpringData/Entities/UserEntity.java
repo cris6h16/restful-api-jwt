@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.cris6h16.Models.ERoles;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 
 @Entity
@@ -74,7 +75,7 @@ public class UserEntity {
             name = "last_modified",
             columnDefinition = "BIGINT DEFAULT 0"
     )
-    private Long lastModified;
+    private LocalDateTime lastModified;
 
 
 }

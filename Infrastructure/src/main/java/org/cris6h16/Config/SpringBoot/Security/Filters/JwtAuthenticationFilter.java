@@ -24,7 +24,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtUtilsImpl jwtUtilsImpl;
     private final CustomUserDetailsService userDetailsService;
 
-    @Value("${jwt.expiration.token.access.cookie.name}")
+    @Value("${jwt.token.access.cookie.name}")
     private String accessTokenCookieName;
 
     public JwtAuthenticationFilter(JwtUtilsImpl jwtUtilsImpl, CustomUserDetailsService userDetailsService) {

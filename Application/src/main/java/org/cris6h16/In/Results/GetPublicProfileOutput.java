@@ -3,6 +3,7 @@ package org.cris6h16.In.Results;
 import org.cris6h16.Models.ERoles;
 import org.cris6h16.Models.UserModel;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 
 public class GetPublicProfileOutput {
@@ -12,7 +13,7 @@ public class GetPublicProfileOutput {
     private Set<ERoles> roles;
     private Boolean active;
     private Boolean emailVerified;
-    private Long lastModified;
+    private LocalDateTime lastModified;
 
     public GetPublicProfileOutput(UserModel um) {
         this.id = um.getId();
@@ -48,7 +49,7 @@ public class GetPublicProfileOutput {
         return emailVerified;
     }
 
-    public Long getLastModified() {
+    public LocalDateTime  getLastModified() {
         return lastModified;
     }
 

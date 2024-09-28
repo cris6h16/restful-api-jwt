@@ -4,6 +4,8 @@ import org.cris6h16.Exceptions.Impls.InvalidAttributeException;
 import org.cris6h16.Models.ERoles;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -26,27 +28,31 @@ public class UserValidatorTest {
         MockitoAnnotations.openMocks(this);
     }
 
-    @Test
-    void validateUsername_shouldThrowException_whenUsernameIsNull() {
-        when(errorMessages.getUsernameCannotBeBlankMessage()).thenReturn("Username cannot be blank");
+    @ParameterizedTest
+    @ValueSource(strings = {"blank", "empty", "null", "length1", "length2", "length21", "length22"})
+    void validateUsername_shouldThrowException_whenUsernameIsInvalid(String now) {
+        String username = switch (now) {
+            case "blank" -> "    ";
+            case "empty" -> "    ";
+            case "null" -> null;
+            case "lenght1" -> "a".repeat(1);
+            case "lenght2" -> "a".repeat(2);
+            case "lenght21" -> "a".repeat(21);
+            case "lenght22" -> "a".repeat(22);
+            default -> throw new IllegalStateException();
+        };
+
+        when(errorMessages.getUsernameLengthFailMessage()).thenReturn("Username length fail etc etc ");
 
         assertThatThrownBy(() -> userValidator.validateUsername(null))
                 .isInstanceOf(InvalidAttributeException.class)
-                .hasMessage("Username cannot be blank");
+                .hasMessage("Username length fail etc etc ");
     }
 
-    @Test
-    void validateUsername_shouldThrowException_whenUsernameIsEmpty() {
-        when(errorMessages.getUsernameCannotBeBlankMessage()).thenReturn("Username cannot be blank");
-
-        assertThatThrownBy(() -> userValidator.validateUsername("   "))
-                .isInstanceOf(InvalidAttributeException.class)
-                .hasMessage("Username cannot be blank");
-    }
-
-    @Test
-    void validateUsername_shouldNotThrowException_whenUsernameIsValid() {
-        userValidator.validateUsername("validUsername");
+    @ParameterizedTest
+    @ValueSource(ints = {3, 4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20})
+    void validateUsername_shouldNotThrowException_whenUsernameIsValid(int n) {
+        userValidator.validateUsername("a".repeat(n));
     }
 
     @Test

@@ -4,8 +4,6 @@ public interface ErrorMessages {
     String getUsernameAlreadyExistsMessage();
     String getEmailAlreadyExistsMessage();
 
-    String getUsernameCannotBeBlankMessage();
-
     String getPasswordTooShortMessage();
 
     String getEmailInvalidMessage();
@@ -23,4 +21,6 @@ public interface ErrorMessages {
     String getInvalidCredentialsMessage();
 
     String getUnexpectedErrorMessage();
+
+    String getUsernameLengthFailMessage();
 }

@@ -13,8 +13,8 @@ public class ErrorMessagesImpl implements ErrorMessages {
     @Value("${error.messages.user.unique.email}")
     private String EMAIL_ALREADY_EXISTS_MSG;
 
-    @Value("${error.messages.user.invalid.username.blank}")
-    private String USERNAME_CANNOT_BE_BLANK_MSG;
+    @Value("${error.messages.user.invalid.username.length}")
+    private String USERNAME_LENGTH_FAIL_MSG;
 
     @Value("${error.messages.user.invalid.password.length.tooShort}")
     private String PASSWORD_TOO_SHORT_MSG;
@@ -53,10 +53,6 @@ public class ErrorMessagesImpl implements ErrorMessages {
         return EMAIL_ALREADY_EXISTS_MSG;
     }
 
-    @Override
-    public String getUsernameCannotBeBlankMessage() {
-        return USERNAME_CANNOT_BE_BLANK_MSG;
-    }
 
     @Override
     public String getPasswordTooShortMessage() {
@@ -101,5 +97,10 @@ public class ErrorMessagesImpl implements ErrorMessages {
     @Override
     public String getUnexpectedErrorMessage() {
         return UNEXPECTED_ERROR_MSG;
+    }
+
+    @Override
+    public String getUsernameLengthFailMessage() {
+        return USERNAME_LENGTH_FAIL_MSG;
     }
 }

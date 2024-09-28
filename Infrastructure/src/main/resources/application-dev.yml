@@ -130,7 +130,7 @@ error:
         id:
           null-val: "Id cannot be null"
         username:
-          blank: "Username cannot be blank"
+          length: "Username length must be between 3 & 20 ( included )"
         password:
           length:
             tooShort: "Password must be at least 8 characters long"

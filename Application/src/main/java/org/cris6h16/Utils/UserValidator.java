@@ -14,8 +14,8 @@ public class UserValidator {
     }
 
     public void validateUsername(String username) {
-        if (username == null || username.trim().isEmpty()) {
-            throw new InvalidAttributeException(errorMessages.getUsernameCannotBeBlankMessage());
+        if (username == null || username.trim().isEmpty() || username.length() < 3 || username.length() > 20) {
+            throw new InvalidAttributeException(errorMessages.getUsernameLengthFailMessage());
         }
     }
 

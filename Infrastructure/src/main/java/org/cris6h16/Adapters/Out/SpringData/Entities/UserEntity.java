@@ -30,8 +30,7 @@ public class UserEntity {
     @Column(
             unique = true,
             nullable = false,
-            length = 20,
-            name = "username"
+            length = 20
     )
     private String username;
 
@@ -66,7 +65,7 @@ public class UserEntity {
     @Column(
             nullable = false,
             name = "active",
-            columnDefinition = "BOOLEAN DEFAULT false"
+            columnDefinition = "BOOLEAN DEFAULT true"
     )
     private Boolean active;
 

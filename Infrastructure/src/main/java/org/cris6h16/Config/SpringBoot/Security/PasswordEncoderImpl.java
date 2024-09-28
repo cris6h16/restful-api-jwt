@@ -6,7 +6,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 public class PasswordEncoderImpl implements MyPasswordEncoder {
 
-    private final PasswordEncoder encoder; // todo: verify all attributes in any class are not instatiated directly ( beans )
+    private final PasswordEncoder encoder;
 
     public PasswordEncoderImpl(PasswordEncoder encoder) {
         this.encoder = encoder;

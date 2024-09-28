@@ -9,7 +9,7 @@ import java.util.Collection;
 public class UserDetailsWithId extends User {
     private final Long id;
 
-    public UserDetailsWithId(String username, String password, Collection<? extends GrantedAuthority> authorities, Long id) {
+    private UserDetailsWithId(String username, String password, Collection<? extends GrantedAuthority> authorities, Long id) {
         super(username, password, authorities);
         this.id = id;
     }

@@ -7,7 +7,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping(value = "${controller.path.core}${controller.path.authentication.core}")
+@RequestMapping(
+        value = "${controller.path.core}" +
+                "${controller.path.authentication.core}"
+)
 public class AuthenticationController {
     private final AuthenticationControllerFacade facade;
 

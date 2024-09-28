@@ -25,7 +25,7 @@ import static org.cris6h16.Repositories.Page.MySortOrder.MyDirection.DESC;
 
 
 @Component
-public class UserControllerFacade {
+public class UserAccountControllerFacade {
 
     private final RequestDeleteAccountPort requestDeleteAccountPort;
     private final DeleteAccountPort deleteAccountPort;
@@ -37,15 +37,15 @@ public class UserControllerFacade {
     private final GetAllPublicProfilesPort getAllPublicProfilesPort;
     private final CacheService cacheService;
 
-    public UserControllerFacade(RequestDeleteAccountPort requestDeleteAccountPort,
-                                DeleteAccountPort deleteAccountPort,
-                                UpdateUsernamePort updateUsernamePort,
-                                UpdatePasswordPort updatePasswordPort,
-                                UpdateEmailPort updateEmailPort,
-                                RequestUpdateEmailPort requestUpdateEmailPort,
-                                GetPublicProfilePort getPublicProfilePort,
-                                GetAllPublicProfilesPort getAllPublicProfilesPort,
-                                CacheService cacheService) {
+    public UserAccountControllerFacade(RequestDeleteAccountPort requestDeleteAccountPort,
+                                       DeleteAccountPort deleteAccountPort,
+                                       UpdateUsernamePort updateUsernamePort,
+                                       UpdatePasswordPort updatePasswordPort,
+                                       UpdateEmailPort updateEmailPort,
+                                       RequestUpdateEmailPort requestUpdateEmailPort,
+                                       GetPublicProfilePort getPublicProfilePort,
+                                       GetAllPublicProfilesPort getAllPublicProfilesPort,
+                                       CacheService cacheService) {
         this.requestDeleteAccountPort = requestDeleteAccountPort;
         this.deleteAccountPort = deleteAccountPort;
         this.updateUsernamePort = updateUsernamePort;

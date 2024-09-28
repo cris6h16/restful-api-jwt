@@ -8,6 +8,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -38,6 +39,7 @@ class CustomControllerExceptionHandlerTest {
 
         // Assert
         assertEquals(res.getStatusCode(), status);
+        assertEquals(res.getHeaders().get("Content-Type").get(0), MediaType.APPLICATION_JSON_VALUE);
         assertEquals(res.getBody(), expectedBody);
     }
 
@@ -53,6 +55,7 @@ class CustomControllerExceptionHandlerTest {
 
         // Assert
         assertEquals(res.getStatusCode(), status);
+        assertEquals(res.getHeaders().get("Content-Type").get(0), MediaType.APPLICATION_JSON_VALUE);
         assertEquals(res.getBody(), expectedBody);
     }
 
@@ -68,6 +71,7 @@ class CustomControllerExceptionHandlerTest {
 
         // Assert
         assertEquals(res.getStatusCode(), status);
+        assertEquals(res.getHeaders().get("Content-Type").get(0), MediaType.APPLICATION_JSON_VALUE);
         assertEquals(res.getBody(), expectedBody);
     }
 
@@ -83,6 +87,7 @@ class CustomControllerExceptionHandlerTest {
 
         // Assert
         assertEquals(res.getStatusCode(), status);
+        assertEquals(res.getHeaders().get("Content-Type").get(0), MediaType.APPLICATION_JSON_VALUE);
         assertEquals(res.getBody(), expectedBody);
     }
 
@@ -98,6 +103,7 @@ class CustomControllerExceptionHandlerTest {
 
         // Assert
         assertEquals(res.getStatusCode(), status);
+        assertEquals(res.getHeaders().get("Content-Type").get(0), MediaType.APPLICATION_JSON_VALUE);
         assertEquals(res.getBody(), expectedBody);
     }
 
@@ -120,6 +126,7 @@ class CustomControllerExceptionHandlerTest {
 
         // Assert
         assertEquals(res.getStatusCode(), status);
+        assertEquals(res.getHeaders().get("Content-Type").get(0), MediaType.APPLICATION_JSON_VALUE);
         assertEquals(res.getBody(), expectedBody);
     }
 

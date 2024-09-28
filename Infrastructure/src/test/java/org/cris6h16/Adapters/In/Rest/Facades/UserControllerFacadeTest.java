@@ -57,7 +57,7 @@ public class UserControllerFacadeTest {
     private CacheService cacheService;
 
     @InjectMocks
-    private UserControllerFacade userControllerFacade;
+    private UserAccountControllerFacade userControllerFacade;
 
     @BeforeEach
     public void setUp() {

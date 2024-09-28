@@ -2,7 +2,7 @@ package org.cris6h16.Adapters.In.Rest;
 
 import org.cris6h16.Adapters.In.Rest.DTOs.PublicProfileDTO;
 import org.cris6h16.Adapters.In.Rest.DTOs.UpdateMyPasswordDTO;
-import org.cris6h16.Adapters.In.Rest.Facades.UserControllerFacade;
+import org.cris6h16.Adapters.In.Rest.Facades.UserAccountControllerFacade;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -11,83 +11,78 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping(value = "${controller.path.core}" + "${controller.path.user.core}")
-public class UserController {
+@RequestMapping(value = "${controller.path.core}" +
+        "${controller.path.user.core}" +
+        "${controller.path.user.account.core}"
+)
+public class UserAccountController {
 
-    private final UserControllerFacade userControllerFacade;
+    private final UserAccountControllerFacade userAccountControllerFacade;
 
-    public UserController(UserControllerFacade userControllerFacade) {
-        this.userControllerFacade = userControllerFacade;
+    public UserAccountController(UserAccountControllerFacade userAccountControllerFacade) {
+        this.userAccountControllerFacade = userAccountControllerFacade;
     }
 
     @PostMapping(
-            value = "${controller.path.user.account.core}" +
-                    "${controller.path.user.account.request.delete}"
+            value = "${controller.path.user.account.request.delete}"
     )
     public ResponseEntity<Void> requestDeleteMyAccount() {
-        return userControllerFacade.requestDeleteMyAccount();
+        return userAccountControllerFacade.requestDeleteMyAccount();
     }
 
     @DeleteMapping(
-            value = "${controller.path.user.account.core}" +
-                    "${controller.path.user.account.request.core}" +
+            value = "${controller.path.user.account.request.core}" +
                     "${controller.path.user.account.request.delete}"
     )
     public ResponseEntity<Void> deleteMyAccount() {
-        return userControllerFacade.deleteMyAccount();
+        return userAccountControllerFacade.deleteMyAccount();
     }
 
     @PatchMapping(
-            value = "${controller.path.user.account.core}" +
-                    "${controller.path.user.account.update.core}" +
+            value = "${controller.path.user.account.update.core}" +
                     "${controller.path.user.account.update.username}",
             consumes = "application/json"
     )
     public ResponseEntity<Void> updateMyUsername(@RequestBody String newUsername) {
-        return userControllerFacade.updateMyUsername(newUsername);
+        return userAccountControllerFacade.updateMyUsername(newUsername);
     }
 
     @PatchMapping(
-            value = "${controller.path.user.account.core}" +
-                    "${controller.path.user.account.update.core}" +
+            value = "${controller.path.user.account.update.core}" +
                     "${controller.path.user.account.update.password}",
             consumes = "application/json"
     )
     public ResponseEntity<Void> updateMyPassword(@RequestBody UpdateMyPasswordDTO dto) {
-        return userControllerFacade.updateMyPassword(dto);
+        return userAccountControllerFacade.updateMyPassword(dto);
     }
 
     @PostMapping(
-            value = "${controller.path.user.account.core}" +
-                    "${controller.path.user.account.request.core}" +
+            value = "${controller.path.user.account.request.core}" +
                     "${controller.path.user.account.request.update-email}"
     )
     public ResponseEntity<Void> requestUpdateMyEmail() {
-        return userControllerFacade.requestUpdateMyEmail();
+        return userAccountControllerFacade.requestUpdateMyEmail();
     }
 
     @PatchMapping(
-            value = "${controller.path.user.account.core}" +
-                    "${controller.path.user.account.update.core}" +
+            value = "${controller.path.user.account.update.core}" +
                     "${controller.path.user.account.update.email}",
             consumes = "application/json"
     )
     public ResponseEntity<Void> updateMyEmail(@RequestBody String newEmail) {
-        return userControllerFacade.updateMyEmail(newEmail);
+        return userAccountControllerFacade.updateMyEmail(newEmail);
     }
 
 
     @GetMapping(
-            value = "${controller.path.user.account.core}",
             produces = "application/json"
     )
     public ResponseEntity<PublicProfileDTO> getMyAccount() {
-        return userControllerFacade.getMyAccount();
+        return userAccountControllerFacade.getMyAccount();
     }
 
     @GetMapping(
-            value = "${controller.path.user.account.core}" +
-                    "${controller.path.user.account.all.core}",
+            value = "${controller.path.user.account.all.core}",
             produces = "application/json"
     )
     public ResponseEntity<Page<PublicProfileDTO>> getAllUsers(@PageableDefault(
@@ -96,6 +91,6 @@ public class UserController {
             direction = Sort.Direction.DESC,
             page = 0
     ) Pageable pageable) {
-        return userControllerFacade.getAllUsers(pageable);
+        return userAccountControllerFacade.getAllUsers(pageable);
     }
 }

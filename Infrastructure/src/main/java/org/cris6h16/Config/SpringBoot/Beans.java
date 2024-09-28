@@ -1,6 +1,7 @@
 package org.cris6h16.Config.SpringBoot;
 
 import org.cris6h16.Config.SpringBoot.Security.PasswordEncoderImpl;
+import org.cris6h16.Config.SpringBoot.Security.UserDetails.CustomUserDetailsService;
 import org.cris6h16.Config.SpringBoot.Security.UserDetails.UserDetailsServiceImpl;
 import org.cris6h16.Config.SpringBoot.Services.ErrorMessagesImpl;
 import org.cris6h16.Config.SpringBoot.Utils.JwtUtilsImpl;
@@ -108,7 +109,7 @@ public class Beans {
 
 
     @Bean
-    public UserDetailsService userDetailsService(UserRepository userRepository) {
+    public CustomUserDetailsService userDetailsService(UserRepository userRepository) {
         return new UserDetailsServiceImpl(userRepository);
     }
 

@@ -55,6 +55,8 @@ spring:
     redis:
       host: localhost
       port: 6379
+      ttl:
+        minutes: 5
 
 server:
   port: 8080

@@ -3,6 +3,7 @@ package org.cris6h16.Config.SpringBoot.Redis;
 
 import org.cris6h16.In.Commands.GetAllPublicProfilesCommand;
 import org.cris6h16.In.Results.GetAllPublicProfilesOutput;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.Page;
@@ -20,6 +21,9 @@ import java.time.Duration;
 @Configuration
 //@EnableTransactionManagement
 public class RedisConfig {
+
+    @Value("${spring.data.redis.ttl.minutes}")
+    private int ttlMins;
 
     @Bean
     LettuceConnectionFactory connectionFactory() {
@@ -41,7 +45,7 @@ public class RedisConfig {
     @Bean
     public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory) {
         RedisCacheConfiguration cacheConfiguration = RedisCacheConfiguration.defaultCacheConfig()
-                .entryTtl(Duration.ofMinutes(1)) //todo: change
+                .entryTtl(Duration.ofMinutes(ttlMins))
                 .disableCachingNullValues();
 //                .enableTimeToIdle();
 

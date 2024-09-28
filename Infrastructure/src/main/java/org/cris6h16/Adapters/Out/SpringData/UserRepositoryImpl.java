@@ -1,24 +1,23 @@
 package org.cris6h16.Adapters.Out.SpringData;
 
-import org.apache.catalina.User;
 import org.cris6h16.Adapters.Out.SpringData.Entities.UserEntity;
 import org.cris6h16.Models.ERoles;
 import org.cris6h16.Models.UserModel;
 import org.cris6h16.Repositories.Page.MyPage;
 import org.cris6h16.Repositories.Page.MyPageable;
+import org.cris6h16.Repositories.Page.MySortOrder;
 import org.cris6h16.Repositories.UserRepository;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-
-import static org.cris6h16.Adapters.Out.SpringData.Mapper.Entity.toUserEntity;
-import static org.cris6h16.Adapters.Out.SpringData.Mapper.Entity.toUserModel;
-import static org.cris6h16.Adapters.Out.SpringData.Mapper.Pagination.toSpringPageable;
-import static org.cris6h16.Adapters.Out.SpringData.Mapper.Pagination.toUserModelPage;
 
 @Repository
 public class UserRepositoryImpl implements UserRepository {
@@ -79,13 +78,13 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public Optional<UserModel> findByEmail(String email) {
         Optional<UserEntity> ue = userJpaRepository.findByEmail(email);
-        return ue.map(Mapper.Entity::toUserModel);// the mapped if exists else Optinal.empty
+        return ue.map(UserRepositoryImpl::toUserModel);// the mapped if exists else Optinal.empty
     }
 
     @Override
     public Optional<UserModel> findById(Long id) {
         Optional<UserEntity> op = userJpaRepository.findById(id);
-        return op.map(Mapper.Entity::toUserModel); // empty Optional if isn't present
+        return op.map(UserRepositoryImpl::toUserModel); // empty Optional if isn't present
     }
 
     @Override
@@ -124,4 +123,69 @@ public class UserRepositoryImpl implements UserRepository {
     public Set<ERoles> getRolesById(Long id) {
         return userJpaRepository.findRolesById(id);
     }
+
+    static MyPage<UserModel> toUserModelPage(Page<UserEntity> uePage, MyPageable used) {
+        List<UserModel> uml = uePage.getContent().stream()
+                .map(UserRepositoryImpl::toUserModel)
+                .toList();
+        return new MyPage<>(
+                uePage.getTotalPages(),
+                uePage.getTotalElements(),
+                used,
+                uml
+        );
+    }
+
+    static Pageable toSpringPageable(MyPageable myPageable) {
+        List<Sort.Order> orders = new ArrayList<>(1);
+        for (MySortOrder so : myPageable.getSortOrders()) {
+            Sort.Order order = new Sort.Order(
+                    _toDirection(so.direction()),
+                    so.property()
+            );
+            orders.add(order);
+        }
+        Sort sort = Sort.by(orders);
+
+        return PageRequest.of(
+                myPageable.getPageNumber(),
+                myPageable.getPageSize(),
+                sort
+        );
+    }
+
+    static private Sort.Direction _toDirection(MySortOrder.MyDirection dir) {
+        return switch (dir) {
+            case ASC -> Sort.Direction.ASC;
+            case DESC -> Sort.Direction.DESC;
+        };
+    }
+
+    static UserEntity toUserEntity(UserModel um) {
+        return UserEntity.builder()
+                .id(um.getId())
+                .username(um.getUsername())
+                .password(um.getPassword())
+                .email(um.getEmail())
+                .roles(um.getRoles())
+                .active(um.getActive())
+                .emailVerified(um.getEmailVerified())
+                .lastModified(um.getLastModified())
+                .build();
+    }
+
+    static UserModel toUserModel(UserEntity e) {
+        return new UserModel.Builder()
+                .setId(e.getId())
+                .setUsername(e.getUsername())
+                .setPassword(e.getPassword())
+                .setEmail(e.getEmail())
+                .setRoles(e.getRoles())
+                .setActive(e.getActive())
+                .setEmailVerified(e.getEmailVerified())
+                .setLastModified(e.getLastModified())
+                .build();
+    }
 }
+
+

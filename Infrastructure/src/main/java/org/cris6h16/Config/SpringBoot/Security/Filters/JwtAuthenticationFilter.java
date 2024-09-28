@@ -24,12 +24,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtUtilsImpl jwtUtilsImpl;
     private final CustomUserDetailsService userDetailsService;
 
-    @Value("${jwt.token.access.cookie.name}")
-    private String accessTokenCookieName;
+    protected final String accessTokenCookieName;
 
-    public JwtAuthenticationFilter(JwtUtilsImpl jwtUtilsImpl, CustomUserDetailsService userDetailsService) {
+    public JwtAuthenticationFilter(JwtUtilsImpl jwtUtilsImpl,
+                                   CustomUserDetailsService userDetailsService,
+                                   @Value("${jwt.token.access.cookie.name}")
+                                   String accessTokenCookieName) {
         this.jwtUtilsImpl = jwtUtilsImpl;
         this.userDetailsService = userDetailsService;
+        this.accessTokenCookieName = accessTokenCookieName;
     }
 
     @Override

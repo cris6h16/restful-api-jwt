@@ -2,16 +2,17 @@ package org.cris6h16.Adapters.Out.SpringData;
 
 import org.cris6h16.Adapters.Out.SpringData.Entities.UserEntity;
 import org.cris6h16.Models.ERoles;
-import org.cris6h16.Models.UserModel;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 import java.util.Set;
 
-//@Repository(value = "UserRepository")
+@Repository
 public interface UserJpaRepository extends JpaRepository<UserEntity, Long> {
+
     boolean existsByUsername(String username);
 
     boolean existsByEmail(String email);
@@ -20,7 +21,7 @@ public interface UserJpaRepository extends JpaRepository<UserEntity, Long> {
     @Query("UPDATE UserEntity u SET u.emailVerified = :isVerified, u.lastModified = CURRENT_TIMESTAMP WHERE u.id = :id")
     void updateEmailVerifiedById(Long id, boolean isVerified);
 
-    Optional<UserModel> findByEmail(String email);
+    Optional<UserEntity> findByEmail(String email);
 
     @Modifying(clearAutomatically = true)
     @Query("UPDATE UserEntity u SET u.active = false,u.lastModified = CURRENT_TIMESTAMP  WHERE u.id = :id")

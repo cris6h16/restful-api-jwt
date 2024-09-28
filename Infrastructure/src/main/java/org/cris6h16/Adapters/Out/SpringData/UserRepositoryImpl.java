@@ -1,5 +1,6 @@
 package org.cris6h16.Adapters.Out.SpringData;
 
+import org.apache.catalina.User;
 import org.cris6h16.Adapters.Out.SpringData.Entities.UserEntity;
 import org.cris6h16.Models.ERoles;
 import org.cris6h16.Models.UserModel;
@@ -77,7 +78,8 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public Optional<UserModel> findByEmail(String email) {
-        return userJpaRepository.findByEmail(email);
+        Optional<UserEntity> ue = userJpaRepository.findByEmail(email);
+        return ue.map(Mapper.Entity::toUserModel);// the mapped if exists else Optinal.empty
     }
 
     @Override

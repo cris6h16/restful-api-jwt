@@ -5,6 +5,7 @@ import org.cris6h16.Exceptions.Impls.*;
 import org.cris6h16.Utils.ErrorMessages;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -18,6 +19,14 @@ public class CustomControllerExceptionHandler {
         this.errorMessages = errorMessages;
     }
 
+    // HttpMediaTypeNotSupportedException
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<String> handleHttpMediaTypeNotSupportedException(HttpMediaTypeNotSupportedException e) {
+        return ResponseEntity
+                .status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
+                .header("Content-Type", "application/json")
+                .body(buildMessage(e.getMessage(), HttpStatus.UNSUPPORTED_MEDIA_TYPE));
+    }
     //InvalidAttributeException
     @ExceptionHandler(InvalidAttributeException.class)
     public ResponseEntity<String> handleInvalidAttributeException(InvalidAttributeException e) {

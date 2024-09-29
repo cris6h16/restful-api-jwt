@@ -92,7 +92,7 @@ class AuthenticationControllerTest {
         mockMvc.perform(post(mainPath + loginPath)
                         .contentType(MediaType.TEXT_PLAIN)
                         .content(new ObjectMapper().writeValueAsString(dto)))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isUnsupportedMediaType());
     }
 
     @Test
@@ -130,7 +130,7 @@ class AuthenticationControllerTest {
         mockMvc.perform(post(mainPath + signupPath)
                         .contentType(MediaType.TEXT_PLAIN)
                         .content(new ObjectMapper().writeValueAsString(dto)))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isUnsupportedMediaType());
     }
 
     @Test
@@ -177,7 +177,7 @@ class AuthenticationControllerTest {
         mockMvc.perform(post(mainPath + requestPasswordResetPath)
                         .contentType(MediaType.TEXT_PLAIN)
                         .content(email))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isUnsupportedMediaType());
     }
 
     @Test
@@ -213,7 +213,7 @@ class AuthenticationControllerTest {
         mockMvc.perform(patch(mainPath + resetPasswordPath)
                         .contentType(MediaType.TEXT_PLAIN)
                         .content(newPassword))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isUnsupportedMediaType());
     }
 
 

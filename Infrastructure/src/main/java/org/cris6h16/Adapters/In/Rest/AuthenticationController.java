@@ -59,8 +59,7 @@ public class AuthenticationController {
     }
 
     @PostMapping(
-            value = "${controller.path.authentication.refresh-access-token}",
-            produces = "application/json"
+            value = "${controller.path.authentication.refresh-access-token}"
     )
     public ResponseEntity<Void> refreshAccessToken() {
         return facade.refreshAccessToken();

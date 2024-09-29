@@ -3,6 +3,7 @@ package org.cris6h16.Config.SpringBoot;
 import org.cris6h16.Config.SpringBoot.Security.PasswordEncoderImpl;
 import org.cris6h16.Config.SpringBoot.Security.UserDetails.CustomUserDetailsService;
 import org.cris6h16.Config.SpringBoot.Security.UserDetails.UserDetailsServiceImpl;
+import org.cris6h16.Config.SpringBoot.Services.Email.EmailServiceImpl;
 import org.cris6h16.Config.SpringBoot.Services.ErrorMessagesImpl;
 import org.cris6h16.Config.SpringBoot.Utils.JwtUtilsImpl;
 import org.cris6h16.In.Ports.*;
@@ -18,9 +19,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.thymeleaf.ITemplateEngine;
 
 // todo: classify this better
 @Configuration
@@ -267,7 +270,7 @@ public class Beans {
     @Bean
     public GetAllPublicProfilesPort getAllPublicProfilesPort(
             UserRepository userRepository
-            ) {
+    ) {
         return new GetAllPublicProfilesUseCase(
                 userRepository
         );

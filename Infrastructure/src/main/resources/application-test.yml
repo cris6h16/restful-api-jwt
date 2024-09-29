@@ -168,6 +168,7 @@ controller:
           email: /email
 
 web-front:
+  core: http://localhost:4200
   path:
     email-verification: frontend.com/auth/verification-email?token={token}
     reset-password: frontend.com/auth/reset-password?token={token}

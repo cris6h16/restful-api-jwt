@@ -1,6 +1,9 @@
 package org.cris6h16.Config.SpringBoot.Services.Email;
 
+import jakarta.mail.MailSessionDefinition;
 import jakarta.mail.internet.MimeMessage;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
 import org.cris6h16.Config.SpringBoot.Utils.JwtUtilsImpl;
 import org.cris6h16.Services.EmailService;
@@ -10,15 +13,14 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.ITemplateEngine;
 import org.thymeleaf.context.Context;
-import org.thymeleaf.spring6.SpringTemplateEngine;
 
-@Service
 @Slf4j
-@ComponentScan("org.cris6h16.*")
+@Service
 public class EmailServiceImpl implements EmailService {
 
-    private final SpringTemplateEngine templateEngine;
+    private final ITemplateEngine templateEngine;
 
     private final JavaMailSender mailSender;
     private final JwtUtilsImpl jwtUtils;
@@ -31,26 +33,18 @@ public class EmailServiceImpl implements EmailService {
     private final long requestUpdateEmailTokenTimeLive;
     private final String updateEmailLinkTemplate;
 
-    // todo: refactor this
-    public EmailServiceImpl(SpringTemplateEngine templateEngine,
+    public EmailServiceImpl(ITemplateEngine templateEngine,
                             JavaMailSender mailSender,
                             JwtUtilsImpl jwtUtils,
-                            @Value("${jwt.token.access.request.email.verification.secs}")
-                            long emailVerificationTokenTimeLive,
-                            @Value("${jwt.token.access.request.email.delete-account.secs}")
-                            long requestDeleteAccountTokenTimeLive,
-                            @Value("${web-front.path.email-verification}")
-                            String emailVerificationLinkTemplate,
-                            @Value("${web-front.path.reset-password}")
-                            String resetPasswordLinkTemplate,
-                            @Value("${jwt.token.access.request.email.reset.password.secs}")
-                            long requestResetPasswordTokenTimeLive,
-                            @Value("${web-front.path.delete-account}")
-                            String deleteAccountLinkTemplate,
-                            @Value("${jwt.token.access.request.email.update-email.secs}")
-                            long requestUpdateEmailTokenTimeLive,
-                            @Value("${web-front.path.update-email}")
-                            String updateEmailLinkTemplate) {
+                            @Value("${jwt.token.access.request.email.verification.secs}") long emailVerificationTokenTimeLive,
+                            @Value("${jwt.token.access.request.email.delete-account.secs}") long requestDeleteAccountTokenTimeLive,
+                            @Value("${web-front.path.email-verification}") String emailVerificationLinkTemplate,
+                            @Value("${web-front.path.reset-password}") String resetPasswordLinkTemplate,
+                            @Value("${jwt.token.access.request.email.reset.password.secs}") long requestPasswordTokenTimeLive,
+                            @Value("${web-front.path.delete-account}") String deleteAccountLinkTemplate,
+                            @Value("${jwt.token.access.request.email.update-email.secs}") long requestUpdateEmailTokenTimeLive,
+                            @Value("${web-front.path.update-email}") String updateEmailLinkTemplate) {
+
         this.templateEngine = templateEngine;
         this.mailSender = mailSender;
         this.jwtUtils = jwtUtils;
@@ -58,11 +52,12 @@ public class EmailServiceImpl implements EmailService {
         this.requestDeleteAccountTokenTimeLive = requestDeleteAccountTokenTimeLive;
         this.emailVerificationLinkTemplate = emailVerificationLinkTemplate;
         this.resetPasswordLinkTemplate = resetPasswordLinkTemplate;
-        this.requestPasswordTokenTimeLive = requestResetPasswordTokenTimeLive;
+        this.requestPasswordTokenTimeLive = requestPasswordTokenTimeLive;
         this.deleteAccountLinkTemplate = deleteAccountLinkTemplate;
         this.requestUpdateEmailTokenTimeLive = requestUpdateEmailTokenTimeLive;
         this.updateEmailLinkTemplate = updateEmailLinkTemplate;
     }
+
 
     public void sendEmail(String email, String subject, String content) {
         String failMsg = "";
@@ -129,7 +124,7 @@ public class EmailServiceImpl implements EmailService {
      * @param htmlTemplateName html template name, example {@code email-verification.html}
      * @return
      */
-    private String buildHtmlContent(String token, String linkTemplate, String linkVariableName, String htmlTemplateName) {
+    String buildHtmlContent(String token, String linkTemplate, String linkVariableName, String htmlTemplateName) {
         String link = linkTemplate.replace("{token}", token);
 
         Context context = new Context();

@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
@@ -88,6 +89,7 @@ public class EmailServiceImpl implements EmailService {
         }
     }
 
+    @Async
     @Override
     public void sendVerificationEmail(Long id, String email) {
         String token = jwtUtils.genToken(id, null, emailVerificationTokenTimeLive);
@@ -96,6 +98,7 @@ public class EmailServiceImpl implements EmailService {
     }
 
 
+    @Async
     @Override
     public void sendResetPasswordEmail(Long id, String email) {
         String token = jwtUtils.genToken(id, null, requestPasswordTokenTimeLive);
@@ -103,6 +106,7 @@ public class EmailServiceImpl implements EmailService {
         sendEmail(email, "Password Reset Request", content);
     }
 
+    @Async
     @Override
     public void sendRequestDeleteAccountEmail(Long id, String email) {
         String token = jwtUtils.genToken(id, null, requestDeleteAccountTokenTimeLive);
@@ -110,6 +114,7 @@ public class EmailServiceImpl implements EmailService {
         sendEmail(email, "Request Delete Account", content);
     }
 
+    @Async
     @Override
     public void sendRequestUpdateEmail(Long id, String email) {
         String token = jwtUtils.genToken(id, null, requestUpdateEmailTokenTimeLive);

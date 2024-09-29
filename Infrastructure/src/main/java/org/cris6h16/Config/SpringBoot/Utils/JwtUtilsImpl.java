@@ -5,6 +5,8 @@ import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import lombok.Getter;
+import lombok.ToString;
 import org.cris6h16.Models.ERoles;
 import org.cris6h16.Utils.JwtUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,6 +18,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
+@Getter
 public class JwtUtilsImpl implements JwtUtils {
 
     private final String secretKey;
@@ -28,11 +31,11 @@ public class JwtUtilsImpl implements JwtUtils {
         this.refreshTokenExpTimeSecs = refreshTokenExpTimeSecs;
     }
 
-     public String genToken(Long subject, Map<String, String> claims, long timeExpirationMillis) {
+    public String genToken(Long subject, Map<String, String> claims, long timeExpirationSecs) {
         JwtBuilder jwtBuilder = Jwts.builder()
                 .subject(String.valueOf(subject))
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + timeExpirationMillis))
+                .expiration(new Date(System.currentTimeMillis() + (timeExpirationSecs * 1000)))
                 .signWith(getSign());
 
         if (claims != null && !claims.isEmpty()) {
@@ -45,7 +48,7 @@ public class JwtUtilsImpl implements JwtUtils {
     }
 
 
-   public   boolean validate(String token) {
+    public boolean validate(String token) {
         try {
             Jwts.parser()
                     .verifyWith(getSign())
@@ -62,13 +65,13 @@ public class JwtUtilsImpl implements JwtUtils {
         return Long.valueOf(getAClaim(token, claims -> claims.getSubject()));
     }
 
-     <T> T getAClaim(String token, Function<Claims, T> individualClaim) {
+    <T> T getAClaim(String token, Function<Claims, T> individualClaim) {
         Claims claims = getClaims(token);
         return individualClaim.apply(claims);
     }
 
 
-     Claims getClaims(String token) {
+    Claims getClaims(String token) {
         return Jwts.parser()
                 .verifyWith(getSign())
                 .build()
@@ -77,7 +80,7 @@ public class JwtUtilsImpl implements JwtUtils {
     }
 
 
-     SecretKey getSign() {
+    SecretKey getSign() {
         byte[] keyBase = Decoders.BASE64.decode(this.secretKey);
         return Keys.hmacShaKeyFor(keyBase);
     }
@@ -92,15 +95,5 @@ public class JwtUtilsImpl implements JwtUtils {
         return genToken(id, Map.of("roles", roles.toString()), accessTokenExpTimeSecs);
     }
 
-    public String getSecretKey() {
-        return secretKey;
-    }
 
-    public long getAccessTokenExpTimeSecs() {
-        return accessTokenExpTimeSecs;
-    }
-
-    public long getRefreshTokenExpTimeSecs() {
-        return refreshTokenExpTimeSecs;
-    }
 }

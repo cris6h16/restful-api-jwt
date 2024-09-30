@@ -1,78 +1,127 @@
 package org.cris6h16.Config.SpringBoot.Security;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import org.cris6h16.Config.SpringBoot.Security.Filters.JwtAuthenticationFilter;
-import org.junit.jupiter.api.BeforeEach;
+import org.cris6h16.Adapters.In.Rest.Facades.AuthenticationControllerFacade;
+import org.cris6h16.Adapters.In.Rest.Facades.UserAccountControllerFacade;
+import org.cris6h16.Config.SpringBoot.Redis.RedisConfig;
+import org.cris6h16.Repositories.UserRepository;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
 
-import static org.mockito.Mockito.verify;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
+@SpringBootTest(classes = {CustomAppConfig.class})
+@AutoConfigureMockMvc(addFilters = true)
+@ActiveProfiles("test")
 class SecurityConfigTest {
 
-    @MockBean
-    private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Autowired
     private SecurityConfig securityConfig;
 
+    @MockBean
+    private UserAccountControllerFacade userAccountControllerFacade;
+    @MockBean
+    private AuthenticationControllerFacade authenticationControllerFacade;
+
+    @Autowired
     private MockMvc mockMvc;
 
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-        mockMvc = MockMvcBuilders
-                .standaloneSetup(securityConfig)
-                .addFilters(jwtAuthenticationFilter)  // Add the JWT filter
-                .build();
+    @Test
+    void testPublicEndpoints() throws Exception {
+        when(authenticationControllerFacade.login(any())).thenReturn(ResponseEntity.ok().build());
+        when(authenticationControllerFacade.signup(any())).thenReturn(ResponseEntity.ok().build());
+
+        assertEndpointIsAccessible(securityConfig.loginPath, HttpMethod.POST);
+        assertEndpointIsAccessible(securityConfig.signupPath, HttpMethod.POST);
     }
 
     @Test
-    void testSecurityFilterChain() throws Exception {
-        // permit all
-        mockMvc.perform(get(securityConfig.loginPath))
-                .andExpect(status().isOk());
+    @WithMockUser(roles = "USER")
+    void testAccessingToAdminEndpointAsUser_forbidden() throws Exception {
+        assertEndpointIsForbidden(securityConfig.allUsersPagePath, HttpMethod.GET);
+    }
 
-        mockMvc.perform(get(securityConfig.signupPath))
-                .andExpect(status().isOk());
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void testAccessingToUserEndpointAsAdmin_forbidden() throws Exception {
+        assertEndpointIsForbidden(securityConfig.userAccountPath, HttpMethod.GET); // get account ( also the core path )
+    }
 
-        // secured
-        mockMvc.perform(get(securityConfig.userAccountPath))
-                .andExpect(status().isForbidden());
-
-        mockMvc.perform(get(securityConfig.allUsersPagePath))
-                .andExpect(status().isForbidden());
+    @Test
+    @WithAnonymousUser
+    void testSecuredEndpoints() throws Exception {
+        // mock the facades are not necessary, request never reaches to facades
+        assertEndpointIsForbidden(securityConfig.userAccountPath, HttpMethod.GET); // get account ( also the core path )
+        assertEndpointIsForbidden(securityConfig.userAccountPath + "/delete", HttpMethod.DELETE); // delete account ( sub path of userAccountPath, inside the secured pattern )
+        assertEndpointIsForbidden(securityConfig.allUsersPagePath, HttpMethod.GET);
     }
 
     @WithMockUser(roles = "USER")
     @Test
     void testUserAccess() throws Exception {
-        mockMvc.perform(get(securityConfig.userAccountPath))
-                .andExpect(status().isOk());
+        when(userAccountControllerFacade.getMyAccount()).thenReturn(ResponseEntity.ok().build());
+        assertEndpointIsAccessible(securityConfig.userAccountPath, HttpMethod.GET);
     }
 
     @WithMockUser(roles = "ADMIN")
     @Test
     void testAdminAccess() throws Exception {
-        mockMvc.perform(get(securityConfig.allUsersPagePath))
-                .andExpect(status().isOk());
+        when(userAccountControllerFacade.getAllUsers(any())).thenReturn(ResponseEntity.ok().build());
+        assertEndpointIsAccessible(securityConfig.allUsersPagePath, HttpMethod.GET);
     }
+
+    private void assertEndpointIsAccessible(String path, HttpMethod method) throws Exception {
+        if (method == HttpMethod.POST) {
+            mockMvc.perform(post(path)
+                            .contentType("application/json")
+                            .content("{}"))
+                    .andExpect(status().isOk());
+            return;
+        }
+        if (method == HttpMethod.GET) {
+            mockMvc.perform(get(path))
+                    .andExpect(status().isOk());
+            return;
+        }
+        throw new UnsupportedOperationException();
+    }
+
+    private void assertEndpointIsForbidden(String path, HttpMethod method) throws Exception {
+        if (method == HttpMethod.GET) {
+            mockMvc.perform(get(path))
+                    .andExpect(status().isForbidden());
+            return;
+        }
+        if (method == HttpMethod.DELETE) {
+            mockMvc.perform(delete(path))
+                    .andExpect(status().isForbidden());
+            return;
+        }
+        throw new UnsupportedOperationException();
+    }
+
+
+}
+
+@ComponentScan(
+        basePackages = "org.cris6h16.*",
+        excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {UserRepository.class, RedisConfig.class})
+)
+//@EnableAutoConfiguration(exclude = {JpaRepositoriesAutoConfiguration.class})
+class CustomAppConfig {
 
 }

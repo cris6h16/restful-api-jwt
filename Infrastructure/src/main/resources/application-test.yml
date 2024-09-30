@@ -73,7 +73,8 @@ server:
 
 logging:
   level:
-    root: error
+    root: debug
+    org.cris6h16.Config.SpringBoot.Security.Filters.JwtAuthenticationFilter: debug
   logback:
     rollingpolicy:
       file-name-pattern: ./logs/restful-api-jwt.%d{yyyy-MM-dd}.%i.log
@@ -141,37 +142,36 @@ error:
 
 
 controller:
-  path:
-    core: /api/v1
-    authentication:
-      core: /auth
-      signup: /signup
-      login: /login
-      verify-email: /verify-email
-      request-reset-password: /password/request-reset
-      reset-password: /password
-      refresh-access-token: /refresh-token
-    user:
-      core: /user
-      account:
-        core: /account
-        all:
-          core: /all # pagination
-        request:
-          core: /request
-          delete: /delete
-          update-email: /update-email
-        update:
-          core: /update
-          username: /username
-          password: /password
-          email: /email
+  base: /api/v1
+  authentication:
+    core: ${controller.base}/auth
+    signup: ${controller.authentication.core}/signup
+    login: ${controller.authentication.core}/login
+    verify-email: ${controller.authentication.core}/verify-email
+    request-reset-password: ${controller.authentication.core}/request-reset-password
+    reset-password: ${controller.authentication.core}/password
+    refresh-access-token: ${controller.authentication.core}/refresh-token
+
+  user:
+    core: ${controller.base}/user
+    pagination:
+      all: ${controller.user.core}/all
+    account:
+      core: ${controller.user.core}/account
+      request:
+        core: ${controller.user.account.core}/request
+        delete: ${controller.user.account.request.core}/delete
+        update-email: ${controller.user.account.request.core}/update-email
+      update:
+        core: ${controller.user.account.core}/update
+        username: ${controller.user.account.update.core}/username
+        password: ${controller.user.account.update.core}/password
+        email: ${controller.user.account.update.core}/email
 
 web-front:
   core: http://localhost:4200
   path:
-    email-verification: frontend.com/auth/verification-email?token={token}
-    reset-password: frontend.com/auth/reset-password?token={token}
-    delete-account: frontend.com/me/delete-account?token={token}
-    update-email: frontend.com/me/update-email?token={token}
-
+    email-verification: ${web-front.core}/auth/verification-email?token={token}
+    reset-password: ${web-front.core}/auth/reset-password?token={token}
+    delete-account: ${web-front.core}/me/delete-account?token={token}
+    update-email: ${web-front.core}/me/update-email?token={token}

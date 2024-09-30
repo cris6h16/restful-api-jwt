@@ -7,9 +7,11 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.Getter;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 import org.cris6h16.Models.ERoles;
 import org.cris6h16.Utils.JwtUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -18,14 +20,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
+@Component("JwtUtils")
 @Getter
+@Slf4j
 public class JwtUtilsImpl implements JwtUtils {
 
     private final String secretKey;
     private final long accessTokenExpTimeSecs;
     private final long refreshTokenExpTimeSecs;
 
-    public JwtUtilsImpl(String secretKey, long accessTokenExpTimeSecs, long refreshTokenExpTimeSecs) {
+    public JwtUtilsImpl(@Value("${jwt.secret.key}") String secretKey,
+                        @Value("${jwt.token.access.expiration.secs}") long accessTokenExpTimeSecs,
+                        @Value("${jwt.token.refresh.expiration.secs}") long refreshTokenExpTimeSecs) {
         this.secretKey = secretKey;
         this.accessTokenExpTimeSecs = accessTokenExpTimeSecs;
         this.refreshTokenExpTimeSecs = refreshTokenExpTimeSecs;
@@ -49,19 +55,24 @@ public class JwtUtilsImpl implements JwtUtils {
 
 
     public boolean validate(String token) {
+        log.debug("Validating token");
         try {
             Jwts.parser()
                     .verifyWith(getSign())
                     .build()
                     .parseSignedClaims(token)
                     .getPayload();
+
+            log.debug("Token is valid");
             return true;
         } catch (Exception e) {
+            log.debug("Token is invalid");
             return false;
         }
     }
 
     public Long getId(String token) {
+        log.debug("Extracting user ID from token");
         return Long.valueOf(getAClaim(token, claims -> claims.getSubject()));
     }
 

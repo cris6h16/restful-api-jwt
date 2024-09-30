@@ -30,11 +30,6 @@ import org.thymeleaf.ITemplateEngine;
 public class Beans {
 
     @Bean
-    public ErrorMessages errorMessages() {
-        return new ErrorMessagesImpl();
-    }
-
-    @Bean
     public UserValidator userValidator(ErrorMessages errorMessages) {
         return new UserValidator(errorMessages);
     }
@@ -100,36 +95,10 @@ public class Beans {
     }
 
 
-    @Bean
-    public MyPasswordEncoder passwordEncoder(PasswordEncoder encoder) {
-        return new PasswordEncoderImpl(encoder);
-    }
-
-    @Bean
-    public PasswordEncoder springPasswordEncoder() {
-        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
-    }
 
 
-    @Bean
-    public CustomUserDetailsService userDetailsService(UserRepository userRepository) {
-        return new UserDetailsServiceImpl(userRepository);
-    }
 
-    @Bean("JwtUtils")
-    public JwtUtils jwtUtils(@Value("${jwt.secret.key}") String secretKey,
-                             @Value("${jwt.token.access.expiration.secs}") long accessTokenExpTimeSecs,
-                             @Value("${jwt.token.refresh.expiration.secs}") long refreshTokenExpTimeSecs) {
-        return new JwtUtilsImpl(secretKey, accessTokenExpTimeSecs, refreshTokenExpTimeSecs);
-    }
 
-    // used in infrastructure, contains methods like validate, getId, etc.
-    @Bean("JwtUtilsImpl")
-    public JwtUtilsImpl jwtUtilsImpl(@Value("${jwt.secret.key}") String secretKey,
-                                     @Value("${jwt.token.access.expiration.secs}") long accessTokenExpTimeSecs,
-                                     @Value("${jwt.token.refresh.expiration.secs}") long refreshTokenExpTimeSecs) {
-        return new JwtUtilsImpl(secretKey, accessTokenExpTimeSecs, refreshTokenExpTimeSecs);
-    }
 
     @Bean
     public ResetPasswordPort getResetPasswordPort(

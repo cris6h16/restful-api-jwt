@@ -11,10 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping(value = "${controller.path.core}" +
-        "${controller.path.user.core}" +
-        "${controller.path.user.account.core}"
-)
 public class UserAccountController {
 
     private final UserAccountControllerFacade userAccountControllerFacade;
@@ -23,24 +19,18 @@ public class UserAccountController {
         this.userAccountControllerFacade = userAccountControllerFacade;
     }
 
-    @PostMapping(
-            value = "${controller.path.user.account.request.delete}"
-    )
+    @PostMapping(value = "${controller.user.account.request.delete}")
     public ResponseEntity<Void> requestDeleteMyAccount() {
         return userAccountControllerFacade.requestDeleteMyAccount();
     }
 
-    @DeleteMapping(
-            value = "${controller.path.user.account.request.core}" +
-                    "${controller.path.user.account.request.delete}"
-    )
+    @DeleteMapping(value = "${controller.user.account.core}")
     public ResponseEntity<Void> deleteMyAccount() {
         return userAccountControllerFacade.deleteMyAccount();
     }
 
     @PatchMapping(
-            value = "${controller.path.user.account.update.core}" +
-                    "${controller.path.user.account.update.username}",
+            value = "${controller.user.account.update.username}",
             consumes = "application/json"
     )
     public ResponseEntity<Void> updateMyUsername(@RequestBody String newUsername) {
@@ -48,25 +38,20 @@ public class UserAccountController {
     }
 
     @PatchMapping(
-            value = "${controller.path.user.account.update.core}" +
-                    "${controller.path.user.account.update.password}",
+            value = "${controller.user.account.update.password}",
             consumes = "application/json"
     )
     public ResponseEntity<Void> updateMyPassword(@RequestBody UpdateMyPasswordDTO dto) {
         return userAccountControllerFacade.updateMyPassword(dto);
     }
 
-    @PostMapping(
-            value = "${controller.path.user.account.request.core}" +
-                    "${controller.path.user.account.request.update-email}"
-    )
+    @PostMapping(value = "${controller.user.account.request.update-email}")
     public ResponseEntity<Void> requestUpdateMyEmail() {
         return userAccountControllerFacade.requestUpdateMyEmail();
     }
 
     @PatchMapping(
-            value = "${controller.path.user.account.update.core}" +
-                    "${controller.path.user.account.update.email}",
+            value = "${controller.user.account.update.email}" ,
             consumes = "application/json"
     )
     public ResponseEntity<Void> updateMyEmail(@RequestBody String newEmail) {
@@ -75,6 +60,7 @@ public class UserAccountController {
 
 
     @GetMapping(
+            value = "${controller.user.account.core}",
             produces = "application/json"
     )
     public ResponseEntity<PublicProfileDTO> getMyAccount() {
@@ -82,7 +68,7 @@ public class UserAccountController {
     }
 
     @GetMapping(
-            value = "${controller.path.user.account.all.core}",
+            value = "${controller.user.pagination.all}",
             produces = "application/json"
     )
     public ResponseEntity<Page<PublicProfileDTO>> getAllUsers(@PageableDefault(

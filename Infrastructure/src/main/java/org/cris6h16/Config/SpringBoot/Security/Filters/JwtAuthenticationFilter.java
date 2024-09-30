@@ -5,6 +5,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.cris6h16.Config.SpringBoot.Security.UserDetails.CustomUserDetailsService;
 import org.cris6h16.Config.SpringBoot.Security.UserDetails.UserDetailsWithId;
 import org.cris6h16.Config.SpringBoot.Utils.JwtUtilsImpl;
@@ -16,9 +17,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
 
-// as a component and not instantiated directly due to this need beans an env properties ( less complexity )
 @Component
+@Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtilsImpl jwtUtilsImpl;
@@ -40,11 +42,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
 
+        log.debug("entered to JwtAuthenticationFilter.doFilterInternal");
+
         // accessToken=...; Path=/; Secure; HttpOnly; Expires=Fri, 12 Sep 2025 02:17:49 GMT;
         Cookie[] cookies = request.getCookies();
         String tkCookie = null;
 
         if (cookies == null) {
+            log.debug("No cookies found, then skipping filter");
             filterChain.doFilter(request, response);
             return;
         }
@@ -52,6 +57,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         for (Cookie cookie : cookies) {
             if (cookie.getName().equals(accessTokenCookieName)) {
                 tkCookie = cookie.getValue();
+                log.debug("found access token cookie");
+                break;
             }
         }
 
@@ -59,13 +66,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             Long id = jwtUtilsImpl.getId(tkCookie);
             UserDetailsWithId user = userDetailsService.loadUserById(id);
 
-//            Principal principal =
             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                     user, null, user.getAuthorities()
             );
             SecurityContextHolder.getContext().setAuthentication(authToken);
+            log.debug("authenticated user: {}", user.getUsername());
         }
 
+        log.debug("leaving JwtAuthenticationFilter.doFilterInternal");
         filterChain.doFilter(request, response);
     }
 }

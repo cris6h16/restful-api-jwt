@@ -30,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2) // avoid using the real database
 @AutoConfigureMockMvc(addFilters = false)// bypass security filters
 @ActiveProfiles(value = {"test"}) // todo: set in all tests
-class AuthenticationControllerTest {
+public class AuthenticationControllerTest {
 
     @Value("${controller.path.core}" + "${controller.path.authentication.core}")
     String mainPath;

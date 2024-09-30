@@ -7,10 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping(
-        value = "${controller.path.core}" +
-                "${controller.path.authentication.core}"
-)
 public class AuthenticationController {
     private final AuthenticationControllerFacade facade;
 
@@ -19,7 +15,7 @@ public class AuthenticationController {
     }
 
     @PostMapping(
-            value = "${controller.path.authentication.signup}",
+            value = "${controller.authentication.signup}",
             consumes = "application/json"
     )
     public ResponseEntity<Void> signUp(@RequestBody CreateAccountDTO dto) {
@@ -28,7 +24,7 @@ public class AuthenticationController {
 
 
     @PostMapping(
-            value = "${controller.path.authentication.login}",
+            value = "${controller.authentication.login}",
             consumes = "application/json"
     )
     public ResponseEntity<Void> login(@RequestBody LoginDTO dto) { //todo: if is logged in, say something
@@ -36,14 +32,14 @@ public class AuthenticationController {
     }
 
     @PutMapping(
-            value = "${controller.path.authentication.verify-email}"
+            value = "${controller.authentication.verify-email}"
     )
     public ResponseEntity<Void> verifyMyEmail() { //todo: test this
         return facade.verifyMyEmail();
     }
 
     @PostMapping(
-            value = "${controller.path.authentication.request-reset-password}",
+            value = "${controller.authentication.request-reset-password}",
             consumes = "application/json"
     )
     public ResponseEntity<Void> requestPasswordReset(@RequestBody String email) {
@@ -51,7 +47,7 @@ public class AuthenticationController {
     }
 
     @PatchMapping(
-            value = "${controller.path.authentication.reset-password}",
+            value = "${controller.authentication.reset-password}",
             consumes = "application/json"
     )
     public ResponseEntity<Void> resetPassword(@RequestBody String newPassword) {
@@ -59,7 +55,7 @@ public class AuthenticationController {
     }
 
     @PostMapping(
-            value = "${controller.path.authentication.refresh-access-token}"
+            value = "${controller.authentication.refresh-access-token}"
     )
     public ResponseEntity<Void> refreshAccessToken() {
         return facade.refreshAccessToken();

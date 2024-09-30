@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-class UserDetailsServiceImplTest {
+public class UserDetailsServiceImplTest {
 
     @Mock
     private UserRepository userRepository;

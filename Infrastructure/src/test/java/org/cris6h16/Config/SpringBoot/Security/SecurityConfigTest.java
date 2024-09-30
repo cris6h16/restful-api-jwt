@@ -2,15 +2,12 @@ package org.cris6h16.Config.SpringBoot.Security;
 
 import org.cris6h16.Adapters.In.Rest.Facades.AuthenticationControllerFacade;
 import org.cris6h16.Adapters.In.Rest.Facades.UserAccountControllerFacade;
-import org.cris6h16.Config.SpringBoot.Redis.RedisConfig;
-import org.cris6h16.Repositories.UserRepository;
+import org.cris6h16.Config.SpringBoot.Main;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.FilterType;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.test.context.support.WithAnonymousUser;
@@ -23,11 +20,10 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(classes = {CustomAppConfig.class})
+@SpringBootTest(classes = {Main.class})
 @AutoConfigureMockMvc(addFilters = true)
 @ActiveProfiles("test")
-class SecurityConfigTest {
-
+public class SecurityConfigTest {
 
     @Autowired
     private SecurityConfig securityConfig;
@@ -114,14 +110,5 @@ class SecurityConfigTest {
         throw new UnsupportedOperationException();
     }
 
-
-}
-
-@ComponentScan(
-        basePackages = "org.cris6h16.*",
-        excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {UserRepository.class, RedisConfig.class})
-)
-//@EnableAutoConfiguration(exclude = {JpaRepositoriesAutoConfiguration.class})
-class CustomAppConfig {
 
 }

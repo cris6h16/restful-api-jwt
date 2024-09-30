@@ -27,7 +27,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 // todo: refactor this
-class JwtAuthenticationFilterTest {
+public class JwtAuthenticationFilterTest {
 
     @Mock
     private JwtUtilsImpl jwtUtilsImpl;

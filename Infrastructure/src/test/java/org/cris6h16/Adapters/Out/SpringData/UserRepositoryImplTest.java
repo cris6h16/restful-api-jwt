@@ -23,7 +23,7 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class UserRepositoryImplTest {
+public class UserRepositoryImplTest {
 
     @Mock
     private UserJpaRepository userJpaRepository;

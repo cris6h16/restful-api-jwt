@@ -9,7 +9,7 @@ import org.springframework.test.context.TestPropertySource;
 import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest(classes = ErrorMessagesImpl.class)
 @ActiveProfiles("test")
-class ErrorMessagesImplTest {
+public class ErrorMessagesImplTest {
 
     @Autowired
     private ErrorMessagesImpl errorMessagesImpl;

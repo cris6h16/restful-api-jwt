@@ -2,12 +2,12 @@ package org.cris6h16.Config.SpringBoot.Security.Filters;
 
 
 import jakarta.servlet.http.Cookie;
+import org.cris6h16.Config.SpringBoot.Main;
 import org.cris6h16.Config.SpringBoot.Security.UserDetails.CustomUserDetailsService;
 import org.cris6h16.Config.SpringBoot.Security.UserDetails.UserDetailsWithId;
 import org.cris6h16.Config.SpringBoot.Utils.JwtUtilsImpl;
 import org.cris6h16.In.Ports.VerifyEmailPort;
 import org.cris6h16.Models.ERoles;
-import org.cris6h16.Utils.JwtUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,6 +16,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Collection;
@@ -25,9 +26,9 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-// todo: create a yml for prod and tests
-@SpringBootTest
+@SpringBootTest(classes = {Main.class})
 @AutoConfigureMockMvc // MockMvc
+@ActiveProfiles("test")
 public class JwtAuthenticationFilterIntegrationTest {
 
     @Autowired
@@ -45,6 +46,9 @@ public class JwtAuthenticationFilterIntegrationTest {
     @Value("${jwt.token.access.cookie.name}")
     private String accessTokenCookieName;
 
+    @Value("${controller.authentication.verify-email}")
+    private String verifyEmailPath;
+
     @Test
     public void whenRequestWithValidJwt_thenAuthenticated() throws Exception {
         // Arrange
@@ -57,13 +61,11 @@ public class JwtAuthenticationFilterIntegrationTest {
 
         when(jwtUtils.validate(validJwt)).thenReturn(true);
         when(jwtUtils.getId(validJwt)).thenReturn(1L);
-
-        // - beans
         when(userDetailsService.loadUserById(1L)).thenReturn(userDetails);
 
 
         // Act
-        mockMvc.perform(put("/api/v1/auth/verify-email")
+        mockMvc.perform(put(verifyEmailPath)
                         .cookie(accessTokenCookie))
                 .andExpect(status().isNoContent());
 
@@ -83,7 +85,7 @@ public class JwtAuthenticationFilterIntegrationTest {
         when(jwtUtils.validate(invalidJwt)).thenReturn(false);
 
         // Act
-        mockMvc.perform(put("/api/v1/auth/verify-email")
+        mockMvc.perform(put(verifyEmailPath)
                         .cookie(accessTokenCookie))
                 .andExpect(status().isForbidden());
     }

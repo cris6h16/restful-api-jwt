@@ -18,7 +18,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
 
-class EmailServiceImplTest {
+public class EmailServiceImplTest {
 
     @Mock
     private JavaMailSender mailSender;

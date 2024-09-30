@@ -114,6 +114,7 @@ jwt:
           reset:
             password:
               secs: 1800 # 30 minutes
+
 error:
   messages:
     system:
@@ -156,6 +157,7 @@ controller:
     core: ${controller.base}/user
     pagination:
       all: ${controller.user.core}/all
+
     account:
       core: ${controller.user.core}/account
       request:
@@ -175,3 +177,4 @@ web-front:
     reset-password: ${web-front.core}/auth/reset-password?token={token}
     delete-account: ${web-front.core}/me/delete-account?token={token}
     update-email: ${web-front.core}/me/update-email?token={token}
+

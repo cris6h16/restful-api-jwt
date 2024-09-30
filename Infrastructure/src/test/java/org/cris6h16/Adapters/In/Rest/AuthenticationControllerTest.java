@@ -8,8 +8,6 @@ import org.cris6h16.Config.SpringBoot.Main;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -27,30 +25,26 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 //@WebMvcTest
 @SpringBootTest(classes = Main.class)
-@AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2) // avoid using the real database
 @AutoConfigureMockMvc(addFilters = false)// bypass security filters
 @ActiveProfiles(value = {"test"}) // todo: set in all tests
 public class AuthenticationControllerTest {
 
-    @Value("${controller.path.core}" + "${controller.path.authentication.core}")
-    String mainPath;
-
-    @Value("${controller.path.authentication.signup}")
+    @Value("${controller.authentication.signup}")
     String signupPath;
 
-    @Value("${controller.path.authentication.login}")
+    @Value("${controller.authentication.login}")
     String loginPath;
 
-    @Value("${controller.path.authentication.verify-email}")
+    @Value("${controller.authentication.verify-email}")
     String verifyMyEmailPath;
 
-    @Value("${controller.path.authentication.request-reset-password}")
+    @Value("${controller.authentication.request-reset-password}")
     String requestPasswordResetPath;
 
-    @Value("${controller.path.authentication.reset-password}")
+    @Value("${controller.authentication.reset-password}")
     String resetPasswordPath;
 
-    @Value("${controller.path.authentication.refresh-access-token}")
+    @Value("${controller.authentication.refresh-access-token}")
     String refreshAccessTokenPath;
 
     @Autowired
@@ -64,7 +58,7 @@ public class AuthenticationControllerTest {
         LoginDTO dto = new LoginDTO();
         when(facade.login(any(LoginDTO.class))).thenReturn(ResponseEntity.ok().build());
 
-        mockMvc.perform(post(mainPath + loginPath)
+        mockMvc.perform(post(loginPath)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(dto)))
                 .andExpect(status().isOk());
@@ -77,7 +71,7 @@ public class AuthenticationControllerTest {
         LoginDTO dto = new LoginDTO();
         when(facade.login(any(LoginDTO.class))).thenReturn(ResponseEntity.ok().build());
 
-        mockMvc.perform(post(mainPath + loginPath)
+        mockMvc.perform(post(loginPath)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(dto)))
                 .andExpect(status().isOk());
@@ -89,7 +83,7 @@ public class AuthenticationControllerTest {
     void login_shouldRejectNonJsonContentType() throws Exception {
         LoginDTO dto = new LoginDTO();
 
-        mockMvc.perform(post(mainPath + loginPath)
+        mockMvc.perform(post(loginPath)
                         .contentType(MediaType.TEXT_PLAIN)
                         .content(new ObjectMapper().writeValueAsString(dto)))
                 .andExpect(status().isUnsupportedMediaType());
@@ -102,7 +96,7 @@ public class AuthenticationControllerTest {
         when(facade.signup(any(CreateAccountDTO.class))).thenReturn(ResponseEntity.ok().build());
 
         // Act & Assert
-        mockMvc.perform(post(mainPath + signupPath)
+        mockMvc.perform(post(signupPath)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(dto)))
                 .andExpect(status().isOk());
@@ -115,7 +109,7 @@ public class AuthenticationControllerTest {
         CreateAccountDTO dto = new CreateAccountDTO();
         when(facade.signup(any(CreateAccountDTO.class))).thenReturn(ResponseEntity.ok().build());
 
-        mockMvc.perform(post(mainPath + signupPath)
+        mockMvc.perform(post(signupPath)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(dto)))
                 .andExpect(status().isOk());
@@ -127,7 +121,7 @@ public class AuthenticationControllerTest {
     void signUp_shouldRejectNonJsonContentType() throws Exception {
         CreateAccountDTO dto = new CreateAccountDTO();
 
-        mockMvc.perform(post(mainPath + signupPath)
+        mockMvc.perform(post(signupPath)
                         .contentType(MediaType.TEXT_PLAIN)
                         .content(new ObjectMapper().writeValueAsString(dto)))
                 .andExpect(status().isUnsupportedMediaType());
@@ -137,7 +131,7 @@ public class AuthenticationControllerTest {
     void verifyMyEmail_shouldCallFacadeAndReturnStatusOk() throws Exception {
         when(facade.verifyMyEmail()).thenReturn(ResponseEntity.ok().build());
 
-        mockMvc.perform(put(mainPath + verifyMyEmailPath))
+        mockMvc.perform(put(verifyMyEmailPath))
                 .andExpect(status().isOk());
 
         verify(facade).verifyMyEmail();
@@ -149,7 +143,7 @@ public class AuthenticationControllerTest {
         String email = "test@example.com";
         when(facade.requestPasswordReset(anyString())).thenReturn(ResponseEntity.ok().build());
 
-        mockMvc.perform(post(mainPath + requestPasswordResetPath)
+        mockMvc.perform(post(requestPasswordResetPath)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(email))
                 .andExpect(status().isOk());
@@ -162,7 +156,7 @@ public class AuthenticationControllerTest {
         String email = "test@example.com";
         when(facade.requestPasswordReset(anyString())).thenReturn(ResponseEntity.ok().build());
 
-        mockMvc.perform(post(mainPath + requestPasswordResetPath)
+        mockMvc.perform(post(requestPasswordResetPath)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(email))
                 .andExpect(status().isOk());
@@ -174,7 +168,7 @@ public class AuthenticationControllerTest {
     void requestPasswordReset_shouldRejectNonJsonContentType() throws Exception {
         String email = "test@example.com";
 
-        mockMvc.perform(post(mainPath + requestPasswordResetPath)
+        mockMvc.perform(post(requestPasswordResetPath)
                         .contentType(MediaType.TEXT_PLAIN)
                         .content(email))
                 .andExpect(status().isUnsupportedMediaType());
@@ -185,7 +179,7 @@ public class AuthenticationControllerTest {
         String newPassword = "newPassword123";
         when(facade.resetPassword(anyString())).thenReturn(ResponseEntity.ok().build());
 
-        mockMvc.perform(patch(mainPath + resetPasswordPath)
+        mockMvc.perform(patch(resetPasswordPath)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(newPassword))
                 .andExpect(status().isOk());
@@ -198,7 +192,7 @@ public class AuthenticationControllerTest {
         String newPassword = "newPassword123";
         when(facade.resetPassword(anyString())).thenReturn(ResponseEntity.ok().build());
 
-        mockMvc.perform(patch(mainPath + resetPasswordPath)
+        mockMvc.perform(patch(resetPasswordPath)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(newPassword))
                 .andExpect(status().isOk());
@@ -210,7 +204,7 @@ public class AuthenticationControllerTest {
     void resetPassword_shouldRejectNonJsonContentType() throws Exception {
         String newPassword = "newPassword123";
 
-        mockMvc.perform(patch(mainPath + resetPasswordPath)
+        mockMvc.perform(patch(resetPasswordPath)
                         .contentType(MediaType.TEXT_PLAIN)
                         .content(newPassword))
                 .andExpect(status().isUnsupportedMediaType());
@@ -221,7 +215,7 @@ public class AuthenticationControllerTest {
     void refreshAccessToken_shouldCallFacadeAndReturnStatusOk() throws Exception {
         when(facade.refreshAccessToken()).thenReturn(ResponseEntity.ok().build());
 
-        mockMvc.perform(post(mainPath + refreshAccessTokenPath))
+        mockMvc.perform(post(refreshAccessTokenPath))
                 .andExpect(status().isOk());
 
         verify(facade).refreshAccessToken();

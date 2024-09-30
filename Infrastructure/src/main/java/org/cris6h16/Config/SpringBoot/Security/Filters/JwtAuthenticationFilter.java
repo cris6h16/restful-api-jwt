@@ -70,7 +70,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     user, null, user.getAuthorities()
             );
             SecurityContextHolder.getContext().setAuthentication(authToken);
-            log.debug("authenticated user: {}", user.getUsername());
+            log.debug("authenticated user: {}", user);
         }
 
         log.debug("leaving JwtAuthenticationFilter.doFilterInternal");

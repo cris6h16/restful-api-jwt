@@ -35,6 +35,18 @@ public class SecurityConfig {
     @Value("${controller.authentication.login}")
     String loginPath;
 
+    @Value("${controller.authentication.verify-email}")
+    String verifyMyEmailPath;
+
+    @Value("${controller.authentication.request-reset-password}")
+    String requestPasswordResetPath;
+
+    @Value("${controller.authentication.reset-password}")
+    String resetPasswordPath;
+
+    @Value("${controller.authentication.refresh-access-token}")
+    String refreshAccessTokenPath;
+
     @Value("${controller.user.account.core}")
     String userAccountPath;
 
@@ -47,6 +59,7 @@ public class SecurityConfig {
 
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+
     }
 
     @Bean
@@ -55,7 +68,10 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers(HttpMethod.POST, loginPath, signupPath).permitAll()
-                        .requestMatchers(userAccountPath + "/**").hasAuthority(ERoles.ROLE_USER.toString())
+                        .requestMatchers(HttpMethod.PUT, verifyMyEmailPath).hasAuthority(ERoles.ROLE_USER.toString())
+                        .requestMatchers(HttpMethod.POST, requestPasswordResetPath).hasAuthority(ERoles.ROLE_USER.toString())
+                        .requestMatchers(HttpMethod.PATCH, resetPasswordPath).hasAuthority(ERoles.ROLE_USER.toString())
+                        .requestMatchers(HttpMethod.POST, refreshAccessTokenPath).hasAuthority(ERoles.ROLE_USER.toString())
                         .requestMatchers(HttpMethod.GET, allUsersPagePath).hasAuthority(ERoles.ROLE_ADMIN.toString())
                         .anyRequest().denyAll()
                 )

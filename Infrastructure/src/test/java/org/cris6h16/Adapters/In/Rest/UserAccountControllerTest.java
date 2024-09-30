@@ -8,8 +8,6 @@ import org.cris6h16.Config.SpringBoot.Main;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -31,33 +29,29 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(classes = Main.class)
-@AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2) // Avoid load the real database
 @AutoConfigureMockMvc(addFilters = false) // Bypass security filters
 @ActiveProfiles(value = {"test"})
-class UserAccountControllerTest {
+public class UserAccountControllerTest {
 
-    @Value("${controller.path.core}" + "${controller.path.user.core}" + "${controller.path.user.account.core}")
-    String mainPath;
-
-    @Value("${controller.path.user.account.request.delete}")
+    @Value("${controller.user.account.request.delete}")
     String requestDeleteMyAccountPath;
 
-    @Value("${controller.path.user.account.request.core}" + "${controller.path.user.account.request.delete}")
+    @Value("${controller.user.account.core}")
     String deleteMyAccountPath;
 
-    @Value("${controller.path.user.account.update.core}" + "${controller.path.user.account.update.username}")
+    @Value("${controller.user.account.update.username}")
     String updateMyUsernamePath;
 
-    @Value("${controller.path.user.account.update.core}" + "${controller.path.user.account.update.password}")
+    @Value("${controller.user.account.update.password}")
     String updateMyPasswordPath;
 
-    @Value("${controller.path.user.account.request.core}" + "${controller.path.user.account.request.update-email}")
+    @Value("${controller.user.account.request.update-email}")
     String requestUpdateMyEmailPath;
 
-    @Value("${controller.path.user.account.update.core}" + "${controller.path.user.account.update.email}")
+    @Value("${controller.user.account.update.email}")
     String updateMyEmailPath;
 
-    @Value("${controller.path.user.account.all.core}")
+    @Value("${controller.user.pagination.all}")
     String getAllUsersPath;
 
     @Autowired
@@ -70,7 +64,7 @@ class UserAccountControllerTest {
     void requestDeleteMyAccount_shouldCallFacadeAndReturnStatusOk() throws Exception {
         when(userAccountControllerFacade.requestDeleteMyAccount()).thenReturn(ResponseEntity.ok().build());
 
-        mockMvc.perform(post(mainPath + requestDeleteMyAccountPath))
+        mockMvc.perform(post(requestDeleteMyAccountPath))
                 .andExpect(status().isOk());
 
         verify(userAccountControllerFacade).requestDeleteMyAccount();
@@ -80,7 +74,7 @@ class UserAccountControllerTest {
     void deleteMyAccount_shouldCallFacadeAndReturnStatusOk() throws Exception {
         when(userAccountControllerFacade.deleteMyAccount()).thenReturn(ResponseEntity.ok().build());
 
-        mockMvc.perform(delete(mainPath + deleteMyAccountPath))
+        mockMvc.perform(delete(deleteMyAccountPath))
                 .andExpect(status().isOk());
 
         verify(userAccountControllerFacade).deleteMyAccount();
@@ -92,7 +86,7 @@ class UserAccountControllerTest {
         when(userAccountControllerFacade.updateMyUsername(anyString())).thenReturn(ResponseEntity.ok().build());
 
 
-        mockMvc.perform(patch(mainPath + updateMyUsernamePath)
+        mockMvc.perform(patch(updateMyUsernamePath)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(newUsername))
                 .andExpect(status().isOk());
@@ -103,7 +97,7 @@ class UserAccountControllerTest {
     @Test
     void updateMyUsername_shouldRejectNonJsonContentType() throws Exception {
         String newUsername = "newUsername";
-        mockMvc.perform(patch(mainPath + updateMyUsernamePath)
+        mockMvc.perform(patch(updateMyUsernamePath)
                         .contentType(MediaType.TEXT_PLAIN)
                         .content(newUsername))
                 .andExpect(status().isUnsupportedMediaType());
@@ -114,7 +108,7 @@ class UserAccountControllerTest {
         UpdateMyPasswordDTO dto = new UpdateMyPasswordDTO("oldPassword", "newPassword");
         when(userAccountControllerFacade.updateMyPassword(any(UpdateMyPasswordDTO.class))).thenReturn(ResponseEntity.ok().build());
 
-        mockMvc.perform(patch(mainPath + updateMyPasswordPath)
+        mockMvc.perform(patch(updateMyPasswordPath)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(dto)))
                 .andExpect(status().isOk());
@@ -126,7 +120,7 @@ class UserAccountControllerTest {
     void updateMyPassword_shouldRejectNonJsonContentType() throws Exception {
         UpdateMyPasswordDTO dto = new UpdateMyPasswordDTO("oldPassword", "newPassword");
 
-        mockMvc.perform(patch(mainPath + updateMyPasswordPath)
+        mockMvc.perform(patch(updateMyPasswordPath)
                         .contentType(MediaType.TEXT_PLAIN)
                         .content(new ObjectMapper().writeValueAsString(dto)))
                 .andExpect(status().isUnsupportedMediaType());
@@ -136,7 +130,7 @@ class UserAccountControllerTest {
     void requestUpdateMyEmail_shouldCallFacadeAndReturnStatusOk() throws Exception {
         when(userAccountControllerFacade.requestUpdateMyEmail()).thenReturn(ResponseEntity.ok().build());
 
-        mockMvc.perform(post(mainPath + requestUpdateMyEmailPath))
+        mockMvc.perform(post(requestUpdateMyEmailPath))
                 .andExpect(status().isOk());
 
         verify(userAccountControllerFacade).requestUpdateMyEmail();
@@ -147,7 +141,7 @@ class UserAccountControllerTest {
         String newEmail = "newemail@example.com";
         when(userAccountControllerFacade.updateMyEmail(anyString())).thenReturn(ResponseEntity.ok().build());
 
-        mockMvc.perform(patch(mainPath + updateMyEmailPath)
+        mockMvc.perform(patch(updateMyEmailPath)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(newEmail))
                 .andExpect(status().isOk());
@@ -159,7 +153,7 @@ class UserAccountControllerTest {
     void updateMyEmail_shouldRejectNonJsonContentType() throws Exception {
         String newEmail = "newemail@example.com";
 
-        mockMvc.perform(patch(mainPath + updateMyEmailPath)
+        mockMvc.perform(patch(updateMyEmailPath)
                         .contentType(MediaType.TEXT_PLAIN)
                         .content(newEmail))
                 .andExpect(status().isUnsupportedMediaType());
@@ -170,7 +164,7 @@ class UserAccountControllerTest {
         PublicProfileDTO profile = new PublicProfileDTO();
         when(userAccountControllerFacade.getMyAccount()).thenReturn(ResponseEntity.ok(profile));
 
-        mockMvc.perform(get(mainPath))
+        mockMvc.perform(get(deleteMyAccountPath))
                 .andExpect(status().isOk());
 
         verify(userAccountControllerFacade).getMyAccount();
@@ -181,7 +175,7 @@ class UserAccountControllerTest {
         Page<PublicProfileDTO> page = new PageImpl<>(List.of(new PublicProfileDTO()));
         when(userAccountControllerFacade.getAllUsers(any(Pageable.class))).thenReturn(ResponseEntity.ok(page));
 
-        mockMvc.perform(get(mainPath + getAllUsersPath)
+        mockMvc.perform(get(getAllUsersPath)
                         .param("page", "0")
                         .param("size", "50")
                         .param("sort", "id,DESC"))

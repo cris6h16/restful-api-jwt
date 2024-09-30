@@ -1,31 +1,31 @@
 package org.cris6h16.Adapters.Out.SpringData.Entities;
 
 import org.cris6h16.Adapters.Out.SpringData.UserJpaRepository;
-import org.cris6h16.Config.SpringBoot.Main;
 import org.cris6h16.Models.ERoles;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.dao.DuplicateKeyException;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Objects;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 // principally tested the constraints
-@SpringBootTest(classes = Main.class)
-@Transactional(isolation = Isolation.READ_COMMITTED)
-class UserEntityTest {
+@SpringBootTest(classes = Math.class)
+@ActiveProfiles("test")
+public class UserEntityTest {
 
     @Autowired
     private UserJpaRepository userJpaRepository;
@@ -157,6 +157,7 @@ class UserEntityTest {
                 .isInstanceOf(DataIntegrityViolationException.class)
                 .hasMessageContaining("not-null property references a null or transient value : org.cris6h16.Adapters.Out.SpringData.Entities.UserEntity.active");
     }
+
     private UserEntity createUserEntity() {
         LocalDateTime ldt = Instant.now().atZone(ZoneId.systemDefault()).toLocalDateTime();
         ldt = ldt.minusNanos(ldt.getNano());
@@ -233,5 +234,5 @@ class UserEntityTest {
                 .build();
     }
 
-
 }
+

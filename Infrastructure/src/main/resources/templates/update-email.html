@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -41,7 +41,7 @@
 <div class="container">
     <h1>Email Update Request</h1>
     <p>It seems like you requested update your email. If this was you, click the button below to update your email:</p>
-    <a href="${UpdateEmailLink}" class="button">Update Email</a>
+        <a th:href="${link}" class="button">Update Email</a>
     <p>If you did not request this change, please ignore this email.</p>
     <p>Best regards,<br><a href="https://github.com/cris6h16">cris6h16</a> App</p>
 </div>

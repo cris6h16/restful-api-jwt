@@ -8,6 +8,7 @@ import io.jsonwebtoken.security.Keys;
 import lombok.Getter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.cris6h16.Config.SpringBoot.Properties.JwtProperties;
 import org.cris6h16.Models.ERoles;
 import org.cris6h16.Utils.JwtUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,19 +26,16 @@ import java.util.function.Function;
 @Slf4j
 public class JwtUtilsImpl implements JwtUtils {
 
-    private final String secretKey;
-    private final long accessTokenExpTimeSecs;
-    private final long refreshTokenExpTimeSecs;
+    private final JwtProperties jwtProperties;
 
-    public JwtUtilsImpl(@Value("${jwt.secret.key}") String secretKey,
-                        @Value("${jwt.token.access.expiration.secs}") long accessTokenExpTimeSecs,
-                        @Value("${jwt.token.refresh.expiration.secs}") long refreshTokenExpTimeSecs) {
-        this.secretKey = secretKey;
-        this.accessTokenExpTimeSecs = accessTokenExpTimeSecs;
-        this.refreshTokenExpTimeSecs = refreshTokenExpTimeSecs;
+    public JwtUtilsImpl(JwtProperties jwtProperties) {
+        this.jwtProperties = jwtProperties;
     }
 
+
     public String genToken(Long subject, Map<String, String> claims, long timeExpirationSecs) {
+       log.debug("Generating token");
+
         JwtBuilder jwtBuilder = Jwts.builder()
                 .subject(String.valueOf(subject))
                 .issuedAt(new Date(System.currentTimeMillis()))
@@ -47,9 +45,12 @@ public class JwtUtilsImpl implements JwtUtils {
         if (claims != null && !claims.isEmpty()) {
             for (Map.Entry<String, String> entry : claims.entrySet()) {
                 jwtBuilder.claim(entry.getKey(), entry.getValue());
+
+                log.debug("Added claim: {} = {}", entry.getKey(), entry.getValue());
             }
         }
 
+        log.debug("Token generated");
         return jwtBuilder.compact();
     }
 
@@ -72,11 +73,11 @@ public class JwtUtilsImpl implements JwtUtils {
     }
 
     public Long getId(String token) {
-        log.debug("Extracting user ID from token");
         return Long.valueOf(getAClaim(token, claims -> claims.getSubject()));
     }
 
     <T> T getAClaim(String token, Function<Claims, T> individualClaim) {
+        log.debug("Extracting a claim from token, function: {}", individualClaim.toString());
         Claims claims = getClaims(token);
         return individualClaim.apply(claims);
     }
@@ -92,19 +93,21 @@ public class JwtUtilsImpl implements JwtUtils {
 
 
     SecretKey getSign() {
-        byte[] keyBase = Decoders.BASE64.decode(this.secretKey);
+        byte[] keyBase = Decoders.BASE64.decode(this.jwtProperties.getSecretKey());
         return Keys.hmacShaKeyFor(keyBase);
     }
 
     @Override
     public String genRefreshToken(Long id) {
-        return genToken(id, null, refreshTokenExpTimeSecs);
+        log.debug("Generating refresh token for user ID: {}", id);
+        return genToken(id, null, this.jwtProperties.getToken().getRefresh().getExpiration().getSecs());
     }
 
     @Override
     public String genAccessToken(Long id, Set<ERoles> roles) {
-        return genToken(id, Map.of("roles", roles.toString()), accessTokenExpTimeSecs);
+        log.debug("Generating access token for user ID: {}", id);
+        return genToken(id, Map.of("roles", roles.toString()), this.jwtProperties.getToken().getAccess().getExpiration().getSecs());
     }
-
-
 }
+
+

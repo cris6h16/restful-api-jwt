@@ -73,7 +73,7 @@ server:
 
 logging:
   level:
-    root: error
+    root: debug
   logback:
     rollingpolicy:
       file-name-pattern: ./logs/restful-api-jwt.%d{yyyy-MM-dd}.%i.log
@@ -86,8 +86,7 @@ logging:
 
 
 jwt:
-  secret:
-    key: 123456789987654321123456789987654321123456789
+  secret-key: 123456789987654321123456789987654321123456789
   token:
     refresh:
       expiration:
@@ -168,11 +167,54 @@ controller:
         password: ${controller.user.account.update.core}/password
         email: ${controller.user.account.update.core}/email
 
-web-front:
-  core: http://localhost:4200
-  path:
-    email-verification: ${web-front.core}/auth/verification-email?token={token}
-    reset-password: ${web-front.core}/auth/reset-password?token={token}
-    delete-account: ${web-front.core}/me/delete-account?token={token}
-    update-email: ${web-front.core}/me/update-email?token={token}
 
+email-service:
+  host: http://localhost:4200
+  token:
+    parameter: token
+    variable-in-link-template: "{token}"
+
+  verification:
+    link-template: ${email-service.host}/auth/verification-email?${email-service.token.parameter}=${email-service.token.variable-in-link-template}
+    subject: "Email verification"
+    html:
+      name: "email-verification.html"
+      href-variable: "link"
+
+  reset-password:
+    link-template: ${email-service.host}/auth/reset-password?${email-service.token.parameter}=${email-service.token.variable-in-link-template}
+    subject: "Reset password"
+    html:
+      name: "reset-password.html"
+      href-variable: "link"
+
+  delete-account:
+    link-template: ${email-service.host}/me/delete-account?${email-service.token.parameter}=${email-service.token.variable-in-link-template}
+    subject: "Delete account"
+    html:
+      name: "delete-account.html"
+      href-variable: "link"
+
+  update-email:
+    link-template: ${email-service.host}/me/update-email?${email-service.token.parameter}=${email-service.token.variable-in-link-template}
+    subject: "Update email"
+    html:
+      name: "update-email.html"
+      href-variable: "link"
+
+cors:
+  path-pattern: /**
+  allowed-origins:
+      - ${web-front.core}
+  allowed-methods:
+      - GET
+      - POST
+      - PUT
+      - DELETE
+  allowed-headers:
+#        - Authorization
+      - Content-Type
+  exposed-headers:
+#        - Authorization
+  allow-credentials: true
+  max-age: 3600 #seconds

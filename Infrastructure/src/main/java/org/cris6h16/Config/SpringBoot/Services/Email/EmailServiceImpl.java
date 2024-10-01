@@ -1,20 +1,19 @@
 package org.cris6h16.Config.SpringBoot.Services.Email;
 
-import jakarta.mail.MailSessionDefinition;
 import jakarta.mail.internet.MimeMessage;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
+import org.cris6h16.Config.SpringBoot.Properties.JwtProperties;
+import org.cris6h16.Config.SpringBoot.Properties.EmailServiceProperties;
 import org.cris6h16.Config.SpringBoot.Utils.JwtUtilsImpl;
 import org.cris6h16.Services.EmailService;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.ITemplateEngine;
 import org.thymeleaf.context.Context;
+
+import java.util.function.Function;
 
 @Slf4j
 @Service
@@ -24,42 +23,24 @@ public class EmailServiceImpl implements EmailService {
 
     private final JavaMailSender mailSender;
     private final JwtUtilsImpl jwtUtils;
-    private final long emailVerificationTokenTimeLive;
-    private final long requestDeleteAccountTokenTimeLive;
-    private final String emailVerificationLinkTemplate;
-    private final String resetPasswordLinkTemplate;
-    private final long requestPasswordTokenTimeLive;
-    private final String deleteAccountLinkTemplate;
-    private final long requestUpdateEmailTokenTimeLive;
-    private final String updateEmailLinkTemplate;
+    private final JwtProperties jwtProperties;
+    private final EmailServiceProperties emailServiceProperties;
 
     public EmailServiceImpl(ITemplateEngine templateEngine,
                             JavaMailSender mailSender,
-                            JwtUtilsImpl jwtUtils,
-                            @Value("${jwt.token.access.request.email.verification.secs}") long emailVerificationTokenTimeLive,
-                            @Value("${jwt.token.access.request.email.delete-account.secs}") long requestDeleteAccountTokenTimeLive,
-                            @Value("${web-front.path.email-verification}") String emailVerificationLinkTemplate,
-                            @Value("${web-front.path.reset-password}") String resetPasswordLinkTemplate,
-                            @Value("${jwt.token.access.request.email.reset.password.secs}") long requestPasswordTokenTimeLive,
-                            @Value("${web-front.path.delete-account}") String deleteAccountLinkTemplate,
-                            @Value("${jwt.token.access.request.email.update-email.secs}") long requestUpdateEmailTokenTimeLive,
-                            @Value("${web-front.path.update-email}") String updateEmailLinkTemplate) {
+                            JwtUtilsImpl jwtUtils, JwtProperties jwtProperties, EmailServiceProperties webFrontProperties) {
 
         this.templateEngine = templateEngine;
         this.mailSender = mailSender;
         this.jwtUtils = jwtUtils;
-        this.emailVerificationTokenTimeLive = emailVerificationTokenTimeLive;
-        this.requestDeleteAccountTokenTimeLive = requestDeleteAccountTokenTimeLive;
-        this.emailVerificationLinkTemplate = emailVerificationLinkTemplate;
-        this.resetPasswordLinkTemplate = resetPasswordLinkTemplate;
-        this.requestPasswordTokenTimeLive = requestPasswordTokenTimeLive;
-        this.deleteAccountLinkTemplate = deleteAccountLinkTemplate;
-        this.requestUpdateEmailTokenTimeLive = requestUpdateEmailTokenTimeLive;
-        this.updateEmailLinkTemplate = updateEmailLinkTemplate;
+        this.jwtProperties = jwtProperties;
+        this.emailServiceProperties = webFrontProperties;
     }
 
 
-    public void sendEmail(String email, String subject, String content) {
+    void sendEmail(String email, Function<EmailServiceProperties, String> subjectExtractor, String content) {
+        String subject = subjectExtractor.apply(emailServiceProperties);
+
         String failMsg = "";
         if (email == null || email.isEmpty()) failMsg = "Email cannot be null or empty";
         if (subject == null || subject.isEmpty()) failMsg = "Subject cannot be null or empty";
@@ -87,48 +68,106 @@ public class EmailServiceImpl implements EmailService {
     @Async
     @Override
     public void sendVerificationEmail(Long id, String email) {
+        long emailVerificationTokenTimeLive = jwtProperties.getToken().getAccess().getRequest().getEmail().getVerification().getSecs();
         String token = jwtUtils.genToken(id, null, emailVerificationTokenTimeLive);
-        String content = buildHtmlContent(token, emailVerificationLinkTemplate, "EmailVerificationLink", "verification-email.html");
-        sendEmail(email, "Email Verification needed", content);
+
+        String content = buildHtmlContent(
+                token,
+                props -> props.getVerification().getLinkTemplate(),
+                props -> props.getVerification().getHtml().getHrefVariable(),
+                props -> props.getVerification().getHtml().getName(),
+                props -> props.getToken().getVariableInLinkTemplate()
+        );
+
+        sendEmail(
+                email,
+                props -> props.getVerification().getSubject(),
+                content
+        );
     }
 
 
     @Async
     @Override
     public void sendResetPasswordEmail(Long id, String email) {
+        long requestPasswordTokenTimeLive = jwtProperties.getToken().getAccess().getRequest().getEmail().getReset().getPassword().getSecs();
         String token = jwtUtils.genToken(id, null, requestPasswordTokenTimeLive);
-        String content = buildHtmlContent(token, resetPasswordLinkTemplate, "ResetPasswordLink", "request-reset-password.html");
-        sendEmail(email, "Password Reset Request", content);
+
+        String content = buildHtmlContent(
+                token,
+                props -> props.getResetPassword().getLinkTemplate(),
+                props -> props.getResetPassword().getHtml().getHrefVariable(),
+                props -> props.getResetPassword().getHtml().getName(),
+                props -> props.getToken().getVariableInLinkTemplate()
+        );
+
+        sendEmail(
+                email,
+                props -> props.getResetPassword().getSubject(),
+                content
+        );
     }
 
     @Async
     @Override
     public void sendRequestDeleteAccountEmail(Long id, String email) {
+        long requestDeleteAccountTokenTimeLive = jwtProperties.getToken().getAccess().getRequest().getEmail().getDeleteAccount().getSecs();
         String token = jwtUtils.genToken(id, null, requestDeleteAccountTokenTimeLive);
-        String content = buildHtmlContent(token, deleteAccountLinkTemplate, "DeleteAccountLink", "request-delete-account.html");
-        sendEmail(email, "Request Delete Account", content);
+
+        String content = buildHtmlContent(
+                token,
+                props -> props.getDeleteAccount().getLinkTemplate(),
+                props -> props.getDeleteAccount().getHtml().getHrefVariable(),
+                props -> props.getDeleteAccount().getHtml().getName(),
+                props -> props.getToken().getVariableInLinkTemplate()
+        );
+
+        sendEmail(
+                email,
+                props -> props.getDeleteAccount().getSubject(),
+                content
+        );
     }
 
     @Async
     @Override
     public void sendRequestUpdateEmail(Long id, String email) {
+        long requestUpdateEmailTokenTimeLive = jwtProperties.getToken().getAccess().getRequest().getEmail().getUpdateEmail().getSecs();
         String token = jwtUtils.genToken(id, null, requestUpdateEmailTokenTimeLive);
-        String content = buildHtmlContent(token, updateEmailLinkTemplate, "UpdateEmailLink", "request-update-email.html");
-        sendEmail(email, "Request Update Email", content);
+
+        String content = buildHtmlContent(
+                token,
+                props -> props.getUpdateEmail().getLinkTemplate(),
+                props -> props.getUpdateEmail().getHtml().getHrefVariable(),
+                props -> props.getUpdateEmail().getHtml().getName(),
+                props -> props.getToken().getVariableInLinkTemplate()
+        );
+
+        sendEmail(
+                email,
+                props -> props.getUpdateEmail().getSubject(),
+                content
+        );
     }
 
-    /**
-     * @param token
-     * @param linkTemplate     for insert token, example {@code example.com?token={token}}
-     * @param linkVariableName the thymeleaf variable name inside the html, example of a variable in thymeleaf {@code <a th:href="${var}" }, in this case the variable name is {@code var}
-     * @param htmlTemplateName html template name, example {@code email-verification.html}
-     * @return
-     */
-    String buildHtmlContent(String token, String linkTemplate, String linkVariableName, String htmlTemplateName) {
-        String link = linkTemplate.replace("{token}", token);
 
+    String buildHtmlContent(String token,
+                            Function<EmailServiceProperties, String> linkTemplateExtractor,
+                            Function<EmailServiceProperties, String> hrefVariableInHtmlExtractor,
+                            Function<EmailServiceProperties, String> htmlTemplateNameExtractor,
+                            Function<EmailServiceProperties, String> variableInLinkTemplateExtractor) {
+
+        String linkTemplate = linkTemplateExtractor.apply(emailServiceProperties);
+        String hrefVariableInHtml = hrefVariableInHtmlExtractor.apply(emailServiceProperties);
+        String htmlTemplateName = htmlTemplateNameExtractor.apply(emailServiceProperties);
+        String variableInLinkTemplate = variableInLinkTemplateExtractor.apply(emailServiceProperties);
+
+        log.debug("building html content with token: {}, linkTemplate: {}, hrefVariableInHtml: {}, htmlTemplateName: {}, variableInLinkTemplate: {}",
+                token, linkTemplate, hrefVariableInHtml, htmlTemplateName, variableInLinkTemplate);
+
+        String link = linkTemplate.replace(variableInLinkTemplate, token);
         Context context = new Context();
-        context.setVariable(linkVariableName, link);
+        context.setVariable(hrefVariableInHtml, link);
         return templateEngine.process(htmlTemplateName, context);
 
     }

@@ -165,7 +165,7 @@ public class EmailServiceImplTest {
         String token = "generated-token";
         String linkTemplate = "http://example.com/verify?token={token}";
         String expectedLink = "http://example.com/verify?token=generated-token";
-        String htmlTemplateName = "verification-email.html";
+        String htmlTemplateName = "email-verification.html";
         String expectedContent = "HTML content";
 
         when(templateEngine.process(anyString(), any(Context.class))).thenReturn(expectedContent);

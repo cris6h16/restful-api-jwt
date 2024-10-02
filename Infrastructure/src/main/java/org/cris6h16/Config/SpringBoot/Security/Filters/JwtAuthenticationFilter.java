@@ -6,6 +6,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.cris6h16.Config.SpringBoot.Properties.JwtProperties;
 import org.cris6h16.Config.SpringBoot.Security.UserDetails.CustomUserDetailsService;
 import org.cris6h16.Config.SpringBoot.Security.UserDetails.UserDetailsWithId;
 import org.cris6h16.Config.SpringBoot.Utils.JwtUtilsImpl;
@@ -25,16 +26,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtilsImpl jwtUtilsImpl;
     private final CustomUserDetailsService userDetailsService;
+    private final JwtProperties jwtProperties;
 
-    protected final String accessTokenCookieName;
 
     public JwtAuthenticationFilter(JwtUtilsImpl jwtUtilsImpl,
                                    CustomUserDetailsService userDetailsService,
-                                   @Value("${jwt.token.access.cookie.name}")
-                                   String accessTokenCookieName) {
+                                   JwtProperties jwtProperties) {
         this.jwtUtilsImpl = jwtUtilsImpl;
         this.userDetailsService = userDetailsService;
-        this.accessTokenCookieName = accessTokenCookieName;
+        this.jwtProperties = jwtProperties;
     }
 
     @Override
@@ -55,6 +55,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         for (Cookie cookie : cookies) {
+            String accessTokenCookieName = jwtProperties.getToken().getAccess().getCookie().getName();
+
             if (cookie.getName().equals(accessTokenCookieName)) {
                 tkCookie = cookie.getValue();
                 log.debug("found access token cookie");

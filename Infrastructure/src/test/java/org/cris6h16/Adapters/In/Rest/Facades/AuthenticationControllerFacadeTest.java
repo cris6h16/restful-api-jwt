@@ -2,7 +2,6 @@ package org.cris6h16.Adapters.In.Rest.Facades;
 
 import org.cris6h16.Adapters.In.Rest.DTOs.CreateAccountDTO;
 import org.cris6h16.Adapters.In.Rest.DTOs.LoginDTO;
-import org.cris6h16.Config.SpringBoot.Beans;
 import org.cris6h16.Config.SpringBoot.Security.UserDetails.UserDetailsWithId;
 import org.cris6h16.Config.SpringBoot.Utils.JwtUtilsImpl;
 import org.cris6h16.Exceptions.Impls.NotFoundException;
@@ -15,7 +14,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;

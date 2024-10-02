@@ -3,22 +3,25 @@ package org.cris6h16.Config.SpringBoot.Security;
 import org.cris6h16.Adapters.In.Rest.Facades.AuthenticationControllerFacade;
 import org.cris6h16.Adapters.In.Rest.Facades.UserAccountControllerFacade;
 import org.cris6h16.Config.SpringBoot.Main;
+import org.cris6h16.Config.SpringBoot.Properties.ControllerProperties;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.test.context.support.WithAnonymousUser;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import java.util.Arrays;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(classes = {Main.class})
 @AutoConfigureMockMvc(addFilters = true)
@@ -28,86 +31,166 @@ public class SecurityConfigTest {
     @Autowired
     private SecurityConfig securityConfig;
 
+    @Autowired
+    private ControllerProperties controllerProperties;
+
     @MockBean
     private UserAccountControllerFacade userAccountControllerFacade;
+
     @MockBean
     private AuthenticationControllerFacade authenticationControllerFacade;
 
     @Autowired
     private MockMvc mockMvc;
 
-    @Test
-    void testPublicEndpoints() throws Exception {
-        when(authenticationControllerFacade.login(any())).thenReturn(ResponseEntity.ok().build());
-        when(authenticationControllerFacade.signup(any())).thenReturn(ResponseEntity.ok().build());
-
-        assertEndpointIsAccessible(securityConfig.loginPath, HttpMethod.POST);
-        assertEndpointIsAccessible(securityConfig.signupPath, HttpMethod.POST);
+    @BeforeEach
+    void setUp() {
+        // the facades can be mocked otpionally if i want change the status
     }
 
-    @Test
+
+    @Nested
+    class UnauthenticatedTests {
+        @Test
+        void testPermitAllPaths() throws Exception {
+            String[] posts = postPermitAllPaths();
+            int expectedStatus = HttpStatus.OK.value();
+
+            for (String path : posts) performAndAssert("POST", path, expectedStatus);
+        }
+
+        @Test
+        void testNotPermitAllPaths() throws Exception {
+            int expectedStatus = HttpStatus.FORBIDDEN.value();
+
+            String[] gets = concat(getAndAdminPaths(), getAndUserPaths());
+            String[] posts = postAndUserPaths();
+            String[] puts = putAndUserPath();
+            String[] patches = patchAndUserPaths();
+            String[] deletes = deleteAndUserPath();
+
+            for (String path : gets) performAndAssert("GET", path, expectedStatus);
+            for (String path : posts) performAndAssert("POST", path, expectedStatus);
+            for (String path : puts) performAndAssert("PUT", path, expectedStatus);
+            for (String path : patches) performAndAssert("PATCH", path, expectedStatus);
+            for (String path : deletes) performAndAssert("DELETE", path, expectedStatus);
+        }
+
+
+    }
+
+    @Nested
     @WithMockUser(roles = "USER")
-    void testAccessingToAdminEndpointAsUser_forbidden() throws Exception {
-        assertEndpointIsForbidden(securityConfig.allUsersPagePath, HttpMethod.GET);
+    class UserRolesTests {
+
+        @Test
+        void testForbiddenPaths() throws Exception {
+            int expectedStatus = HttpStatus.FORBIDDEN.value();
+            String[] gets = securityConfig.getAndAdminPaths();
+
+            for (String path : gets) performAndAssert("GET", path, expectedStatus);
+        }
+
+        @Test
+        void testAuthorizedPaths() throws Exception {
+            int expectedStatus = HttpStatus.OK.value();
+            String[] gets = getAndUserPaths();
+            String[] posts = concat(postAndUserPaths(), postPermitAllPaths());
+            String[] puts = putAndUserPath();
+            String[] patches = patchAndUserPaths();
+            String[] deletes = deleteAndUserPath();
+
+            for (String path : gets) performAndAssert("GET", path, expectedStatus);
+            for (String path : posts) performAndAssert("POST", path, expectedStatus);
+            for (String path : puts) performAndAssert("PUT", path, expectedStatus);
+            for (String path : patches) performAndAssert("PATCH", path, expectedStatus);
+            for (String path : deletes) performAndAssert("DELETE", path, expectedStatus);
+        }
+
     }
 
-    @Test
+    private String[] concat(String[]... strings) {
+        return Arrays.stream(strings).flatMap(Arrays::stream).toArray(String[]::new); // { {}, {} } -> { }
+    }
+
+
+    @Nested
     @WithMockUser(roles = "ADMIN")
-    void testAccessingToUserEndpointAsAdmin_forbidden() throws Exception {
-        assertEndpointIsForbidden(securityConfig.userAccountPath, HttpMethod.GET); // get account ( also the core path )
-    }
+    class AdminRolesTests {
 
-    @Test
-    @WithAnonymousUser
-    void testSecuredEndpoints() throws Exception {
-        // mock the facades are not necessary, request never reaches to facades
-        assertEndpointIsForbidden(securityConfig.userAccountPath, HttpMethod.GET); // get account ( also the core path )
-        assertEndpointIsForbidden(securityConfig.userAccountPath + "/delete", HttpMethod.DELETE); // delete account ( sub path of userAccountPath, inside the secured pattern )
-        assertEndpointIsForbidden(securityConfig.allUsersPagePath, HttpMethod.GET);
-    }
+        @Test
+        void testForbiddenPaths() throws Exception {
+            int expectedStatus = HttpStatus.FORBIDDEN.value();
+            String[] gets = getAndUserPaths();
+            String[] posts = postAndUserPaths();
+            String[] puts = putAndUserPath();
+            String[] patches = patchAndUserPaths();
+            String[] deletes = deleteAndUserPath();
 
-    @WithMockUser(roles = "USER")
-    @Test
-    void testUserAccess() throws Exception {
-        when(userAccountControllerFacade.getMyAccount()).thenReturn(ResponseEntity.ok().build());
-        assertEndpointIsAccessible(securityConfig.userAccountPath, HttpMethod.GET);
-    }
-
-    @WithMockUser(roles = "ADMIN")
-    @Test
-    void testAdminAccess() throws Exception {
-        when(userAccountControllerFacade.getAllUsers(any())).thenReturn(ResponseEntity.ok().build());
-        assertEndpointIsAccessible(securityConfig.allUsersPagePath, HttpMethod.GET);
-    }
-
-    private void assertEndpointIsAccessible(String path, HttpMethod method) throws Exception {
-        if (method == HttpMethod.POST) {
-            mockMvc.perform(post(path)
-                            .contentType("application/json")
-                            .content("{}"))
-                    .andExpect(status().isOk());
-            return;
+            for (String path : gets) performAndAssert("GET", path, expectedStatus);
+            for (String path : posts) performAndAssert("POST", path, expectedStatus);
+            for (String path : puts) performAndAssert("PUT", path, expectedStatus);
+            for (String path : patches) performAndAssert("PATCH", path, expectedStatus);
+            for (String path : deletes) performAndAssert("DELETE", path, expectedStatus);
         }
-        if (method == HttpMethod.GET) {
-            mockMvc.perform(get(path))
-                    .andExpect(status().isOk());
-            return;
+
+        @Test
+        void testAuthorizedPaths() throws Exception {
+            int expectedStatus = HttpStatus.OK.value();
+            String[] gets = concat(getAndAdminPaths());
+            String[] posts = postPermitAllPaths();
+
+            for (String path : gets) performAndAssert("GET", path, expectedStatus);
+            for (String path : posts) performAndAssert("POST", path, expectedStatus);
         }
-        throw new UnsupportedOperationException();
     }
 
-    private void assertEndpointIsForbidden(String path, HttpMethod method) throws Exception {
-        if (method == HttpMethod.GET) {
-            mockMvc.perform(get(path))
-                    .andExpect(status().isForbidden());
-            return;
-        }
-        if (method == HttpMethod.DELETE) {
-            mockMvc.perform(delete(path))
-                    .andExpect(status().isForbidden());
-            return;
-        }
-        throw new UnsupportedOperationException();
+
+    String[] getAndAdminPaths() {
+        return securityConfig.getAndAdminPaths();
+    }
+
+    String[] getAndUserPaths() {
+        return securityConfig.getAndUserPaths();
+    }
+
+    String[] postPermitAllPaths() {
+        return securityConfig.postPermitAllPaths();
+    }
+
+    String[] postAndUserPaths() {
+        return securityConfig.postAndUserPaths();
+    }
+
+    String[] putAndUserPath() {
+        return securityConfig.putAndUserPath();
+    }
+
+    String[] patchAndUserPaths() {
+        return securityConfig.patchAndUserPaths();
+    }
+
+    String[] deleteAndUserPath() {
+        return securityConfig.deleteAndUserPath();
+    }
+
+
+    void performAndAssert(String method, String path, int expectedStatus) throws Exception {
+        MockHttpServletRequestBuilder request = switch (method) {
+            case "POST" -> post(path);
+            case "PUT" -> put(path);
+            case "PATCH" -> patch(path);
+            case "DELETE" -> delete(path);
+            case "GET" -> get(path);
+            default -> throw new IllegalArgumentException();
+        };
+
+        int status = mockMvc.perform(request
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andReturn().getResponse().getStatus();
+
+        assertEquals(status, expectedStatus);
     }
 
 

@@ -20,8 +20,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.function.Function;
 
 // todo: tests for this and add cors config
@@ -51,12 +49,12 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers(HttpMethod.POST, postPermitAllPaths()).permitAll()
-                        .requestMatchers(HttpMethod.PUT, verifyEmailPath()).hasAuthority(ROLE_USER)
-                        .requestMatchers(HttpMethod.POST, postAndRoleUserPaths()).hasAuthority(ROLE_USER)
-                        .requestMatchers(HttpMethod.PATCH, patchAndRoleUserPaths()).hasAuthority(ROLE_USER)
-                        .requestMatchers(HttpMethod.DELETE, deleteMyAccountPath()).hasAuthority(ROLE_USER)
-                        .requestMatchers(HttpMethod.GET, getMyAccountPath()).hasAuthority(ROLE_USER)
-                        .requestMatchers(HttpMethod.GET, allUserPagePath()).hasAuthority(ROLE_ADMIN)
+                        .requestMatchers(HttpMethod.PUT, putAndUserPath()).hasAuthority(ROLE_USER)
+                        .requestMatchers(HttpMethod.POST, postAndUserPaths()).hasAuthority(ROLE_USER)
+                        .requestMatchers(HttpMethod.PATCH, patchAndUserPaths()).hasAuthority(ROLE_USER)
+                        .requestMatchers(HttpMethod.DELETE, deleteAndUserPath()).hasAuthority(ROLE_USER)
+                        .requestMatchers(HttpMethod.GET, getAndUserPaths()).hasAuthority(ROLE_USER)
+                        .requestMatchers(HttpMethod.GET, getAndAdminPaths()).hasAuthority(ROLE_ADMIN)
                         .anyRequest().denyAll()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
@@ -70,7 +68,36 @@ public class SecurityConfig {
         return http.build();
     }
 
-    private String[] postAndRoleUserPaths() {
+     String[] getAndAdminPaths() {
+        log.debug("Extracting ( HTTP GET & Admin ) paths");
+        return new String[]{
+                extractPath(props -> props.getUser().getPagination().getAll())
+        };
+    }
+
+     String[] getAndUserPaths() {
+        log.debug("Extracting ( HTTP GET & USER ) paths");
+        return new String[]{
+                extractPath(props -> props.getUser().getAccount().getCore())
+        };
+    }
+
+     String[] deleteAndUserPath() {
+        log.debug("Extracting ( HTTP DELETE & USER ) paths");
+        return new String[]{
+                extractPath(props -> props.getUser().getAccount().getCore()) // de;ete account
+        };
+    }
+
+     String[] putAndUserPath() {
+        log.debug("Extracting ( HTTP PUT & USER ) paths");
+        return new String[]{
+                extractPath(props -> props.getAuthentication().getVerifyEmail())
+        };
+    }
+
+     String[] postAndUserPaths() {
+        log.debug("Extracting ( HTTP POST & USER ) paths");
         return new String[]{
                 extractPath(props -> props.getAuthentication().getRefreshAccessToken()),
                 extractPath(props -> props.getAuthentication().getRequestResetPassword()),
@@ -79,7 +106,8 @@ public class SecurityConfig {
         };
     }
 
-    private String[] patchAndRoleUserPaths() {
+     String[] patchAndUserPaths() {
+        log.debug("Extracting ( HTTP PATCH & USER ) paths");
         return new String[]{
                 extractPath(props -> props.getAuthentication().getResetPassword()),
                 extractPath(props -> props.getUser().getAccount().getUpdate().getUsername()),
@@ -87,29 +115,13 @@ public class SecurityConfig {
                 extractPath(props -> props.getUser().getAccount().getUpdate().getEmail())
         };
     }
-    private String[] postPermitAllPaths() {
+
+     String[] postPermitAllPaths() {
+        log.debug("Extracting ( HTTP POST permit all ) paths");
         return new String[]{
                 extractPath(props -> props.getAuthentication().getLogin()),
                 extractPath(props -> props.getAuthentication().getSignup())
         };
-    }
-
-    private String getMyAccountPath() {
-        return extractPath(props -> props.getUser().getAccount().getCore());
-    }
-
-
-    private String deleteMyAccountPath() {
-        return extractPath(props -> props.getUser().getAccount().getCore());
-    }
-
-
-    private String allUserPagePath() {
-        return extractPath(props -> props.getUser().getPagination().getAll());
-    }
-
-    private String verifyEmailPath() {
-        return extractPath(props -> props.getAuthentication().getVerifyEmail());
     }
 
     String extractPath(Function<ControllerProperties, String> extractor) {
@@ -131,7 +143,7 @@ public class SecurityConfig {
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration(corsProperties.getPathPattern(), configuration);
-        
+
         log.info("Cors configuration loaded with allowed origins: {}, allowed methods: {}, allowed headers: {}, exposed headers: {}, allow credentials: {}, max age: {}",
                 corsProperties.getAllowedOrigins(),
                 corsProperties.getAllowedMethods(),

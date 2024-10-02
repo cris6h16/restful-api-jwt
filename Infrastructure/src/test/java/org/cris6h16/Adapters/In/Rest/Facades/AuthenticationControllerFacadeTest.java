@@ -2,6 +2,8 @@ package org.cris6h16.Adapters.In.Rest.Facades;
 
 import org.cris6h16.Adapters.In.Rest.DTOs.CreateAccountDTO;
 import org.cris6h16.Adapters.In.Rest.DTOs.LoginDTO;
+import org.cris6h16.Config.SpringBoot.Properties.ControllerProperties;
+import org.cris6h16.Config.SpringBoot.Properties.JwtProperties;
 import org.cris6h16.Config.SpringBoot.Security.UserDetails.UserDetailsWithId;
 import org.cris6h16.Config.SpringBoot.Utils.JwtUtilsImpl;
 import org.cris6h16.Exceptions.Impls.NotFoundException;
@@ -12,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
@@ -27,6 +30,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+// todo: test Common class
 public class AuthenticationControllerFacadeTest {
     @Mock
     private CreateAccountPort createAccountPort;
@@ -43,27 +47,16 @@ public class AuthenticationControllerFacadeTest {
     @Mock
     private JwtUtilsImpl jwtUtilsImpl;
     @Mock
-    private ErrorMessages errorMessages;
+    private JwtProperties jwtProperties;
+    @Mock
+    private ControllerProperties controllerProperties;
 
+    @InjectMocks
     private AuthenticationControllerFacade authenticationControllerFacade;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-
-        authenticationControllerFacade = new AuthenticationControllerFacade(
-                createAccountPort,
-                verifyEmailPort,
-                loginPort,
-                requestResetPasswordPort,
-                resetPasswordPort,
-                refreshAccessTokenPort,
-                jwtUtilsImpl,
-                "refreshTokenCookieName",
-                "refreshTokenCookiePath",
-                "accessTokenCookieName",
-                "accessTokenCookiePath"
-        );
     }
 
     @Test
@@ -89,20 +82,6 @@ public class AuthenticationControllerFacadeTest {
         verify(createAccountPort).handle(any());
         assertThat(res.getStatusCode()).isEqualTo(HttpStatus.CREATED);
     }
-
-    @Test
-    void verifyMyEmail_principalIsNotAnInstanceOfUserDetailsWithIdThenIllegalStateException() {
-        // Arrange
-        Authentication a = mock(Authentication.class);
-        when(a.getPrincipal()).thenReturn(mock(User.class));
-        SecurityContextHolder.getContext().setAuthentication(a);
-
-        // Act & Assert
-        assertThatThrownBy(() -> authenticationControllerFacade.verifyMyEmail())
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessage("Principal is not an instance of UserDetailsWithId");
-    }
-
 
     @Test
     void verifyEmail_successfulThenNoContent() {
@@ -135,8 +114,16 @@ public class AuthenticationControllerFacadeTest {
     @Test
     void login_success() {
         // Arrange
+        JwtProperties.Token.Access.Expiration accessExpiration = mock(JwtProperties.Token.Access.Expiration.class);
+        JwtProperties.Token.Refresh.Expiration refreshExpiration = mock(JwtProperties.Token.Refresh.Expiration.class);
+
         when(loginPort.handle(any(), any())).thenReturn(
                 new LoginOutput("MockedAccessToken", "MockedRefreshToken"));
+
+        when(jwtProperties.getToken().getRefresh().getExpiration())
+                .thenReturn(refreshExpiration);
+        when(jwtProperties.getToken().getAccess().getExpiration())
+                .thenReturn(accessExpiration);
 
         // Act
         ResponseEntity<Void> res = authenticationControllerFacade.login(new LoginDTO("email", "pass"));
@@ -147,35 +134,34 @@ public class AuthenticationControllerFacadeTest {
         assertThat(setCookies.get(0)).isEqualTo(expectedAccessTokenCookie());
         assertThat(setCookies.get(1)).isEqualTo(expectedRefreshTokenCookie());
         verify(loginPort).handle("email", "pass");
-        verify(jwtUtilsImpl).getAccessTokenExpTimeSecs();
-        verify(jwtUtilsImpl).getRefreshTokenExpTimeSecs();
-
+        verify(accessExpiration).getSecs();
+        verify(refreshExpiration).getSecs();
     }
 
     private String expectedRefreshTokenCookie() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(authenticationControllerFacade.refreshTokenCookieName)
-                .append("=")
-                .append("MockedRefreshToken")
-                .append("; Path=")
-                .append(authenticationControllerFacade.refreshTokenCookiePath)
-                .append("; Max-Age=")
-                .append("0; Expires=")
-                .append("Thu, 01 Jan 1970 00:00:00 GMT; Secure; HttpOnly; SameSite=Strict");
-        return sb.toString();
+//        StringBuilder sb = new StringBuilder();
+//        sb.append(authenticationControllerFacade.refreshTokenCookieName)
+//                .append("=")
+//                .append("MockedRefreshToken")
+//                .append("; Path=")
+//                .append(authenticationControllerFacade.refreshTokenCookiePath)
+//                .append("; Max-Age=")
+//                .append("0; Expires=")
+//                .append("Thu, 01 Jan 1970 00:00:00 GMT; Secure; HttpOnly; SameSite=Strict");
+        return "sb.toString()";
     }
 
     private String expectedAccessTokenCookie() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(authenticationControllerFacade.accessTokenCookieName)
-                .append("=")
-                .append("MockedAccessToken")
-                .append("; Path=")
-                .append(authenticationControllerFacade.accessTokenCookiePath)
-                .append("; Max-Age=")
-                .append("0; Expires=")
-                .append("Thu, 01 Jan 1970 00:00:00 GMT; Secure; HttpOnly; SameSite=Strict");
-        return sb.toString();
+//        StringBuilder sb = new StringBuilder();
+//        sb.append(authenticationControllerFacade.accessTokenCookieName)
+//                .append("=")
+//                .append("MockedAccessToken")
+//                .append("; Path=")
+//                .append(authenticationControllerFacade.accessTokenCookiePath)
+//                .append("; Max-Age=")
+//                .append("0; Expires=")
+//                .append("Thu, 01 Jan 1970 00:00:00 GMT; Secure; HttpOnly; SameSite=Strict");
+        return "sb.toString()";
     }
 
 
@@ -236,11 +222,8 @@ public class AuthenticationControllerFacadeTest {
     @Test
     void refreshAccessToken_success() {
         // Arrange
-        Authentication a = mock(Authentication.class);
-        UserDetailsWithId user = mock(UserDetailsWithId.class);
-        when(user.getId()).thenReturn(999L);
-        when(a.getPrincipal()).thenReturn(user);
-        SecurityContextHolder.getContext().setAuthentication(a);
+        mockPrinci pal(999L);
+
 
         when(refreshAccessTokenPort.handle(999L))
                 .thenReturn("MockedAccessToken");
@@ -252,6 +235,14 @@ public class AuthenticationControllerFacadeTest {
         assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(res.getHeaders().get("Set-Cookie").get(0))
                 .isEqualTo(expectedAccessTokenCookie());
+    }
+
+    private void mockPrincipal(long id) {
+        Authentication a = mock(Authentication.class);
+        UserDetailsWithId user = mock(UserDetailsWithId.class);
+        when(user.getId()).thenReturn(id);
+        when(a.getPrincipal()).thenReturn(user);
+        SecurityContextHolder.getContext().setAuthentication(a);
     }
 }
 

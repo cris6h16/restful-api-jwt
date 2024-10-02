@@ -126,8 +126,6 @@ public class AuthenticationControllerFacade {
 
     // read-only operation (no transactional)
     public ResponseEntity<Void> requestPasswordReset(String email) {
-        if (email == null) throw new IllegalArgumentException("email cannot be null");
-
         _requestPasswordReset(email);
         return ResponseEntity.accepted().build();
     }
@@ -146,7 +144,6 @@ public class AuthenticationControllerFacade {
     public ResponseEntity<Void> resetPassword(String newPassword) {
         Long id = Common.getPrincipalId();
         resetPasswordPort.handle(id, newPassword);
-        ;
         return ResponseEntity.noContent().build();
     }
 

@@ -47,7 +47,7 @@ public class EmailServiceImpl implements EmailService {
         if (content == null || content.isEmpty()) failMsg = "Text cannot be null or empty";
         if (!failMsg.isEmpty()) throw new IllegalArgumentException(failMsg);
 
-        log.info("Sending email to {}", email);
+        log.info("Trying to send an email to {}", email);
 
         try {
             MimeMessage message = mailSender.createMimeMessage();
@@ -60,14 +60,18 @@ public class EmailServiceImpl implements EmailService {
 
             mailSender.send(message);
             log.info("Email sent to {}", email);
+
         } catch (Exception e) {
             log.error("Failed to send email to {}: {}", email, e.toString());
         }
     }
 
+    //todo: logg the app
     @Async
     @Override
     public void sendVerificationEmail(Long id, String email) {
+        log.debug("Creating a verification email for id:{}, email: {}", id, email);
+
         long emailVerificationTokenTimeLive = jwtProperties.getToken().getAccess().getRequest().getEmail().getVerification().getSecs();
         String token = jwtUtils.genToken(id, null, emailVerificationTokenTimeLive);
 
@@ -90,6 +94,8 @@ public class EmailServiceImpl implements EmailService {
     @Async
     @Override
     public void sendResetPasswordEmail(Long id, String email) {
+        log.debug("Creating a Reset Password email for id:{}, email: {}", id, email);
+
         long requestPasswordTokenTimeLive = jwtProperties.getToken().getAccess().getRequest().getEmail().getReset().getPassword().getSecs();
         String token = jwtUtils.genToken(id, null, requestPasswordTokenTimeLive);
 
@@ -111,6 +117,8 @@ public class EmailServiceImpl implements EmailService {
     @Async
     @Override
     public void sendRequestDeleteAccountEmail(Long id, String email) {
+        log.debug("Creating a Request Delete Account email for id:{}, email: {}", id, email);
+
         long requestDeleteAccountTokenTimeLive = jwtProperties.getToken().getAccess().getRequest().getEmail().getDeleteAccount().getSecs();
         String token = jwtUtils.genToken(id, null, requestDeleteAccountTokenTimeLive);
 
@@ -132,6 +140,8 @@ public class EmailServiceImpl implements EmailService {
     @Async
     @Override
     public void sendRequestUpdateEmail(Long id, String email) {
+        log.debug("Creating a Request Update Email email for id:{}, email: {}", id, email);
+
         long requestUpdateEmailTokenTimeLive = jwtProperties.getToken().getAccess().getRequest().getEmail().getUpdateEmail().getSecs();
         String token = jwtUtils.genToken(id, null, requestUpdateEmailTokenTimeLive);
 
@@ -169,7 +179,6 @@ public class EmailServiceImpl implements EmailService {
         Context context = new Context();
         context.setVariable(hrefVariableInHtml, link);
         return templateEngine.process(htmlTemplateName, context);
-
     }
 
 }

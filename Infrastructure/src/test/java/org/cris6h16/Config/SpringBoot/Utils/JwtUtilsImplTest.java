@@ -1,8 +1,11 @@
 package org.cris6h16.Config.SpringBoot.Utils;
 
 import io.jsonwebtoken.Claims;
+import org.cris6h16.Config.SpringBoot.Properties.JwtProperties;
 import org.cris6h16.Models.ERoles;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 
 import java.util.List;
 import java.util.Map;
@@ -13,15 +16,11 @@ import static org.junit.jupiter.api.Assertions.*;
 public
 class JwtUtilsImplTest {
 
-    private JwtUtilsImpl jwtUtilsImpl;
+    @Mock
+    private JwtProperties jwtProperties;
 
-    public JwtUtilsImplTest() {
-        this.jwtUtilsImpl = new JwtUtilsImpl(
-                "secretKey123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
-                60 * 15, // 15 mins
-                60 * 60 * 24 * 15 // 15 days
-        );
-    }
+    @InjectMocks
+    private JwtUtilsImpl jwtUtilsImpl;
 
     @Test
     void genToken_claimsNullSuccessful() {

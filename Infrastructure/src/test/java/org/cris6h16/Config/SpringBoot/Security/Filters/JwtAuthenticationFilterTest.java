@@ -5,11 +5,13 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.cris6h16.Config.SpringBoot.Properties.JwtProperties;
 import org.cris6h16.Config.SpringBoot.Security.UserDetails.CustomUserDetailsService;
 import org.cris6h16.Config.SpringBoot.Security.UserDetails.UserDetailsWithId;
 import org.cris6h16.Config.SpringBoot.Utils.JwtUtilsImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -34,16 +36,19 @@ public class JwtAuthenticationFilterTest {
     @Mock
     private CustomUserDetailsService userDetailsService;
 
+    @Mock
+    private JwtProperties jwtProperties;
+
+    @InjectMocks
     private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    String accessTokenCookieName = "accessTokenCookieName";
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        jwtAuthenticationFilter = new JwtAuthenticationFilter(
-                jwtUtilsImpl,
-                userDetailsService,
-                "accessTokenCookieName"
-        );
+        when(jwtProperties.getToken().getAccess().getCookie().getName())
+                .thenReturn(accessTokenCookieName);
     }
 
     @Test
@@ -68,7 +73,7 @@ public class JwtAuthenticationFilterTest {
         // Arrange
         String token = "imthetoken";
         HttpServletRequest request = mock(HttpServletRequest.class);
-        Cookie accessTokenCookie = new Cookie(jwtAuthenticationFilter.accessTokenCookieName, token);
+        Cookie accessTokenCookie = new Cookie(accessTokenCookieName, token);
         Cookie other1 = new Cookie("other1", "value of the cookie1");
         Cookie other2 = new Cookie("other2", "value of the cookie2");
         Cookie other3 = new Cookie("other3", "value of the cookie3");
@@ -94,7 +99,7 @@ public class JwtAuthenticationFilterTest {
         String invalidToken = "expired,etc";
         FilterChain filterChain = mock(FilterChain.class);
         HttpServletRequest request = mock(HttpServletRequest.class);
-        Cookie accessTokenCookie = new Cookie(jwtAuthenticationFilter.accessTokenCookieName, invalidToken);
+        Cookie accessTokenCookie = new Cookie(accessTokenCookieName, invalidToken);
 
         when(request.getCookies())
                 .thenReturn(new Cookie[]{accessTokenCookie});
@@ -125,7 +130,7 @@ public class JwtAuthenticationFilterTest {
         FilterChain filterChain = mock(FilterChain.class);
         HttpServletResponse response = mock(HttpServletResponse.class);
         HttpServletRequest request = mock(HttpServletRequest.class);
-        Cookie accessTokenCookie = new Cookie(jwtAuthenticationFilter.accessTokenCookieName, validToken);
+        Cookie accessTokenCookie = new Cookie(accessTokenCookieName, validToken);
 
         UserDetailsWithId userDetailsWithId = mock(UserDetailsWithId.class);
         when(userDetailsWithId.getAuthorities()).thenReturn(authorities);

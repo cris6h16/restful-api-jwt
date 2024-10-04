@@ -9,7 +9,6 @@ import org.cris6h16.Config.SpringBoot.Utils.JwtUtilsImpl;
 import org.cris6h16.Exceptions.Impls.NotFoundException;
 import org.cris6h16.In.Ports.*;
 import org.cris6h16.In.Results.LoginOutput;
-import org.cris6h16.Utils.ErrorMessages;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -21,43 +20,105 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
-
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 // todo: test Common class
 public class AuthenticationControllerFacadeTest {
+
     @Mock
     private CreateAccountPort createAccountPort;
+
     @Mock
     private VerifyEmailPort verifyEmailPort;
+
     @Mock
     private LoginPort loginPort;
+
     @Mock
     private RequestResetPasswordPort requestResetPasswordPort;
+
     @Mock
     private ResetPasswordPort resetPasswordPort;
+
     @Mock
     private RefreshAccessTokenPort refreshAccessTokenPort;
+
     @Mock
     private JwtUtilsImpl jwtUtilsImpl;
+
     @Mock
     private JwtProperties jwtProperties;
+
     @Mock
     private ControllerProperties controllerProperties;
 
     @InjectMocks
     private AuthenticationControllerFacade authenticationControllerFacade;
 
+    String locationPath = "/location-path";
+    String accessTokenCookieName = "access-tk-cookie-name";
+    String refreshTokenCookieName = "refresh-tk-cookie-name";
+    String accessTokenCookiePath = "/access-path";
+    String refreshTokenCookiePath = "/refresh-path";
+    // dont change of 0 to avoid complexities with Expiration in cookie
+    long accessExpirationSecs = 0;
+    long refreshExpirationSecs = 0;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        mockJwtProperties();
+        mockControllerProperties();
+        mockPrincipal(999L);
     }
+
+    private void mockJwtProperties() {
+        JwtProperties.Token.Access access = mock(JwtProperties.Token.Access.class);
+        JwtProperties.Token.Refresh refresh = mock(JwtProperties.Token.Refresh.class);
+
+        when(jwtProperties.getToken()).thenReturn(mock(JwtProperties.Token.class));
+        when(jwtProperties.getToken().getAccess()).thenReturn(access);
+        when(jwtProperties.getToken().getRefresh()).thenReturn(refresh);
+
+        mockAccessProperties(access);
+        mockRefreshProperties(refresh);
+    }
+
+    private void mockAccessProperties(JwtProperties.Token.Access access) {
+        JwtProperties.Token.Access.Cookie accessCookie = mock(JwtProperties.Token.Access.Cookie.class);
+        JwtProperties.Token.Access.Expiration accessExpiration = mock(JwtProperties.Token.Access.Expiration.class);
+
+        when(access.getCookie()).thenReturn(accessCookie);
+        when(access.getExpiration()).thenReturn(accessExpiration);
+
+        when(accessCookie.getName()).thenReturn(accessTokenCookieName);
+        when(accessCookie.getPath()).thenReturn(accessTokenCookiePath);
+        when(accessExpiration.getSecs()).thenReturn(accessExpirationSecs);
+    }
+
+    private void mockRefreshProperties(JwtProperties.Token.Refresh refresh) {
+        JwtProperties.Token.Refresh.Cookie refreshCookie = mock(JwtProperties.Token.Refresh.Cookie.class);
+        JwtProperties.Token.Refresh.Expiration refreshExpiration = mock(JwtProperties.Token.Refresh.Expiration.class);
+
+        when(refresh.getCookie()).thenReturn(refreshCookie);
+        when(refresh.getExpiration()).thenReturn(refreshExpiration);
+
+        when(refreshCookie.getName()).thenReturn(refreshTokenCookieName);
+        when(refreshCookie.getPath()).thenReturn(refreshTokenCookiePath);
+        when(refreshExpiration.getSecs()).thenReturn(refreshExpirationSecs);
+    }
+
+    private void mockControllerProperties() {
+        when(controllerProperties.getUser()).thenReturn(mock(ControllerProperties.User.class));
+        when(controllerProperties.getAuthentication()).thenReturn(mock(ControllerProperties.Authentication.class));
+        when(controllerProperties.getAuthentication().getCore()).thenReturn(locationPath);
+    }
+
 
     @Test
     void signup_dtoNullThenIllegalArgumentException() {
@@ -67,109 +128,104 @@ public class AuthenticationControllerFacadeTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"password", "username", "email"})
-    void signup_anyAttributeNullThenSuccess(String now) { // concern of use case
-        // Arrange
-        String username = now.equals("username") ? null : "username";
-        String password = now.equals("password") ? null : "password";
-        String email = now.equals("email") ? null : "email";
-        CreateAccountDTO dto = new CreateAccountDTO(username, password, email);
+    @ValueSource(strings = {"username", "password", "email"})
+    void signup_withNullAttributes_createsAccount(String attribute) {
+        CreateAccountDTO dto = createAccountDtoWithNullAttribute(attribute);
+        when(controllerProperties.getUser().getCore()).thenReturn(locationPath);
 
-        // Act
         ResponseEntity<Void> res = authenticationControllerFacade.signup(dto);
 
-        // Assert
         verify(createAccountPort).handle(any());
         assertThat(res.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(res.getHeaders().get("Location")).containsExactly(locationPath);
     }
+
+    private CreateAccountDTO createAccountDtoWithNullAttribute(String attribute) {
+        return new CreateAccountDTO(
+                "username".equals(attribute) ? null : "username",
+                "password".equals(attribute) ? null : "password",
+                "email".equals(attribute) ? null : "email"
+        );
+    }
+
 
     @Test
     void verifyEmail_successfulThenNoContent() {
         // Arrange
-        Authentication a = mock(Authentication.class);
-        UserDetailsWithId user = mock(UserDetailsWithId.class);
-        when(user.getId()).thenReturn(999L);
-        when(a.getPrincipal()).thenReturn(user);
-        SecurityContextHolder.getContext().setAuthentication(a);
+        mockPrincipal(99900L);
 
         // Act
         ResponseEntity<Void> res = authenticationControllerFacade.verifyMyEmail();
 
         // Assert
-        verify(verifyEmailPort).handle(999L);
+        verify(verifyEmailPort).handle(99900L);
         assertThat(res.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
     }
 
     @Test
-    void login_dtoNullThenIllegalArgumentException() {
-        // Arrange
-        LoginDTO dto = null;
-
-        // Act & Assert
-        assertThatThrownBy(() -> authenticationControllerFacade.login(dto))
+    void login_withNullDto_throwsIllegalArgumentException() {
+        assertThatThrownBy(() -> authenticationControllerFacade.login(null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("dto cannot be null");
     }
 
     @Test
-    void login_success() {
+    void login_success() throws InterruptedException {
         // Arrange
-        JwtProperties.Token.Access.Expiration accessExpiration = mock(JwtProperties.Token.Access.Expiration.class);
-        JwtProperties.Token.Refresh.Expiration refreshExpiration = mock(JwtProperties.Token.Refresh.Expiration.class);
+        String generatedAccessToken = "access@#rt3ety34ui4ufi4f4hfiu4";
+        String generatedRefreshToken = "refr3sh@#rt3ety34ui4ufi4f4hfiu4";
+        LoginDTO loginDTO = new LoginDTO("email1234", "pass^abc");
+        LoginOutput output = new LoginOutput(generatedAccessToken, generatedRefreshToken);
 
-        when(loginPort.handle(any(), any())).thenReturn(
-                new LoginOutput("MockedAccessToken", "MockedRefreshToken"));
-
-        when(jwtProperties.getToken().getRefresh().getExpiration())
-                .thenReturn(refreshExpiration);
-        when(jwtProperties.getToken().getAccess().getExpiration())
-                .thenReturn(accessExpiration);
+        when(loginPort.handle(any(), any())).thenReturn(output);
 
         // Act
-        ResponseEntity<Void> res = authenticationControllerFacade.login(new LoginDTO("email", "pass"));
+        ResponseEntity<Void> res = authenticationControllerFacade.login(loginDTO);
 
         // Assert
-        assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
-        List<String> setCookies = res.getHeaders().get("Set-Cookie");
-        assertThat(setCookies.get(0)).isEqualTo(expectedAccessTokenCookie());
-        assertThat(setCookies.get(1)).isEqualTo(expectedRefreshTokenCookie());
-        verify(loginPort).handle("email", "pass");
-        verify(accessExpiration).getSecs();
-        verify(refreshExpiration).getSecs();
+        verify(loginPort).handle(loginDTO.getEmail(), loginDTO.getPassword());
+        assertEquals(res.getStatusCode(), HttpStatus.OK);
+        assertThat(res.getHeaders().get("Set-Cookie")).containsExactlyInAnyOrder(
+                expectedAccessTokenCookie(generatedAccessToken),
+                expectedRefreshTokenCookie(generatedRefreshToken)
+        );
     }
 
-    private String expectedRefreshTokenCookie() {
-//        StringBuilder sb = new StringBuilder();
-//        sb.append(authenticationControllerFacade.refreshTokenCookieName)
-//                .append("=")
-//                .append("MockedRefreshToken")
-//                .append("; Path=")
-//                .append(authenticationControllerFacade.refreshTokenCookiePath)
-//                .append("; Max-Age=")
-//                .append("0; Expires=")
-//                .append("Thu, 01 Jan 1970 00:00:00 GMT; Secure; HttpOnly; SameSite=Strict");
-        return "sb.toString()";
+    private String expectedRefreshTokenCookie(String token) throws InterruptedException {
+        return buildCookieString(
+                token,
+                refreshTokenCookiePath,
+                refreshExpirationSecs,
+                refreshTokenCookieName
+        );
     }
 
-    private String expectedAccessTokenCookie() {
-//        StringBuilder sb = new StringBuilder();
-//        sb.append(authenticationControllerFacade.accessTokenCookieName)
-//                .append("=")
-//                .append("MockedAccessToken")
-//                .append("; Path=")
-//                .append(authenticationControllerFacade.accessTokenCookiePath)
-//                .append("; Max-Age=")
-//                .append("0; Expires=")
-//                .append("Thu, 01 Jan 1970 00:00:00 GMT; Secure; HttpOnly; SameSite=Strict");
-        return "sb.toString()";
+    private String expectedAccessTokenCookie(String token) throws InterruptedException {
+        return buildCookieString(
+                token,
+                accessTokenCookiePath,
+                accessExpirationSecs,
+                accessTokenCookieName
+        );
+    }
+
+    private String buildCookieString(String token, String path, long maxAge, String tokenCookieName) throws InterruptedException {
+        return String.format("%s=%s; Path=%s; Max-Age=%d; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure; HttpOnly; SameSite=Strict",
+                tokenCookieName, token, path, maxAge);
     }
 
 
     @Test
-    void requestPasswordReset_emailNullThenIllegalArgumentException() {
-        assertThatThrownBy(() -> authenticationControllerFacade.requestPasswordReset(null))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("email cannot be null");
+    void requestPasswordReset_emailNullThenSuccess() { //  concern of use case
+        // Arrange
+        String email = null;
+
+        // Act
+        ResponseEntity<Void> res = authenticationControllerFacade.requestPasswordReset(email);
+
+        // Assert
+        assertThat(res.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+        assertThat(res.getBody()).isNull();
     }
 
     @Test
@@ -205,11 +261,7 @@ public class AuthenticationControllerFacadeTest {
     @Test
     void resetPassword_success() {
         // Arrange
-        Authentication a = mock(Authentication.class);
-        UserDetailsWithId user = mock(UserDetailsWithId.class);
-        when(user.getId()).thenReturn(999L);
-        when(a.getPrincipal()).thenReturn(user);
-        SecurityContextHolder.getContext().setAuthentication(a);
+        mockPrincipal(999L);
 
         // Act
         ResponseEntity<Void> res = authenticationControllerFacade.resetPassword(null);
@@ -220,21 +272,21 @@ public class AuthenticationControllerFacadeTest {
     }
 
     @Test
-    void refreshAccessToken_success() {
+    void refreshAccessToken_success() throws InterruptedException {
         // Arrange
-        mockPrinci pal(999L);
+        String refreshToken = "refreshTokenw123234r43t4rgtgt";
+        mockPrincipal(999L);
 
-
-        when(refreshAccessTokenPort.handle(999L))
-                .thenReturn("MockedAccessToken");
+        when(refreshAccessTokenPort.handle(999L)).thenReturn(refreshToken);
 
         // Act
         ResponseEntity<Void> res = authenticationControllerFacade.refreshAccessToken();
 
         // Assert
         assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(res.getHeaders().get("Set-Cookie").get(0))
-                .isEqualTo(expectedAccessTokenCookie());
+        assertThat(res.getHeaders().get("Set-Cookie")).containsExactlyInAnyOrder(
+                expectedAccessTokenCookie(refreshToken)
+        );
     }
 
     private void mockPrincipal(long id) {
@@ -245,5 +297,3 @@ public class AuthenticationControllerFacadeTest {
         SecurityContextHolder.getContext().setAuthentication(a);
     }
 }
-
-// todo: test each if are or not inside a transaction

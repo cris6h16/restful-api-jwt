@@ -1,16 +1,13 @@
 package org.cris6h16.Adapters.Out.SpringData.Entities;
 
 import org.cris6h16.Adapters.Out.SpringData.UserJpaRepository;
+import org.cris6h16.Config.SpringBoot.Main;
 import org.cris6h16.Models.ERoles;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.Instant;
@@ -23,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 // principally tested the constraints
-@SpringBootTest(classes = Math.class)
+@SpringBootTest(classes = Main.class)
 @ActiveProfiles("test")
 public class UserEntityTest {
 

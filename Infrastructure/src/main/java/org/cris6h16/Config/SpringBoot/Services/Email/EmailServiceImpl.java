@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.ITemplateEngine;
 import org.thymeleaf.context.Context;
 
+import java.util.Arrays;
 import java.util.function.Function;
 
 @Slf4j
@@ -39,15 +40,11 @@ public class EmailServiceImpl implements EmailService {
 
 
     void sendEmail(String email, Function<EmailServiceProperties, String> subjectExtractor, String content) {
+        validateArguments(email, subjectExtractor, content);
         String subject = subjectExtractor.apply(emailServiceProperties);
+        log.debug("Extracted subject: {}", subject);
 
-        String failMsg = "";
-        if (email == null || email.isEmpty()) failMsg = "Email cannot be null or empty";
-        if (subject == null || subject.isEmpty()) failMsg = "Subject cannot be null or empty";
-        if (content == null || content.isEmpty()) failMsg = "Text cannot be null or empty";
-        if (!failMsg.isEmpty()) throw new IllegalArgumentException(failMsg);
-
-        log.info("Trying to send an email to {}", email);
+        log.debug("Trying to send an email to {}", email);
 
         try {
             MimeMessage message = mailSender.createMimeMessage();
@@ -57,13 +54,31 @@ public class EmailServiceImpl implements EmailService {
             helper.setSubject(subject);
             helper.setText(content, true);
 
+            log.debug("Sending email to {}, Content: {}, Subject: {}",
+                    Arrays.toString(message.getAllRecipients()),
+                    message.getContent(),
+                    message.getSubject()
+            );
 
             mailSender.send(message);
-            log.info("Email sent to {}", email);
+            log.debug("Email sent to {}", email);
 
         } catch (Exception e) {
             log.error("Failed to send email to {}: {}", email, e.toString());
         }
+    }
+
+    private void validateArguments(String email, Function<EmailServiceProperties, String> subjectExtractor, String content) {
+        if (email == null || email.isEmpty()) {
+            throw new IllegalArgumentException("Email cannot be null or empty");
+        }
+        if (subjectExtractor == null || subjectExtractor.apply(emailServiceProperties) == null || subjectExtractor.apply(emailServiceProperties).isBlank()) {
+            throw new IllegalArgumentException("SubjectExtractor cannot be blank");
+        }
+        if (content == null || content.isEmpty()) {
+            throw new IllegalArgumentException("Content cannot be null or empty");
+        }
+        log.debug("Arguments are valid");
     }
 
     //todo: logg the app

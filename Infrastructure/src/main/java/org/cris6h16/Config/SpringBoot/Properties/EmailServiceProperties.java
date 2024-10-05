@@ -6,43 +6,7 @@ import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
-/*
 
-email-service:
-  host: http://localhost:4200
-  token:
-    parameter: token
-    variable-in-link-template: "{token}"
-
-  verification:
-    link-template: ${email.host}/auth/verification-email?${email.token.parameter}=${email.token.variable-in-link-template}
-    subject: "Email verification"
-    html:
-      name: "email-verification.html"
-      href-variable: "link"
-
-  reset-password:
-    link-template: ${email.host}/auth/reset-password?${email.token.parameter}=${email.token.variable-in-link-template}
-    subject: "Reset password"
-    html:
-      name: "reset-password.html"
-      href-variable: "link"
-
-  delete-account:
-    link-template: ${email.host}/me/delete-account?${email.token.parameter}=${email.token.variable-in-link-template}
-    subject: "Delete account"
-    html:
-      name: "delete-account.html"
-      href-variable: "link"
-
-  update-email:
-    link-template: ${email.host}/me/update-email?${email.token.parameter}=${email.token.variable-in-link-template}
-    subject: "Update email"
-    html:
-      name: "update-email.html"
-      href-variable: "link"
-
- */
 @Component
 @Getter
 @Setter

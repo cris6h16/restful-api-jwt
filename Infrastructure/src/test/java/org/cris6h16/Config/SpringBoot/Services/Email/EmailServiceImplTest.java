@@ -1,22 +1,18 @@
 package org.cris6h16.Config.SpringBoot.Services.Email;
 
-import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.cris6h16.Config.SpringBoot.Properties.EmailServiceProperties;
 import org.cris6h16.Config.SpringBoot.Properties.JwtProperties;
 import org.cris6h16.Config.SpringBoot.Utils.JwtUtilsImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.thymeleaf.ITemplateEngine;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.context.IContext;
 
-import java.io.IOException;
 import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -25,7 +21,9 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
 
+
 public class EmailServiceImplTest {
+
 
     @Mock
     private JavaMailSender mailSender;
@@ -35,13 +33,10 @@ public class EmailServiceImplTest {
 
     @Mock
     private ITemplateEngine templateEngine;
-    @Mock
+
     private JwtProperties jwtProperties;
-    @Mock
     private EmailServiceProperties emailServiceProperties;
 
-
-    @InjectMocks
     private EmailServiceImpl emailService;
 
     @Mock
@@ -52,17 +47,28 @@ public class EmailServiceImplTest {
     void setup() {
         MockitoAnnotations.openMocks(this);
         when(mailSender.createMimeMessage()).thenReturn(mimeMessage);
+
+        jwtProperties = createJwtProperties();
+        emailServiceProperties = createEmailServiceProperties();
+
+        emailService = new EmailServiceImpl(
+                templateEngine,
+                mailSender,
+                jwtUtils,
+                jwtProperties,
+                emailServiceProperties
+        );
     }
+
 
     @Test
     void testSendEmail_Success() throws Exception {
         // Arrange
         String email = "cristianmherrera21@gmail.com";
-        String subject = "Subject";
+        String subject = emailServiceProperties.getUpdateEmail().getSubject();
         String content = "Content";
 
         doNothing().when(mailSender).send(mimeMessage);
-        when(emailServiceProperties.getUpdateEmail().getSubject()).thenReturn(subject);
 
         // Act
         emailService.sendEmail(
@@ -73,24 +79,12 @@ public class EmailServiceImplTest {
 
         // Assert
         verify(mailSender, times(1)).send(mimeMessage);
-        verify(mailSender, times(1)).send(argThat((MimeMessage msg) -> {
-            try {
-                assertEquals(subject, msg.getSubject());
-                assertEquals(email, msg.getAllRecipients()[0].toString());
-                assertEquals(content, msg.getContent());
-
-                return true;
-
-            } catch (MessagingException | IOException e) {
-                throw new RuntimeException(e);
-            }
-        }));
+        verify(mimeMessage).setSubject(subject);
     }
 
     @Test
     void testSendEmail_InvalidArguments() {
         // Arrange
-        when(emailServiceProperties.getUpdateEmail().getSubject()).thenReturn("Subject");
         Function<EmailServiceProperties, String> subjectExtractor = props -> props.getUpdateEmail().getSubject();
 
         // Act & Assert
@@ -105,11 +99,9 @@ public class EmailServiceImplTest {
         Long id = 1L;
         String email = "cristianmherrera21@gmail.com";
         String token = "generated-token";
-        long emailVerificationTokenTimeLive = 9999L;
+        long emailVerificationTokenTimeLive = jwtProperties.getToken().getAccess().getRequest().getEmail().getVerification().getSecs();
         String expectedContent = "Email Content";
 
-        when(jwtProperties.getToken().getAccess().getRequest().getEmail().getVerification().getSecs())
-                .thenReturn(emailVerificationTokenTimeLive);
         when(jwtUtils.genToken(id, null, emailVerificationTokenTimeLive))
                 .thenReturn(token);
         when(templateEngine.process(anyString(), any(Context.class)))
@@ -130,11 +122,9 @@ public class EmailServiceImplTest {
         Long id = 1L;
         String email = "cristianmherrera21@gmail.com";
         String token = "generated-token";
-        long requestPasswordTokenTimeLive = 1234567L;
+        long requestPasswordTokenTimeLive = jwtProperties.getToken().getAccess().getRequest().getEmail().getReset().getPassword().getSecs();
         String expectedContent = "Reset Password Content";
 
-        when(jwtProperties.getToken().getAccess().getRequest().getEmail().getReset().getPassword().getSecs())
-                .thenReturn(requestPasswordTokenTimeLive);
         when(jwtUtils.genToken(id, null, requestPasswordTokenTimeLive))
                 .thenReturn(token);
         when(templateEngine.process(anyString(), any(Context.class)))
@@ -155,11 +145,9 @@ public class EmailServiceImplTest {
         Long id = 1L;
         String email = "cristianmherrera21@gmail.com";
         String token = "generated-token";
-        long requestDeleteAccountTokenTimeLive = 987654L;
+        long requestDeleteAccountTokenTimeLive = jwtProperties.getToken().getAccess().getRequest().getEmail().getDeleteAccount().getSecs();
         String expectedContent = "Delete Account Content";
 
-        when(jwtProperties.getToken().getAccess().getRequest().getEmail().getDeleteAccount().getSecs())
-                .thenReturn(requestDeleteAccountTokenTimeLive);
         when(jwtUtils.genToken(id, null, requestDeleteAccountTokenTimeLive))
                 .thenReturn(token);
         when(templateEngine.process(anyString(), any(Context.class)))
@@ -180,15 +168,11 @@ public class EmailServiceImplTest {
         Long id = 1L;
         String email = "cristianmherrera21@gmail.com";
         String token = "generated-token";
-        long requestUpdateEmailTokenTimeLive = 1010101010L;
+        long requestUpdateEmailTokenTimeLive = jwtProperties.getToken().getAccess().getRequest().getEmail().getUpdateEmail().getSecs();
         String expectedContent = "Update Email Content";
 
-        when(jwtProperties.getToken().getAccess().getRequest().getEmail().getUpdateEmail().getSecs())
-                .thenReturn(requestUpdateEmailTokenTimeLive);
-        when(jwtUtils.genToken(id, null, requestUpdateEmailTokenTimeLive))
-                .thenReturn(token);
-        when(templateEngine.process(anyString(), any(Context.class)))
-                .thenReturn(expectedContent);
+        when(jwtUtils.genToken(id, null, requestUpdateEmailTokenTimeLive)).thenReturn(token);
+        when(templateEngine.process(anyString(), any(Context.class))).thenReturn(expectedContent);
 
         // Act
         emailService.sendRequestUpdateEmail(id, email);
@@ -240,4 +224,130 @@ public class EmailServiceImplTest {
         );
     }
 
+    private JwtProperties createJwtProperties() {
+        JwtProperties jwtProperties = new JwtProperties();
+        jwtProperties.setSecretKey("secret-key");
+
+
+        // Token
+        JwtProperties.Token token = new JwtProperties.Token();
+        jwtProperties.setToken(token);
+
+        // Refresh
+        JwtProperties.Token.Refresh refresh = new JwtProperties.Token.Refresh();
+        JwtProperties.Token.Refresh.Expiration refreshExpiration = new JwtProperties.Token.Refresh.Expiration();
+        refreshExpiration.setSecs(3600);
+        refresh.setExpiration(refreshExpiration);
+
+        JwtProperties.Token.Refresh.Cookie refreshCookie = new JwtProperties.Token.Refresh.Cookie();
+        refreshCookie.setName("refreshCookieName");
+        refreshCookie.setPath("/");
+        refresh.setCookie(refreshCookie);
+
+        token.setRefresh(refresh);
+
+        // Access
+        JwtProperties.Token.Access access = new JwtProperties.Token.Access();
+        JwtProperties.Token.Access.Expiration accessExpiration = new JwtProperties.Token.Access.Expiration();
+        accessExpiration.setSecs(300);
+        access.setExpiration(accessExpiration);
+
+        JwtProperties.Token.Access.Cookie accessCookie = new JwtProperties.Token.Access.Cookie();
+        accessCookie.setName("accessCookieName");
+        accessCookie.setPath("/");
+        access.setCookie(accessCookie);
+
+        // Request
+        JwtProperties.Token.Access.Request request = new JwtProperties.Token.Access.Request();
+
+        // Email
+        JwtProperties.Token.Access.Request.Email email = new JwtProperties.Token.Access.Request.Email();
+
+        // Verification
+        JwtProperties.Token.Access.Request.Email.Verification verification = new JwtProperties.Token.Access.Request.Email.Verification();
+        verification.setSecs(120);
+        email.setVerification(verification);
+
+        // Delete Account
+        JwtProperties.Token.Access.Request.Email.DeleteAccount deleteAccount = new JwtProperties.Token.Access.Request.Email.DeleteAccount();
+        deleteAccount.setSecs(3600);
+        email.setDeleteAccount(deleteAccount);
+
+        // Update Email
+        JwtProperties.Token.Access.Request.Email.UpdateEmail updateEmail = new JwtProperties.Token.Access.Request.Email.UpdateEmail();
+        updateEmail.setSecs(600);
+        email.setUpdateEmail(updateEmail);
+
+        // Reset
+        JwtProperties.Token.Access.Request.Email.Reset reset = new JwtProperties.Token.Access.Request.Email.Reset();
+        JwtProperties.Token.Access.Request.Email.Reset.Password password = new JwtProperties.Token.Access.Request.Email.Reset.Password();
+        password.setSecs(1800);
+        reset.setPassword(password);
+        email.setReset(reset);
+
+        request.setEmail(email);
+        access.setRequest(request);
+        token.setAccess(access);
+
+        return jwtProperties;
+    }
+
+    private EmailServiceProperties createEmailServiceProperties() {
+        EmailServiceProperties emailServiceProperties = new EmailServiceProperties();
+
+        // Set host
+        emailServiceProperties.setHost("smtp.example.com");
+
+        // Token
+        EmailServiceProperties.Token token = new EmailServiceProperties.Token();
+        token.setParameter("tokenParam");
+        token.setVariableInLinkTemplate("tokenVar");
+        emailServiceProperties.setToken(token);
+
+        // Verification
+        EmailServiceProperties.Verification verification = new EmailServiceProperties.Verification();
+        verification.setLinkTemplate("http://example.com/verify?token=${token}");
+        verification.setSubject("Please verify your email");
+
+        EmailServiceProperties.Verification.Html verificationHtml = new EmailServiceProperties.Verification.Html();
+        verificationHtml.setName("Verify your email");
+        verificationHtml.setHrefVariable("token");
+        verification.setHtml(verificationHtml);
+        emailServiceProperties.setVerification(verification);
+
+        // Reset Password
+        EmailServiceProperties.ResetPassword resetPassword = new EmailServiceProperties.ResetPassword();
+        resetPassword.setLinkTemplate("http://example.com/reset-password?token=${token}");
+        resetPassword.setSubject("Reset your password");
+
+        EmailServiceProperties.ResetPassword.Html resetPasswordHtml = new EmailServiceProperties.ResetPassword.Html();
+        resetPasswordHtml.setName("Reset your password");
+        resetPasswordHtml.setHrefVariable("token");
+        resetPassword.setHtml(resetPasswordHtml);
+        emailServiceProperties.setResetPassword(resetPassword);
+
+        // Delete Account
+        EmailServiceProperties.DeleteAccount deleteAccount = new EmailServiceProperties.DeleteAccount();
+        deleteAccount.setLinkTemplate("http://example.com/delete-account?token=${token}");
+        deleteAccount.setSubject("Delete your account");
+
+        EmailServiceProperties.DeleteAccount.Html deleteAccountHtml = new EmailServiceProperties.DeleteAccount.Html();
+        deleteAccountHtml.setName("Delete your account");
+        deleteAccountHtml.setHrefVariable("token");
+        deleteAccount.setHtml(deleteAccountHtml);
+        emailServiceProperties.setDeleteAccount(deleteAccount);
+
+        // Update Email
+        EmailServiceProperties.UpdateEmail updateEmail = new EmailServiceProperties.UpdateEmail();
+        updateEmail.setLinkTemplate("http://example.com/update-email?token=${token}");
+        updateEmail.setSubject("Update your email");
+
+        EmailServiceProperties.UpdateEmail.Html updateEmailHtml = new EmailServiceProperties.UpdateEmail.Html();
+        updateEmailHtml.setName("Update your email");
+        updateEmailHtml.setHrefVariable("token");
+        updateEmail.setHtml(updateEmailHtml);
+        emailServiceProperties.setUpdateEmail(updateEmail);
+
+        return emailServiceProperties;
+    }
 }

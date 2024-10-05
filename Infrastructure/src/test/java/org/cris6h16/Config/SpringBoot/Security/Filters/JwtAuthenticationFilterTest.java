@@ -47,6 +47,10 @@ public class JwtAuthenticationFilterTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        when(jwtProperties.getToken()).thenReturn(mock(JwtProperties.Token.class));
+        when(jwtProperties.getToken().getAccess()).thenReturn(mock(JwtProperties.Token.Access.class));
+        when(jwtProperties.getToken().getAccess().getCookie()).thenReturn(mock(JwtProperties.Token.Access.Cookie.class));
+
         when(jwtProperties.getToken().getAccess().getCookie().getName())
                 .thenReturn(accessTokenCookieName);
     }

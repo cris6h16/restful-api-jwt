@@ -35,10 +35,10 @@ public class UserValidatorTest {
             case "blank" -> "    ";
             case "empty" -> "    ";
             case "null" -> null;
-            case "lenght1" -> "a".repeat(1);
-            case "lenght2" -> "a".repeat(2);
-            case "lenght21" -> "a".repeat(21);
-            case "lenght22" -> "a".repeat(22);
+            case "length1" -> "a".repeat(1);
+            case "length2" -> "a".repeat(2);
+            case "length21" -> "a".repeat(21);
+            case "length22" -> "a".repeat(22);
             default -> throw new IllegalStateException();
         };
 

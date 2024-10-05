@@ -4,21 +4,20 @@ import org.cris6h16.Adapters.In.Rest.DTOs.PublicProfileDTO;
 import org.cris6h16.Adapters.In.Rest.DTOs.UpdateMyPasswordDTO;
 import org.cris6h16.Config.SpringBoot.Security.UserDetails.UserDetailsWithId;
 import org.cris6h16.Config.SpringBoot.Services.CacheService;
+import org.cris6h16.In.Commands.GetAllPublicProfilesCommand;
 import org.cris6h16.In.Ports.*;
 import org.cris6h16.In.Results.GetAllPublicProfilesOutput;
 import org.cris6h16.In.Results.GetPublicProfileOutput;
 import org.cris6h16.Models.ERoles;
 import org.cris6h16.Models.UserModel;
+import org.cris6h16.Repositories.Page.MyPageable;
 import org.cris6h16.Repositories.Page.MySortOrder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -33,6 +32,7 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 public class UserControllerFacadeTest {
@@ -163,19 +163,7 @@ public class UserControllerFacadeTest {
     @Test
     public void getMyAccount_success() {
         // Arrange
-        UserModel user = new UserModel.Builder()
-                .setId(97123L)
-                .setUsername("cris6h16")
-                .setEmail("cristianmherrera21@gmail.com")
-                .setPassword("12345678")
-                .setRoles(Set.of(ERoles.ROLE_USER))
-                .setActive(true)
-                .setLastModified(Instant.now()
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDateTime() // Removes timezone info
-                )
-                .setEmailVerified(true)
-                .build();
+        UserModel user = createUser();
         GetPublicProfileOutput output = new GetPublicProfileOutput(user);
         PublicProfileDTO dto = new PublicProfileDTO(output);
         var principalMocked = mockPrincipalId(97123L);
@@ -190,6 +178,22 @@ public class UserControllerFacadeTest {
         verify(getPublicProfilePort).handle(97123L);
         assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(res.getBody()).isEqualTo(dto);
+    }
+
+    private UserModel createUser() {
+        return new UserModel.Builder()
+                .setId(97123L)
+                .setUsername("cris6h16")
+                .setEmail("cristianmherrera21@gmail.com")
+                .setPassword("12345678")
+                .setRoles(Set.of(ERoles.ROLE_USER))
+                .setActive(true)
+                .setLastModified(Instant.now()
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDateTime() // Removes timezone info
+                )
+                .setEmailVerified(true)
+                .build();
     }
 
     private UserDetailsWithId mockPrincipalId(Long id) {
@@ -231,65 +235,129 @@ public class UserControllerFacadeTest {
     }
 
     @Test
-    public void getAllUsers_cacheMissThenCallsThePortAndPutInCacheAndSuccessful() {
+    public void getAllUsers_cacheMissThenCallsThePortAndPutInCache() {
         // Arrange;
-        long inThisPageCount = 8L;
-        long mockTotalElementsAllCount = 18L;
-
-        Pageable pageable = createPageable(1, 10,
-                Sort.Order.asc("username"),
-                Sort.Order.desc("id"),
-                Sort.Order.asc("anyOtherProperty")
-        );
-
-        List<GetPublicProfileOutput> inThisPageItems = listOfPublicProfilesOutput(inThisPageCount);
-        GetAllPublicProfilesOutput output = createMockGetAllPublicProfilesOutput(mockTotalElementsAllCount, inThisPageItems);
+        GetAllPublicProfilesOutput output = mock(GetAllPublicProfilesOutput.class);
 
         when(cacheService.getAllUsers(any())).thenReturn(null);
         when(getAllPublicProfilesPort.handle(any())).thenReturn(output);
 
-
         // Act
-        ResponseEntity<Page<PublicProfileDTO>> res = userControllerFacade.getAllUsers(pageable);
+        ResponseEntity<Page<PublicProfileDTO>> res = userControllerFacade.getAllUsers(createPageable());
 
         // Assert
         assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
-        Page<PublicProfileDTO> page = res.getBody();
-        assertEquals(mockTotalElementsAllCount, page.getTotalElements());
-        assertEquals(2, page.getTotalPages());
-        assertEquals(1, page.getNumber());
-        assertEquals(inThisPageCount, page.getNumberOfElements());
-        assertEquals(10, page.getSize());
-        assertEquals(pageable, page.getPageable());
-        assertEquals(pageable.getSort(), page.getSort());
-        for (int i = 0; i < 8; i++) {
-            PublicProfileDTO dto = page.getContent().get(i);
-            GetPublicProfileOutput item = inThisPageItems.get(i);
-            assertEquals(dto, new PublicProfileDTO(item));
-        }
-
         verify(cacheService, times(1)).getAllUsers(any());
-        verify(getAllPublicProfilesPort, times(1)).handle(argThat(arg -> {
-            assertEquals(arg.getPageNumber(), pageable.getPageNumber());
-            assertEquals(arg.getPageSize(), pageable.getPageSize());
-            assertEquals(arg.getMySortOrders().size(), pageable.getSort().get().count());
-
-            for (int i = 0; i < pageable.getSort().stream().count(); i++) {
-                MySortOrder order = arg.getMySortOrders().get(i);
-                Sort.Order springOrder = pageable.getSort().stream().toList().get(i);
-
-                assertEquals(order.direction().toString().toLowerCase(), springOrder.getDirection().toString().toLowerCase()); // both were named: ASC & DESC
-                assertEquals(order.property(), springOrder.getProperty());
-            }
-            return true;
-        }));
-        verify(cacheService, times(1)).putAllUsers(any(), eq(output));
+        verify(getAllPublicProfilesPort, times(1)).handle(any());
+        verify(cacheService, times(1)).putAllUsers(any(), any());
     }
 
-    private GetAllPublicProfilesOutput createMockGetAllPublicProfilesOutput(long totalElementsAll, List<GetPublicProfileOutput> items) {
+    @Test
+    public void getAllUsers_cmdMappedCorrectlyToMyPageable() {
+        // Arrange;
+        GetAllPublicProfilesOutput output = createGetAllOutput();
+        Pageable springPageable = createPageable();
+
+        when(cacheService.getAllUsers(any())).thenReturn(null);
+        when(getAllPublicProfilesPort.handle(any())).thenReturn(output);
+
+        // Act
+        ResponseEntity<Page<PublicProfileDTO>> res = userControllerFacade.getAllUsers(createPageable());
+
+        // Assert
+        assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
+        verify(getAllPublicProfilesPort, times(1))
+                .handle(argThat(myPageable ->
+                        myPageable.equals(toMyPageable(springPageable))));
+    }
+
+    private GetAllPublicProfilesCommand toMyPageable(Pageable sentPageable) {
+        return new GetAllPublicProfilesCommand(
+                sentPageable.getPageNumber(),
+                sentPageable.getPageSize(),
+                toMySortOrders(sentPageable.getSort())
+        );
+    }
+
+    private List<MySortOrder> toMySortOrders(Sort sort) {
+        List<MySortOrder> orders = new ArrayList<>();
+        for (Sort.Order order : sort) {
+            MySortOrder.MyDirection direction = switch (order.getDirection()) {
+                case ASC -> MySortOrder.MyDirection.ASC;
+                case DESC -> MySortOrder.MyDirection.DESC;
+            };
+
+            MySortOrder myOrder = new MySortOrder(order.getProperty(), direction);
+            orders.add(myOrder);
+        }
+        return orders;
+    }
+
+    @Test
+    public void getAllUsers_outputMappedToSpringPageSuccess() {
+        // Arrange;
+        Pageable ignoredPageable = createPageable();
+        GetAllPublicProfilesOutput output = createGetAllOutput();
+
+        when(cacheService.getAllUsers(any())).thenReturn(null);
+        when(getAllPublicProfilesPort.handle(any())).thenReturn(output);
+
+        // Act
+        ResponseEntity<Page<PublicProfileDTO>> res = userControllerFacade.getAllUsers(ignoredPageable);
+
+        // Assert
+        assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertEquals(res.getBody(), toSpringPage(output));
+    }
+
+    private Page<PublicProfileDTO> toSpringPage(GetAllPublicProfilesOutput output) {
+        return new PageImpl<>(
+                output.getItems().stream().map(PublicProfileDTO::new).toList(), // GetPublicProfileOutput --> PublicProfileDTO
+                createPageable(output.getCommand()),
+                output.getTotalElements()
+        );
+    }
+
+    private Pageable createPageable(GetAllPublicProfilesCommand command) {
+        return PageRequest.of(
+                command.getPageNumber(),
+                command.getPageSize(),
+                createSort(command.getMySortOrders())
+        );
+    }
+
+    private Sort createSort(List<MySortOrder> mySortOrders) {
+        List<Sort.Order> orders = new ArrayList<>(mySortOrders.size());
+        for (MySortOrder mySortOrder : mySortOrders) {
+            Sort.Order order = switch (mySortOrder.direction()) {
+                case ASC -> Sort.Order.asc(mySortOrder.property());
+                case DESC -> Sort.Order.desc(mySortOrder.property());
+            };
+            orders.add(order);
+        }
+        return Sort.by(orders);
+    }
+
+    private GetAllPublicProfilesOutput createGetAllOutput() {
         return new GetAllPublicProfilesOutput(
-                totalElementsAll,
-                items
+                18,
+                2,
+                createCmd(),
+                listOfPublicProfilesOutput(10)
+        );
+
+    }
+
+
+    private GetAllPublicProfilesCommand createCmd() {
+        return new GetAllPublicProfilesCommand(
+                1,
+                10,
+                List.of(
+                        new MySortOrder("username", MySortOrder.MyDirection.ASC),
+                        new MySortOrder("id", MySortOrder.MyDirection.DESC),
+                        new MySortOrder("anyOtherProperty", MySortOrder.MyDirection.ASC)
+                )
         );
     }
 
@@ -317,10 +385,10 @@ public class UserControllerFacadeTest {
 
 
     private Pageable createPageable() {
-        return PageRequest.of(
-                10,
-                20,
-                Sort.by(Sort.Order.asc("username"))
+        return createPageable(1, 10,
+                Sort.Order.asc("username"),
+                Sort.Order.desc("id"),
+                Sort.Order.asc("anyOtherProperty")
         );
     }
 

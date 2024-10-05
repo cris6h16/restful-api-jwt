@@ -99,9 +99,6 @@ public class UserModel {
         this.lastModified = lastModified;
     }
 
-    public void setEmailVerified(boolean isVerified) {
-        this.emailVerified = isVerified;
-    }
 
     public static class Builder {
         private Long id;

@@ -4,6 +4,7 @@ package org.cris6h16.In.Commands;
 import org.cris6h16.Repositories.Page.MySortOrder;
 
 import java.util.List;
+import java.util.Objects;
 
 public class GetAllPublicProfilesCommand {
     private final int pageNumber;
@@ -26,5 +27,17 @@ public class GetAllPublicProfilesCommand {
 
     public List<MySortOrder> getMySortOrders() {
         return mySortOrders;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+
+        GetAllPublicProfilesCommand that = (GetAllPublicProfilesCommand) obj;
+
+        if (pageNumber != that.pageNumber) return false;
+        if (pageSize != that.pageSize) return false;
+        return Objects.equals(mySortOrders, that.mySortOrders);
     }
 }

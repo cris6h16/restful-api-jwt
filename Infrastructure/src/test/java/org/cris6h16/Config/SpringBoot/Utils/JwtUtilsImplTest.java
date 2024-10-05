@@ -3,9 +3,11 @@ package org.cris6h16.Config.SpringBoot.Utils;
 import io.jsonwebtoken.Claims;
 import org.cris6h16.Config.SpringBoot.Properties.JwtProperties;
 import org.cris6h16.Models.ERoles;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import java.util.List;
 import java.util.Map;
@@ -13,14 +15,30 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
-public
-class JwtUtilsImplTest {
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+public class JwtUtilsImplTest {
 
     @Mock
     private JwtProperties jwtProperties;
 
     @InjectMocks
     private JwtUtilsImpl jwtUtilsImpl;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+
+        when(jwtProperties.getSecretKey()).thenReturn("secretKey123456789098763e4rfgbnmki876543wsx09876543456789nmju7654redcvbnm");
+        when(jwtProperties.getToken()).thenReturn(mock(JwtProperties.Token.class));
+        when(jwtProperties.getToken().getRefresh()).thenReturn(mock(JwtProperties.Token.Refresh.class));
+        when(jwtProperties.getToken().getRefresh().getExpiration()).thenReturn(mock(JwtProperties.Token.Refresh.Expiration.class));
+        when(jwtProperties.getToken().getRefresh().getExpiration().getSecs()).thenReturn(1000L);
+        when(jwtProperties.getToken().getAccess()).thenReturn(mock(JwtProperties.Token.Access.class));
+        when(jwtProperties.getToken().getAccess().getExpiration()).thenReturn(mock(JwtProperties.Token.Access.Expiration.class));
+        when(jwtProperties.getToken().getAccess().getExpiration().getSecs()).thenReturn(1000L);
+    }
 
     @Test
     void genToken_claimsNullSuccessful() {

@@ -242,7 +242,11 @@ public class UserRepositoryImplTest {
         MyPageable pageable = new MyPageable(
                 0,
                 10,
-                List.of(new MySortOrder("username", MySortOrder.MyDirection.ASC))
+                List.of(
+                        new MySortOrder("username", MySortOrder.MyDirection.ASC),
+                        new MySortOrder("hello-word-property", MySortOrder.MyDirection.DESC),
+                        new MySortOrder("email", MySortOrder.MyDirection.DESC)
+                )
         );
         Page<UserEntity> page = mock(Page.class);
 
@@ -253,11 +257,25 @@ public class UserRepositoryImplTest {
 
         // Assert
         assertNotNull(result);
-        verify(userJpaRepository).findAll(argThat((Pageable arg) -> {
-            assertEquals(0, arg.getPageNumber());
-            assertEquals(10, arg.getPageSize());
-            assertEquals("username", arg.getSort().get().findFirst().get().getProperty());
-            assertEquals(Sort.Direction.ASC, arg.getSort().get().findFirst().get().getDirection());
+        verify(userJpaRepository).findAll(argThat((Pageable pag) -> {
+            assertEquals(0, pag.getPageNumber());
+            assertEquals(10, pag.getPageSize());
+
+            for (Sort.Order order : pag.getSort()) {
+                switch (order.getProperty()) {
+                    case "username":
+                        assertEquals(Sort.Direction.ASC, order.getDirection());
+                        break;
+                    case "hello-word-property":
+                        assertEquals(Sort.Direction.DESC, order.getDirection());
+                        break;
+                    case "email":
+                        assertEquals(Sort.Direction.DESC, order.getDirection());
+                        break;
+                    default:
+                        fail("unexpected property: " + order.getProperty());
+                }
+            }
             return true;
         }));
     }

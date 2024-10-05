@@ -5,14 +5,11 @@ import org.cris6h16.Adapters.In.Rest.DTOs.CreateAccountDTO;
 import org.cris6h16.Adapters.In.Rest.DTOs.LoginDTO;
 import org.cris6h16.Config.SpringBoot.Properties.ControllerProperties;
 import org.cris6h16.Config.SpringBoot.Properties.JwtProperties;
-import org.cris6h16.Config.SpringBoot.Utils.JwtUtilsImpl;
 import org.cris6h16.Exceptions.Impls.NotFoundException;
 import org.cris6h16.In.Commands.CreateAccountCommand;
 import org.cris6h16.In.Ports.*;
 import org.cris6h16.In.Results.LoginOutput;
 import org.cris6h16.Models.ERoles;
-import org.cris6h16.Utils.ErrorMessages;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -110,6 +107,8 @@ public class AuthenticationControllerFacade {
     }
 
     private ResponseCookie createAccessTokenCookie(String accessToken) {
+        if (accessToken == null) throw new IllegalArgumentException("accessToken cannot be null");
+
         String name = jwtProperties.getToken().getAccess().getCookie().getName();
         String path = jwtProperties.getToken().getAccess().getCookie().getPath();
         long expiration = jwtProperties.getToken().getAccess().getExpiration().getSecs();
@@ -150,7 +149,12 @@ public class AuthenticationControllerFacade {
 
     // no transactional because it's a read-only operation
     public ResponseEntity<Void> refreshAccessToken() {
-        String accessToken = refreshAccessTokenPort.handle(Common.getPrincipalId());
+        Long id = Common.getPrincipalId();
+        String accessToken = refreshAccessTokenPort.handle(id);
+
+        System.out.println("id: " + id);
+        System.out.println("refreshed access token: " + accessToken);
+
 
         return ResponseEntity.ok()
                 .header("Set-Cookie", createAccessTokenCookie(accessToken).toString())

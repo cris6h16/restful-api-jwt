@@ -9,16 +9,19 @@ import org.cris6h16.Config.SpringBoot.Utils.JwtUtilsImpl;
 import org.cris6h16.Exceptions.Impls.NotFoundException;
 import org.cris6h16.In.Ports.*;
 import org.cris6h16.In.Results.LoginOutput;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -60,6 +63,8 @@ public class AuthenticationControllerFacadeTest {
     @InjectMocks
     private AuthenticationControllerFacade authenticationControllerFacade;
 
+    private final Long userId = 999L;
+
     String locationPath = "/location-path";
     String accessTokenCookieName = "access-tk-cookie-name";
     String refreshTokenCookieName = "refresh-tk-cookie-name";
@@ -74,7 +79,12 @@ public class AuthenticationControllerFacadeTest {
         MockitoAnnotations.openMocks(this);
         mockJwtProperties();
         mockControllerProperties();
-        mockPrincipal(999L);
+        mockPrincipal(userId);
+    }
+
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
     }
 
     private void mockJwtProperties() {
@@ -152,13 +162,12 @@ public class AuthenticationControllerFacadeTest {
     @Test
     void verifyEmail_successfulThenNoContent() {
         // Arrange
-        mockPrincipal(99900L);
 
         // Act
         ResponseEntity<Void> res = authenticationControllerFacade.verifyMyEmail();
 
         // Assert
-        verify(verifyEmailPort).handle(99900L);
+        verify(verifyEmailPort).handle(userId);
         assertThat(res.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
     }
 
@@ -200,7 +209,7 @@ public class AuthenticationControllerFacadeTest {
         );
     }
 
-    private String expectedAccessTokenCookie(String token) throws InterruptedException {
+    private String expectedAccessTokenCookie(String token) {
         return buildCookieString(
                 token,
                 accessTokenCookiePath,
@@ -209,7 +218,7 @@ public class AuthenticationControllerFacadeTest {
         );
     }
 
-    private String buildCookieString(String token, String path, long maxAge, String tokenCookieName) throws InterruptedException {
+    private String buildCookieString(String token, String path, long maxAge, String tokenCookieName) {
         return String.format("%s=%s; Path=%s; Max-Age=%d; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure; HttpOnly; SameSite=Strict",
                 tokenCookieName, token, path, maxAge);
     }
@@ -261,7 +270,6 @@ public class AuthenticationControllerFacadeTest {
     @Test
     void resetPassword_success() {
         // Arrange
-        mockPrincipal(999L);
 
         // Act
         ResponseEntity<Void> res = authenticationControllerFacade.resetPassword(null);
@@ -272,28 +280,33 @@ public class AuthenticationControllerFacadeTest {
     }
 
     @Test
-    void refreshAccessToken_success() throws InterruptedException {
+    void refreshAccessToken_success() {
         // Arrange
         String refreshToken = "refreshTokenw123234r43t4rgtgt";
-        mockPrincipal(999L);
 
-        when(refreshAccessTokenPort.handle(999L)).thenReturn(refreshToken);
+        when(refreshAccessTokenPort.handle(userId)).thenReturn(refreshToken);
 
         // Act
         ResponseEntity<Void> res = authenticationControllerFacade.refreshAccessToken();
 
         // Assert
         assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
+        System.out.println(res.getHeaders().get("Set-Cookie"));
+        System.out.println(expectedAccessTokenCookie(refreshToken));
         assertThat(res.getHeaders().get("Set-Cookie")).containsExactlyInAnyOrder(
                 expectedAccessTokenCookie(refreshToken)
         );
     }
 
     private void mockPrincipal(long id) {
+        SecurityContext context = mock(SecurityContext.class);
+        SecurityContextHolder.setContext(context);
+
         Authentication a = mock(Authentication.class);
-        UserDetailsWithId user = mock(UserDetailsWithId.class);
-        when(user.getId()).thenReturn(id);
-        when(a.getPrincipal()).thenReturn(user);
-        SecurityContextHolder.getContext().setAuthentication(a);
+        UserDetailsWithId principal = mock(UserDetailsWithId.class);
+        when(principal.getId()).thenReturn(id);
+        when(a.getPrincipal()).thenReturn(principal);
+
+        when(context.getAuthentication()).thenReturn(a);
     }
 }

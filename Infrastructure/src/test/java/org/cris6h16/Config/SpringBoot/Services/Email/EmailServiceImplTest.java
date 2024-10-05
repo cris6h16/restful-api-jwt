@@ -15,8 +15,7 @@ import org.thymeleaf.context.IContext;
 
 import java.util.function.Function;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
@@ -80,6 +79,22 @@ public class EmailServiceImplTest {
         // Assert
         verify(mailSender, times(1)).send(mimeMessage);
         verify(mimeMessage).setSubject(subject);
+    }
+
+    @Test
+    void testSendEmail_MailSenderThrowsException_caughtAndIgnored()  { // the service was written to work async so exceptions are caught and ignored ( & logged of course )
+        // Arrange
+        String email = "cristianmherrera21@gmail.com";
+        String subject = emailServiceProperties.getUpdateEmail().getSubject();
+        String content = "Content";
+        doThrow(RuntimeException.class).when(mailSender).send(mimeMessage);
+
+        // Act & Assert
+        assertDoesNotThrow(() -> emailService.sendEmail(
+                email,
+                props -> props.getUpdateEmail().getSubject(),
+                content
+        ));
     }
 
     @Test

@@ -10,8 +10,6 @@ import org.cris6h16.Repositories.Page.MyPage;
 import org.cris6h16.Repositories.Page.MyPageable;
 import org.cris6h16.Repositories.UserRepository;
 
-import java.util.List;
-
 public class GetAllPublicProfilesUseCase implements GetAllPublicProfilesPort {
 
     private final UserRepository userRepository;
@@ -23,19 +21,20 @@ public class GetAllPublicProfilesUseCase implements GetAllPublicProfilesPort {
     @Override
     public GetAllPublicProfilesOutput handle(GetAllPublicProfilesCommand cmd) {
         cmdNotNull(cmd);
-        return toOutput(findPage(cmd), cmd);
+        return toOutput(findPage(cmd));
     }
 
-    private GetAllPublicProfilesOutput toOutput(MyPage<UserModel> page, GetAllPublicProfilesCommand cmd) {
-        List<GetPublicProfileOutput> profiles = page.getItems().stream()
-                .map(this::toPublicProfileOutput)
+    private GetAllPublicProfilesOutput toOutput(MyPage<UserModel> page) {
+        long totalElements = page.getTotalElementsAll();
+        long totalPages = page.getTotalPages();
+        var command = new GetAllPublicProfilesCommand(
+                page.getPageRequest().getPageNumber(),
+                page.getPageRequest().getPageSize(),
+                page.getPageRequest().getSortOrders());
+        var items = page.getItems().stream()
+                .map(GetPublicProfileOutput::new)
                 .toList();
-
-        return new GetAllPublicProfilesOutput(page.getTotalElementsAll(), profiles);
-    }
-
-    private GetPublicProfileOutput toPublicProfileOutput(UserModel userModel) {
-        return new GetPublicProfileOutput(userModel);
+        return new GetAllPublicProfilesOutput(totalElements, totalPages, command, items);
     }
 
     private MyPage<UserModel> findPage(GetAllPublicProfilesCommand cmd) {

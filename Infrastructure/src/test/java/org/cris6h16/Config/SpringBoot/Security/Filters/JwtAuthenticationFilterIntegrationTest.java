@@ -8,7 +8,9 @@ import org.cris6h16.Config.SpringBoot.Security.UserDetails.UserDetailsWithId;
 import org.cris6h16.Config.SpringBoot.Utils.JwtUtilsImpl;
 import org.cris6h16.In.Ports.VerifyEmailPort;
 import org.cris6h16.Models.ERoles;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -16,6 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -49,15 +52,14 @@ public class JwtAuthenticationFilterIntegrationTest {
     @Value("${controller.authentication.verify-email}")
     private String verifyEmailPath;
 
+
+
     @Test
     public void whenRequestWithValidJwt_thenAuthenticated() throws Exception {
         // Arrange
-        UserDetailsWithId userDetails = mock(UserDetailsWithId.class);
+        UserDetailsWithId userDetails = createWithAuthoritiesAndId();
         String validJwt = "validJwt";
         Cookie accessTokenCookie = new Cookie(accessTokenCookieName, validJwt);
-
-        when(userDetails.getAuthorities()).thenReturn(userAuthority());
-        when(userDetails.getId()).thenReturn(1L);
 
         when(jwtUtils.validate(validJwt)).thenReturn(true);
         when(jwtUtils.getId(validJwt)).thenReturn(1L);
@@ -71,6 +73,13 @@ public class JwtAuthenticationFilterIntegrationTest {
 
         // Assert
         verify(verifyEmailPort, times(1)).handle(1L);
+    }
+
+    private UserDetailsWithId createWithAuthoritiesAndId() {
+        UserDetailsWithId userDetails = mock(UserDetailsWithId.class);
+        when(userDetails.getAuthorities()).thenReturn(userAuthority());
+        when(userDetails.getId()).thenReturn(1L);
+        return userDetails;
     }
 
     private Collection<GrantedAuthority> userAuthority() {

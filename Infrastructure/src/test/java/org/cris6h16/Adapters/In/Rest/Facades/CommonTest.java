@@ -1,6 +1,7 @@
 package org.cris6h16.Adapters.In.Rest.Facades;
 
 import org.cris6h16.Config.SpringBoot.Security.UserDetails.UserDetailsWithId;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -25,6 +26,12 @@ class CommonTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
         SecurityContextHolder.setContext(securityContext);
+    }
+
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
+        SecurityContextHolder.setContext(SecurityContextHolder.createEmptyContext());
     }
 
     @Test

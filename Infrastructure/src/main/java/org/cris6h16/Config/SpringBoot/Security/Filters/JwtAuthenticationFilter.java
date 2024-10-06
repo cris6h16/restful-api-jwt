@@ -77,5 +77,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         log.debug("leaving JwtAuthenticationFilter.doFilterInternal");
         filterChain.doFilter(request, response);
+        return;
     }
 }

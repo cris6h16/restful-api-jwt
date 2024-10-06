@@ -9,6 +9,7 @@ import org.cris6h16.Config.SpringBoot.Properties.JwtProperties;
 import org.cris6h16.Config.SpringBoot.Security.UserDetails.CustomUserDetailsService;
 import org.cris6h16.Config.SpringBoot.Security.UserDetails.UserDetailsWithId;
 import org.cris6h16.Config.SpringBoot.Utils.JwtUtilsImpl;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -55,6 +56,12 @@ public class JwtAuthenticationFilterTest {
 
         when(jwtProperties.getToken().getAccess().getCookie().getName())
                 .thenReturn(accessTokenCookieName);
+    }
+
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
+        SecurityContextHolder.setContext(SecurityContextHolder.createEmptyContext());
     }
 
     @Test

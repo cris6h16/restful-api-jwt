@@ -85,6 +85,7 @@ public class AuthenticationControllerFacadeTest {
     @AfterEach
     void tearDown() {
         SecurityContextHolder.clearContext();
+        SecurityContextHolder.setContext(SecurityContextHolder.createEmptyContext());
     }
 
     private void mockJwtProperties() {

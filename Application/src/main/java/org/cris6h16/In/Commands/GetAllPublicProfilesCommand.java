@@ -29,6 +29,7 @@ public class GetAllPublicProfilesCommand {
         return mySortOrders;
     }
 
+    // used in tests
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;

@@ -1,0 +1,224 @@
+openapi: 3.1.0
+info:
+  title: restful-api-jwt
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: Development server
+
+paths:
+  /api/v1/auth/login:
+    post:
+      summary: Authenticate user
+      description: Authenticates a user using email and password.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        "200":
+          $ref: '#/components/responses/LoginSuccess'
+
+        "400":
+          $ref: '#/components/responses/InvalidPropertyProvided'
+
+        "401":
+          $ref: '#/components/responses/UserWithThoseCredentialsNotFound'
+
+        "422":
+          $ref: '#/components/responses/EmailNotVerified'
+
+        default:
+          $ref: '#/components/responses/GenericFail'
+
+  /api/v1/auth/signup:
+    post:
+      summary: Create a user
+      description: Create a user account.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        "201":
+          $ref: '#/components/responses/UserCreatedSuccessfully'
+
+        "400":
+          $ref: '#/components/responses/InvalidPropertyProvided'
+
+        "409":
+          $ref: '#/components/responses/AlreadyExists'
+
+        default:
+          $ref: '#/components/responses/GenericFail'
+
+
+  /api/v1/auth/verify-email:
+    put:
+      summary: Verify Email
+      description: Verify a user email after a successful account creation
+      responses:
+        "204":
+          $ref: '#/components/responses/NoContent'
+        scdscds
+
+components:
+  headers:
+    refreshAndAccessTokens:
+      description: Access token and refresh token cookies.
+      schema:
+        type: string
+        name: "Set-Cookie"
+        example: "[ accessToken=abc123; Path=/; HttpOnly, refreshToken=xyz789; Path=/; HttpOnly"
+
+  schemas:
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+      required:
+        - email
+        - password
+
+    CreateUserRequest: # todo: add a link object
+      type: object
+      properties:
+        username:
+          type: string
+          format: text
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+
+      required:
+        - username
+        - email
+        - password
+
+    ErrorMessage:
+      type: object\
+      properties:
+        message:
+          type: string
+        status:
+          type: string
+      required:
+        - message
+        - status
+  responses:
+    EmailNotVerified:
+      description: Unprocessable Entity - User's email isn't verified
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          examples:
+            EmailNotVerified:
+              summary: Email not verified
+              description: When a user has his email unverified
+              value:
+                message: "Email not verified, please check your email"
+                status: "422"
+    UserWithThoseCredentialsNotFound:
+      description: Unauthorized - Invalid credentials
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          examples:
+            InvalidCredentials:
+              summary: Invalid credentials
+              description: When is user was not found or user isn't active
+              value:
+                message: "Invalid credentials"
+                status: "401"
+
+    InvalidPropertyProvided:
+      description: Bad Request - Invalid property provided like a invalid email, password too short, username length invalid, etc.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          examples:
+            EmailInvalid:
+              summary: Invalid email provided
+              description: When is null or not match with the email regex
+              value:
+                message: "Invalid email"
+                status: "400"
+            PasswordInvalid:
+              summary: Invalid password provided
+              description: When is null or the length is less than 8
+              value:
+                message: "Password must be at least 8 characters long"
+                status: "400"
+            UsernameInvalid:
+              summary: Invalid username provided
+              description: When length of the username provided is invalid
+              value:
+                message: "Username length must be between 3 & 20 ( included )"
+                status: "400"
+    LoginSuccess:
+      description: OK
+      headers:
+        tokens:
+          $ref: '#/components/headers/refreshAndAccessTokens'
+
+    GenericFail:
+      description: Internal Server Error - Unhandled error has occurred internally
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          examples:
+            UnexpectedError:
+              summary: Unhandled error occurred
+              description: When is has occurred an unexpected error like database failure, etc.
+              value:
+                message: "Unexpected error, please try again later"
+                status: "500"
+
+    UserCreatedSuccessfully:
+      description: Created - A user was successfully created
+      headers:
+        tokens:
+          $ref: '#/components/headers/refreshAndAccessTokens'
+        location:
+          description: Location header
+          schema:
+            type: string
+
+
+    AlreadyExists:
+      description: Conflict - Username or email already exists
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          examples:
+            UsernameAlreadyExists:
+              summary: Username already exists
+              description: When the provided username is already in use.
+              value:
+                message: "Username already exists"
+                status: "409"
+            EmailAlreadyExists:
+              summary: Email already exists
+              description: When the provided email is already in use.
+              value:
+                message: "Email already exists"
+                status: "409"
+    NoContent:
+      description: No content - After a successful operation

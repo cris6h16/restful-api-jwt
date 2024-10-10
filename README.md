@@ -344,3 +344,85 @@ Guide to Software Structure and Design"_ by Robert C. Martin.
 ![Sequences diagram](docs/imgs/sequences.png)
 
 
+## 2. Development
+
+### 2.1 Used Technologies
+
+- _Java_
+- _Maven_
+- _Spring Boot_
+  - _Spring Security_
+  - _Spring Data JPA_
+  - _Spring Data Redis_
+  - _Spring Thymeleaf_
+  - _Spring MVC_
+  - _Spring Mail_
+- _Testing_
+  - _Spring Boot Test_
+  - _JUnit 5_
+  - _AssertJ_
+  - _Mockito_
+- _Docker Compose_
+- _PostgreSQL_
+- _OpenAPI_
+- _Lombok_
+- _Docker_
+- _Redis_
+- _JJWT_
+
+### 2.2 Refactoring   
+
+I know that there are some things that can be improved, like break down the
+`.yaml` files into more-specific files, like `paths.yaml`, `jwt.yaml`, `responses.yaml`, etc.
+this is one that I just remembered now, but honestly I can stay refactoring this project 
+today, tomorrow, this week, this month and so on; and I will always find something to improve.
+
+### 2.3 Questions you may have
+
+#### 2.3.1 API Description Language
+
+1. If I'm following the code-first approach, why did
+I not use the `springdoc-openapi` library to generate 
+the OpenAPI Description / client?   
+
+> I have some reasons, the first is that I dont want write or edit the documentation
+from the code, I prefer to write the documentation in a separate file, and the second
+reason is that If I want to ignore a parameter like those that are injected by the 
+Dependency Injection, I need go to the code and add the annotation to hide it 
+as you can see Im modifying the code for the doc concern ( this only one example of those ), and another reason is that
+I feel when I write the OpenAPI Description I have all the control of the documentation.
+
+#### 2.3.2 Testing
+
+1. Why did I not test the database with an embedded database like H2?
+
+> I could do that, but I prefer to test the database with the real database, 
+because I wanna test the real behavior ( of course in a different
+environment, like a different schema, etc. ) even if those tests are slower.
+
+2. What's about the coverage?
+
+> I achieved 100% coverage in the `domain`, `application`, `infrastructure`.
+
+_remember include only the project's packages in the coverage._  
+
+_Infrastructure_   
+![Infrastructure_scope.png](docs/imgs/testing/coverage/Infrastructure/scope.png)     
+
+_Application_   
+![Application_scope.png](docs/imgs/testing/coverage/Application/scope.png)        
+
+_Domain_    
+![Domain_scope.png](docs/imgs/testing/coverage/Domain/scope.png)       
+
+
+- 100%    
+
+_Infrastructure_    
+![Infrastructure_result.png](docs/imgs/testing/coverage/Infrastructure/result.png)     
+
+_Application_    
+![Application_result.png](docs/imgs/testing/coverage/Application/result.png)   
+
+_Domain_    
+![Domain_result.png](docs/imgs/testing/coverage/Domain/result.png)   

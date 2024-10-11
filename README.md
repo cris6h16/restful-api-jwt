@@ -26,7 +26,7 @@ Used to authenticate the user, this one is used by the client to access the API.
 {
   "sub": "1",
   "exp": 123456,
-  "roles": ["ROLE_USER"]
+  "roles": [ROLE_USER, ROLE_ADMIN]
 }
 ```
 

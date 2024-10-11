@@ -7,33 +7,29 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.cris6h16.Config.SpringBoot.Properties.JwtProperties;
-import org.cris6h16.Config.SpringBoot.Security.UserDetails.CustomUserDetailsService;
 import org.cris6h16.Config.SpringBoot.Security.UserDetails.UserDetailsWithId;
 import org.cris6h16.Config.SpringBoot.Utils.JwtUtilsImpl;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.Collection;
 
 @Component
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtilsImpl jwtUtilsImpl;
-    private final CustomUserDetailsService userDetailsService;
     private final JwtProperties jwtProperties;
 
 
     public JwtAuthenticationFilter(JwtUtilsImpl jwtUtilsImpl,
-                                   CustomUserDetailsService userDetailsService,
                                    JwtProperties jwtProperties) {
         this.jwtUtilsImpl = jwtUtilsImpl;
-        this.userDetailsService = userDetailsService;
         this.jwtProperties = jwtProperties;
     }
 
@@ -45,38 +41,73 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         log.debug("entered to JwtAuthenticationFilter.doFilterInternal");
 
         // accessToken=...; Path=/; Secure; HttpOnly; Expires=Fri, 12 Sep 2025 02:17:49 GMT;
-        Cookie[] cookies = request.getCookies();
-        String tkCookie = null;
-
-        if (cookies == null) {
-            log.debug("No cookies found, then skipping filter");
+        String token = getAccessOrRefreshTokenFromCookies(request);
+        if (token == null) {
+            log.debug("No token found, skipping filter");
             filterChain.doFilter(request, response);
             return;
         }
 
-        for (Cookie cookie : cookies) {
-            String accessTokenCookieName = jwtProperties.getToken().getAccess().getCookie().getName();
 
-            if (cookie.getName().equals(accessTokenCookieName)) {
-                tkCookie = cookie.getValue();
-                log.debug("found access token cookie");
-                break;
+        if (!jwtUtilsImpl.validate(token)) {
+            log.debug("Invalid access token, skipping filter");
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        Long id = jwtUtilsImpl.getId(token);
+        Collection<? extends SimpleGrantedAuthority> authorities = jwtUtilsImpl.getRoles(token).stream()
+                .map(role -> new SimpleGrantedAuthority(role.toString()))
+                .toList();
+
+        UserDetailsWithId user = new UserDetailsWithId(id, authorities);
+        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                user, null, authorities
+        );
+        SecurityContextHolder.getContext().setAuthentication(authToken);
+        log.debug("Authenticated user id: {}, authorities: {}", user.getId(), authorities);
+
+        filterChain.doFilter(request, response);
+    }
+
+    /**
+     * Extracts the token from the cookies in the request
+     *
+     * @param request the request containing the cookies
+     * @return if the access token is found, it is returned, otherwise the refresh token is returned ( null if not found any of them )
+     */
+    private String getAccessOrRefreshTokenFromCookies(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) {
+            log.debug("No cookies found in request");
+            return null;
+        }
+
+        String accessToken = getAccessTokenFromCookie(cookies);
+        String refreshToken = getRefreshTokenFromCookie(cookies);
+
+        return accessToken != null ? accessToken : refreshToken;
+    }
+
+    private String getRefreshTokenFromCookie(Cookie[] cookies) {
+        String refreshTokenCookieName = jwtProperties.getToken().getRefresh().getCookie().getName();
+        for (Cookie cookie : cookies) {
+            if (cookie.getName().equals(refreshTokenCookieName)) {
+                log.debug("found refresh token cookie");
+                return cookie.getValue();
             }
         }
+        return null;
+    }
 
-        if (jwtUtilsImpl.validate(tkCookie)) {
-            Long id = jwtUtilsImpl.getId(tkCookie);
-            UserDetailsWithId user = userDetailsService.loadUserById(id);
-
-            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                    user, null, user.getAuthorities()
-            );
-            SecurityContextHolder.getContext().setAuthentication(authToken);
-            log.debug("authenticated user: {}", user);
+    private String getAccessTokenFromCookie(Cookie[] cookies) {
+        String accessTokenCookieName = jwtProperties.getToken().getAccess().getCookie().getName();
+        for (Cookie cookie : cookies) {
+            if (cookie.getName().equals(accessTokenCookieName)) {
+                log.debug("found access token cookie");
+                return cookie.getValue();
+            }
         }
-
-        log.debug("leaving JwtAuthenticationFilter.doFilterInternal");
-        filterChain.doFilter(request, response);
-        return;
+        return null;
     }
 }

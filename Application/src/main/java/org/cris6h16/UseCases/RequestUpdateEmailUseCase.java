@@ -26,13 +26,14 @@ public class RequestUpdateEmailUseCase implements RequestUpdateEmailPort {
     public void handle(Long id) {
         userValidator.validateId(id);
 
-        UserModel user = findByIdElseThrow(id);
-        emailService.sendRequestUpdateEmail(user.getId(), user.getEmail());
+        String email = findEmailByIdElseThrow(id);
+        emailService.sendRequestUpdateEmail(id, email);
     }
 
-    private UserModel findByIdElseThrow(Long id) {
-        return userRepository
-                .findById(id)
-                .orElseThrow(() -> new NotFoundException(errorMessages.getUserNotFoundMessage()));
+    private String findEmailByIdElseThrow(Long id) {
+        return userRepository.findEmailById(id).orElseThrow(
+                () -> new NotFoundException(errorMessages.getUserNotFoundMessage()));
     }
+
+
 }

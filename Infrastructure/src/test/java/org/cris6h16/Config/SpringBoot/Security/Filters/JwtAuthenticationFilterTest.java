@@ -6,7 +6,6 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.cris6h16.Config.SpringBoot.Properties.JwtProperties;
-import org.cris6h16.Config.SpringBoot.Security.UserDetails.CustomUserDetailsService;
 import org.cris6h16.Config.SpringBoot.Security.UserDetails.UserDetailsWithId;
 import org.cris6h16.Config.SpringBoot.Utils.JwtUtilsImpl;
 import org.junit.jupiter.api.AfterEach;
@@ -15,15 +14,11 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -36,8 +31,6 @@ public class JwtAuthenticationFilterTest {
 
     @Mock
     private JwtUtilsImpl jwtUtilsImpl;
-    @Mock
-    private CustomUserDetailsService userDetailsService;
 
     @Mock
     private JwtProperties jwtProperties;
@@ -130,7 +123,7 @@ public class JwtAuthenticationFilterTest {
         // Assert
         verify(jwtUtilsImpl, times(1)).validate(any());
         verify(jwtUtilsImpl, never()).getId(any());
-        verify(userDetailsService, never()).loadUserById(any());
+//        verify(userDetailsService, never()).loadUserById(any());
         verify(filterChain, times(1)).doFilter(any(), any());
     }
 
@@ -148,7 +141,7 @@ public class JwtAuthenticationFilterTest {
         when(request.getCookies()).thenReturn(createCookiesWithToken(validToken));
         when(jwtUtilsImpl.validate(validToken)).thenReturn(true);
         when(jwtUtilsImpl.getId(validToken)).thenReturn(99L);
-        when(userDetailsService.loadUserById(99L)).thenReturn(userDetailsWithId);
+//        when(userDetailsService.loadUserById(99L)).thenReturn(userDetailsWithId);
 
         //Act
         jwtAuthenticationFilter.doFilterInternal(
@@ -166,7 +159,7 @@ public class JwtAuthenticationFilterTest {
         }));
         verify(jwtUtilsImpl, times(1)).validate(validToken);
         verify(jwtUtilsImpl, times(1)).getId(validToken);
-        verify(userDetailsService, times(1)).loadUserById(99L);
+//        verify(userDetailsService, times(1)).loadUserById(99L);
         verify(filterChain, times(1)).doFilter(any(), any());
     }
 

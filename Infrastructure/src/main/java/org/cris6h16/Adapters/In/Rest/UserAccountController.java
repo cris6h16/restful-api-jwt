@@ -50,12 +50,15 @@ public class UserAccountController {
         return userAccountControllerFacade.requestUpdateMyEmail();
     }
 
+    /**
+     * @param email the new email for replace your old email
+     */
     @PatchMapping(
             value = "${controller.user.account.update.email}" ,
             consumes = "application/json"
     )
-    public ResponseEntity<Void> updateMyEmail(@RequestBody String newEmail) {
-        return userAccountControllerFacade.updateMyEmail(newEmail);
+    public ResponseEntity<Void> updateMyEmail(@RequestBody String email) {
+        return userAccountControllerFacade.updateMyEmail(email);
     }
 
 

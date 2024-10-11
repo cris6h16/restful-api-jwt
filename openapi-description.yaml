@@ -9,26 +9,69 @@ servers:
 paths:
   /api/v1/auth/login:
     post:
+      tags:
+        - Unauthenticated Endpoints
       summary: Authenticate user
       description: Authenticates a user using email and password.
+      operationId: login
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LoginRequest'
-      responses:
-        "200":
-          $ref: '#/components/responses/LoginSuccess'
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+              required:
+                - email
+                - password
 
-        "400":
+      responses:
+        200:
+          description: OK
+          headers:
+            tokens:
+              description: Access token and refresh token cookies.
+              schema:
+                type: string
+                name: "Set-Cookie"
+                example: "[ accessToken=abc123; Path=/; HttpOnly, refreshToken=xyz789; Path=/; HttpOnly"
+
+        400:
           $ref: '#/components/responses/InvalidPropertyProvided'
 
-        "401":
-          $ref: '#/components/responses/UserWithThoseCredentialsNotFound'
+        401:
+          description: Unauthorized - Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessageSchema'
+              examples:
+                InvalidCredentials:
+                  summary: Invalid credentials
+                  description: When is user was not found or user isn't active
+                  value:
+                    message: "Invalid credentials"
+                    status: "401"
 
-        "422":
-          $ref: '#/components/responses/EmailNotVerified'
+        422:
+          description: Unprocessable Entity - User's email isn't verified
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessageSchema'
+              examples:
+                EmailNotVerified:
+                  summary: Email not verified
+                  description: When a user has his email unverified
+                  value:
+                    message: "Email not verified, please check your email"
+                    status: "422"
 
         default:
           $ref: '#/components/responses/GenericFail'
@@ -37,21 +80,59 @@ paths:
     post:
       summary: Create a user
       description: Create a user account.
+      operationId: signup
+      tags:
+        - Unauthenticated Endpoints
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateUserRequest'
+              type: object
+              properties:
+                username:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+              required:
+                - username
+                - email
+                - password
       responses:
-        "201":
-          $ref: '#/components/responses/UserCreatedSuccessfully'
+        201:
+          description: Created - A user was successfully created
+          headers:
+            location:
+              description: Location header
+              schema:
+                type: string
 
-        "400":
+        400:
           $ref: '#/components/responses/InvalidPropertyProvided'
 
-        "409":
-          $ref: '#/components/responses/AlreadyExists'
+        409:
+          description: Conflict - Username or email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessageSchema'
+              examples:
+                UsernameAlreadyExists:
+                  summary: Username already exists
+                  description: When the provided username is already in use.
+                  value:
+                    message: "Username already exists"
+                    status: "409"
+                EmailAlreadyExists:
+                  summary: Email already exists
+                  description: When the provided email is already in use.
+                  value:
+                    message: "Email already exists"
+                    status: "409"
 
         default:
           $ref: '#/components/responses/GenericFail'
@@ -61,54 +142,400 @@ paths:
     put:
       summary: Verify Email
       description: Verify a user email after a successful account creation
+      operationId: verifyEmail
+      tags:
+        - User Endpoints
+      security:
+        - accessTokenCookie: []
       responses:
-        "204":
-          $ref: '#/components/responses/NoContent'
-        scdscds
+        204:
+          description: No content - email was verified successfully
+        403:
+          description: Forbidden - When the user is unauthenticated
+        404:
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/GenericFail'
+
+  /api/v1/auth/request-reset-password:
+    post:
+      summary: Request Reset Password
+      description: request reset password of an user account providing the email
+      operationId: requestResetPassword
+
+      tags:
+        - User Endpoints
+
+      requestBody:
+        $ref: '#/components/requestBodies/EmailRequestBody'
+
+      responses:
+        202:
+          description: the request was successfully accepted and an email was sent to complete the process
+        400:
+          $ref: '#/components/responses/InvalidPropertyProvided'
+        default:
+          $ref: '#/components/responses/GenericFail'
+
+  /api/v1/auth/password:
+    patch:
+      summary: reset password of an account
+      description: set a new password for an account
+      operationId: resetPassword
+      tags:
+        - User Endpoints
+      security:
+        - accessTokenCookie: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newPassword:
+                  type: string
+                  format: password
+                required:
+                  - newPassword
+      responses:
+        204:
+          description: No Content - the new password was set
+        403:
+          description: Forbidden - When the user is unauthenticated
+        404:
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/GenericFail'
+
+  /api/v1/auth/refresh-token:
+    post:
+      summary: refresh access token cookie
+      description: request a new access token cookie
+      operationId: refreshAccessToken
+      tags:
+        - Authenticated Endpoints
+      security:
+        - refreshTokenCookie: [ ]
+      responses:
+        200:
+          description: a new access token generated successfully and returned it in a 'Set-Cookie' header
+        403:
+          description: Forbidden - When the user is unauthenticated
+        404:
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/GenericFail'
+
+  /api/v1/user/account/request/delete:
+    post:
+      summary: Request delete my account
+      description: request delete my account; send the delete account confirmation to my email
+      operationId: requestDeleteAccount
+
+      tags:
+        - User Endpoints
+      security:
+        - accessTokenCookie: [ ]
+      responses:
+        202:
+          description: the request was successfully accepted and an email was sent to complete the process
+        403:
+          description: Forbidden - When the user is unauthenticated
+        404:
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/GenericFail'
+
+  /api/v1/user/account:
+    get:
+      summary: Get my public account
+      operationId: getMyAccount
+      tags:
+        - User Endpoints
+      security:
+        - accessTokenCookie: [ ]
+      responses:
+        200:
+          description: response containing my public account
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicUserAccountSchema'
+        403:
+          description: Forbidden - When the user is unauthenticated
+        404:
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/GenericFail'
+    delete:
+      summary: delete my account
+      description: deactivate my account
+      operationId: deleteMyAccount
+      tags:
+        - User Endpoints
+      security:
+        - accessTokenCookie: [ ]
+      responses:
+        204:
+          description: the account was successfully deactivated
+        403:
+          description: Forbidden - When the user is unauthenticated
+        404:
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/GenericFail'
+
+  /api/v1/user/all:
+    get:
+      summary: Get all the public accounts
+      operationId: getAllPublicAccounts
+      security:
+        - accessTokenCookie: [ ]
+      tags:
+        - Admin Endpoints
+      parameters:
+        - name: size
+          in: query
+          allowEmptyValue: false
+          required: false
+          description: the size of the page
+          schema:
+            type: integer
+        - name: sort
+          in: query
+          allowEmptyValue: false
+          required: false
+          description: The properties to sort each one with its direction (asc, desc)
+          schema:
+            type:
+        - name: page
+          in: query
+          allowEmptyValue: false
+          required: false
+          description: the page number ( Zero-Index )
+          schema:
+            type: integer
+
+      responses:
+        200:
+          description: a page of public accounts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PublicUserAccountSchema'
+                  pageable:
+                    type: object
+                    properties:
+                      pageNumber:
+                        type: integer
+                      pageSize:
+                        type: long
+                      sort:
+                        type: object
+                        properties:
+                          empty:
+                            type: boolean
+                          sorted:
+                            type: boolean
+                          unsorted:
+                            type: boolean
+                      offset:
+                        type: integer
+                      paged:
+                        type: boolean
+                      unpaged:
+                        type: boolean
+                  last:
+                    type: boolean
+                  totalElements:
+                    type: long
+                  totalPages:
+                    type: integer
+                  size:
+                    type: integer
+                  number:
+                    type: integer
+                  sort:
+                    type: object
+                    properties:
+                      empty:
+                        type: boolean
+                      sorted:
+                        type: boolean
+                      unsorted:
+                        type: boolean
+                  numberOfElements:
+                    type: integer
+                  first:
+                    type: boolean
+                  empty:
+                    type: boolean
+        403:
+          description: Forbidden - When the user isn't unauthenticated or he hasn't the ADMIN role
+        default:
+          $ref: '#/components/responses/GenericFail'
+
+
+
+
+  /api/v1/user/account/update/username:
+    patch:
+      summary: update my username
+      operationId: updateMyUsername
+      tags:
+        - User Endpoints
+      security:
+        - accessTokenCookie: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newUsername:
+                  type: string
+                required:
+                  - newUsername
+
+      responses:
+        204:
+          description: the username was successfully updated
+        403:
+          description: Forbidden - When the user is unauthenticated
+        404:
+          $ref: '#/components/responses/NotFound'
+        400:
+          $ref: '#/components/responses/InvalidPropertyProvided'
+        default:
+          $ref: '#/components/responses/GenericFail'
+
+
+  /api/v1/user/account/update/password:
+    patch:
+      summary: Update my password
+      operationId: updateMyPassword
+      tags:
+        - User Endpoints
+      security:
+        - accessTokenCookie: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newPassword:
+                  type: string
+                  format: password
+                currentPassword:
+                  type: string
+                  format: password
+                required:
+                  - newPassword
+                  - currentPassword
+      responses:
+        204:
+          description: Password updated successfully
+        400:
+          $ref: '#/components/responses/InvalidPropertyProvided'
+        401:
+          description: The current password doesn't match
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessageSchema'
+              examples:
+                InvalidCredentials:
+                  summary: Current password is not matching
+                  description: When the current password doesn't match with you real password
+                  value:
+                    message: "Your current password not matches"
+                    status: "401"
+        403:
+          description: Forbidden - When the user is unauthenticated
+        404:
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/GenericFail'
+
+  /api/v1/user/account/request/update-email:
+    post:
+      summary: Request update my email
+      description: request update my email to my email
+      operationId: requestUpdateEmail
+      tags:
+        - User Endpoints
+      security:
+        - accessTokenCookie: [ ]
+      responses:
+        202:
+          description: The request was successful accepted and the email for complete the process was sent
+        403:
+          description: Forbidden - When the user is unauthenticated
+        404:
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/GenericFail'
+
+  /api/v1/user/account/update/email:
+    patch:
+      summary: Update my email
+      description: update my email sending a new email for replace my old email
+      operationId: updateMyEmail
+      tags:
+        - User Endpoints
+      security:
+        - accessTokenCookie: [ ]
+      requestBody:
+        $ref: '#/components/requestBodies/EmailRequestBody'
+      responses:
+        204:
+          description: the email was successfully updated
+        400:
+          $ref: '#/components/responses/InvalidPropertyProvided'
+        403:
+          description: Forbidden - When the user is unauthenticated
+        404:
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/GenericFail'
+
+
+
+
 
 components:
-  headers:
-    refreshAndAccessTokens:
-      description: Access token and refresh token cookies.
-      schema:
-        type: string
-        name: "Set-Cookie"
-        example: "[ accessToken=abc123; Path=/; HttpOnly, refreshToken=xyz789; Path=/; HttpOnly"
-
   schemas:
-    LoginRequest:
+    PublicUserAccountSchema:
       type: object
       properties:
-        email:
+        id:
           type: string
-          format: email
-        password:
-          type: string
-          format: password
-      required:
-        - email
-        - password
-
-    CreateUserRequest: # todo: add a link object
-      type: object
-      properties:
+          format: number
         username:
           type: string
-          format: text
         email:
           type: string
           format: email
-        password:
+        roles:
+          type: set
+        active:
+          type: boolean
+        emailVerified:
+          type: boolean
+        lastModified:
           type: string
-          format: password
 
-      required:
-        - username
-        - email
-        - password
-
-    ErrorMessage:
-      type: object\
+    ErrorMessageSchema:
+      type: object
       properties:
         message:
           type: string
@@ -117,40 +544,23 @@ components:
       required:
         - message
         - status
-  responses:
-    EmailNotVerified:
-      description: Unprocessable Entity - User's email isn't verified
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorMessage'
-          examples:
-            EmailNotVerified:
-              summary: Email not verified
-              description: When a user has his email unverified
-              value:
-                message: "Email not verified, please check your email"
-                status: "422"
-    UserWithThoseCredentialsNotFound:
-      description: Unauthorized - Invalid credentials
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorMessage'
-          examples:
-            InvalidCredentials:
-              summary: Invalid credentials
-              description: When is user was not found or user isn't active
-              value:
-                message: "Invalid credentials"
-                status: "401"
 
+    EmailSchema:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        required:
+          - email
+
+  responses:
     InvalidPropertyProvided:
       description: Bad Request - Invalid property provided like a invalid email, password too short, username length invalid, etc.
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ErrorMessage'
+            $ref: '#/components/schemas/ErrorMessageSchema'
           examples:
             EmailInvalid:
               summary: Invalid email provided
@@ -170,18 +580,14 @@ components:
               value:
                 message: "Username length must be between 3 & 20 ( included )"
                 status: "400"
-    LoginSuccess:
-      description: OK
-      headers:
-        tokens:
-          $ref: '#/components/headers/refreshAndAccessTokens'
+
 
     GenericFail:
       description: Internal Server Error - Unhandled error has occurred internally
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ErrorMessage'
+            $ref: '#/components/schemas/ErrorMessageSchema'
           examples:
             UnexpectedError:
               summary: Unhandled error occurred
@@ -190,35 +596,31 @@ components:
                 message: "Unexpected error, please try again later"
                 status: "500"
 
-    UserCreatedSuccessfully:
-      description: Created - A user was successfully created
-      headers:
-        tokens:
-          $ref: '#/components/headers/refreshAndAccessTokens'
-        location:
-          description: Location header
-          schema:
-            type: string
 
 
-    AlreadyExists:
-      description: Conflict - Username or email already exists
+
+    NotFound:
+      description: Not Found - When the user is not found
+
+  requestBodies:
+
+    EmailRequestBody:
+      required: true
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ErrorMessage'
-          examples:
-            UsernameAlreadyExists:
-              summary: Username already exists
-              description: When the provided username is already in use.
-              value:
-                message: "Username already exists"
-                status: "409"
-            EmailAlreadyExists:
-              summary: Email already exists
-              description: When the provided email is already in use.
-              value:
-                message: "Email already exists"
-                status: "409"
-    NoContent:
-      description: No content - After a successful operation
+            $ref: '#/components/schemas/EmailSchema'
+
+
+  securitySchemes:
+    refreshTokenCookie:
+      name: refreshToken
+      type: apiKey
+      in: cookie
+      description: Refresh token cookie
+
+    accessTokenCookie:
+      type: apiKey
+      in: cookie
+      name: accessToken
+      description: Access token cookie

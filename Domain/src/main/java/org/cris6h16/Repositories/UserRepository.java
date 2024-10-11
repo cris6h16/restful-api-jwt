@@ -37,4 +37,7 @@ public interface UserRepository {
     void updateEmailById(Long id, String email);
 
     Set<ERoles> getRolesById(Long id);
+
+    // todo: add tests
+    Optional<String> findEmailById(Long id);
 }

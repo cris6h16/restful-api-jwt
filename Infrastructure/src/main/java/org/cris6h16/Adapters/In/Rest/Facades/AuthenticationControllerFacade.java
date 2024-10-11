@@ -10,6 +10,7 @@ import org.cris6h16.In.Commands.CreateAccountCommand;
 import org.cris6h16.In.Ports.*;
 import org.cris6h16.In.Results.LoginOutput;
 import org.cris6h16.Models.ERoles;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -86,8 +87,7 @@ public class AuthenticationControllerFacade {
         ResponseCookie cookieRefreshToken = createRefreshTokenCookie(refreshToken);
 
         return ResponseEntity.ok()
-                .header("Set-Cookie", cookieAccessToken.toString())
-                .header("Set-Cookie", cookieRefreshToken.toString())
+                .header(HttpHeaders.SET_COOKIE, cookieAccessToken.toString(), cookieRefreshToken.toString())
                 .build();
     }
 
@@ -133,8 +133,7 @@ public class AuthenticationControllerFacade {
         try {
             requestResetPasswordPort.handle(email);
 
-        } catch (
-                NotFoundException e) { // I shouldn't say if the email exists or not in the request reset password ( else I'd be processed by the advice )
+        } catch (NotFoundException e) { // I shouldn't say if the email exists or not in the request reset password ( else I'd be processed by the advice )
             // do nothing
         }
     }
@@ -151,10 +150,6 @@ public class AuthenticationControllerFacade {
     public ResponseEntity<Void> refreshAccessToken() {
         Long id = Common.getPrincipalId();
         String accessToken = refreshAccessTokenPort.handle(id);
-
-        System.out.println("id: " + id);
-        System.out.println("refreshed access token: " + accessToken);
-
 
         return ResponseEntity.ok()
                 .header("Set-Cookie", createAccessTokenCookie(accessToken).toString())

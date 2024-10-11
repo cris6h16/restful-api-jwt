@@ -5,6 +5,9 @@ import org.cris6h16.Config.SpringBoot.Properties.JwtProperties;
 import org.cris6h16.Models.ERoles;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -12,6 +15,7 @@ import org.mockito.MockitoAnnotations;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -112,5 +116,24 @@ public class JwtUtilsImplTest {
         assertEquals(roles.toString(), claims.get("roles"));
         assertThat(claims.keySet()).containsAll(List.of("sub", "iat", "exp", "roles"));
     }
+
+    @ParameterizedTest
+    @MethodSource("provideRoles")
+    void getRoles(Set<ERoles> roles) {
+        Long id = 123L;
+        String accessToken = jwtUtilsImpl.genAccessToken(id, roles);
+
+        Set<ERoles> extractedRoles = jwtUtilsImpl.getRoles(accessToken);
+        assertEquals(roles, extractedRoles);
+    }
+
+    private static Stream<Set<ERoles>> provideRoles() {
+        return Stream.of(
+                Set.of(),
+                Set.of(ERoles.ROLE_USER),
+                Set.of(ERoles.ROLE_USER, ERoles.ROLE_ADMIN)
+        );
+    }
+
 
 }

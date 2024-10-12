@@ -206,6 +206,7 @@ cors:
   path-pattern: /**
   allowed-origins:
       - ${web-front.core}
+      - http://localhost:8000
   allowed-methods:
       - GET
       - POST

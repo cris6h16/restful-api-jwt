@@ -3,7 +3,7 @@ info:
   title: restful-api-jwt
   version: 1.0.0
 servers:
-  - url: http://localhost:8080
+  - url: https://localhost:8080
     description: Development server
 
 paths:
@@ -13,7 +13,6 @@ paths:
         - Unauthenticated Endpoints
       summary: Authenticate user
       description: Authenticates a user using email and password.
-      operationId: login
       requestBody:
         required: true
         content:
@@ -80,7 +79,6 @@ paths:
     post:
       summary: Create a user
       description: Create a user account.
-      operationId: signup
       tags:
         - Unauthenticated Endpoints
       requestBody:
@@ -142,7 +140,6 @@ paths:
     put:
       summary: Verify Email
       description: Verify a user email after a successful account creation
-      operationId: verifyEmail
       tags:
         - User Endpoints
       security:
@@ -161,8 +158,6 @@ paths:
     post:
       summary: Request Reset Password
       description: request reset password of an user account providing the email
-      operationId: requestResetPassword
-
       tags:
         - User Endpoints
 
@@ -181,7 +176,6 @@ paths:
     patch:
       summary: reset password of an account
       description: set a new password for an account
-      operationId: resetPassword
       tags:
         - User Endpoints
       security:
@@ -212,7 +206,6 @@ paths:
     post:
       summary: refresh access token cookie
       description: request a new access token cookie
-      operationId: refreshAccessToken
       tags:
         - Authenticated Endpoints
       security:
@@ -231,8 +224,6 @@ paths:
     post:
       summary: Request delete my account
       description: request delete my account; send the delete account confirmation to my email
-      operationId: requestDeleteAccount
-
       tags:
         - User Endpoints
       security:
@@ -250,7 +241,6 @@ paths:
   /api/v1/user/account:
     get:
       summary: Get my public account
-      operationId: getMyAccount
       tags:
         - User Endpoints
       security:
@@ -271,7 +261,6 @@ paths:
     delete:
       summary: delete my account
       description: deactivate my account
-      operationId: deleteMyAccount
       tags:
         - User Endpoints
       security:
@@ -289,7 +278,6 @@ paths:
   /api/v1/user/all:
     get:
       summary: Get all the public accounts
-      operationId: getAllPublicAccounts
       security:
         - accessTokenCookie: [ ]
       tags:
@@ -387,7 +375,6 @@ paths:
   /api/v1/user/account/update/username:
     patch:
       summary: update my username
-      operationId: updateMyUsername
       tags:
         - User Endpoints
       security:
@@ -420,7 +407,6 @@ paths:
   /api/v1/user/account/update/password:
     patch:
       summary: Update my password
-      operationId: updateMyPassword
       tags:
         - User Endpoints
       security:
@@ -470,7 +456,6 @@ paths:
     post:
       summary: Request update my email
       description: request update my email to my email
-      operationId: requestUpdateEmail
       tags:
         - User Endpoints
       security:
@@ -489,7 +474,6 @@ paths:
     patch:
       summary: Update my email
       description: update my email sending a new email for replace my old email
-      operationId: updateMyEmail
       tags:
         - User Endpoints
       security:

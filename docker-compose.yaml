@@ -60,6 +60,18 @@ services:
     networks:
       - private
 
+  swagger-ui:
+    image: swaggerapi/swagger-ui:latest
+    container_name: swagger-ui
+    hostname: swagger-ui
+    environment:
+      - SWAGGER_JSON=/openapi-description.yaml
+    volumes:
+      - ./openapi-description.yaml:/openapi-description.yaml
+    ports:
+      - "8081:8080"
+    networks:
+      - public
 
 
 

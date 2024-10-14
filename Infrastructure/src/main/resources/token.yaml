@@ -1,18 +1,18 @@
 jwt:
-  secret-key: 123456789987654321123456789987654321123456789
+  secret-key: ${JWT_SECRET_KEY}
   token:
     refresh:
       expiration:
         secs: 1296000 # 15 days
       cookie:
         name: refreshToken
-        path: /auth/refresh-token
+        path: ${controller.authentication.refresh-access-token}
     access:
       expiration:
         secs: 1800 # 30 minutes
       cookie:
         name: accessToken
-        path: /
+        path: ${controller.base} # todo: add test if access i expired the refresh token must be processed in the jwt filter
 
       request:
         email:

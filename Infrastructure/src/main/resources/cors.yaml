@@ -3,6 +3,7 @@ cors:
   path-pattern: /**
   allowed-origins:
     - ${frontend.core}
+    - ${SWAGGER_URL}
   allowed-methods:
     - GET
     - POST

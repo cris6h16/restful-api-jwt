@@ -1,27 +1,35 @@
+version: "3.9"
 services:
   backend:
-    image: restfulapi:test
     container_name: backend
     hostname: backend
     build:
       context: .
       args:
-        - KEYPASS=12345678kp
-        - STOREPASS=12345678sp
-      dockerfile: Dockerfile
+        - KEY_PASS=${KEY_PASS}
+        - KEY_STORE_PASS=${KEY_STORE_PASS}
+        - JKS_NAME=${JKS_NAME}
+        - KEY_ALIAS=${KEY_ALIAS}
+      dockerfile: Dockerfile-app
     ports:
-      - "8000:8080"
-    restart: no # todo: change
+      - "${BACK_PORT}:8080"
+    restart: unless-stopped
     environment:
-      - PSQL_USER=$PSQL_USER
-      - PSQL_PASS=$PSQL_PASS
-      - MAIL_USER=$MAIL_USER
-      - MAIL_PASS=$MAIL_PASS
-      - JWT_SECRET_KEY=$JWT_SECRET_KEY
-      - KEY_STORE_PASS=$KEY_STORE_PASS
-      - PSQL_URL=db:5432/restful-api-jwt
-      - REDIS_HOST=server-cache
-      - REDIS_PORT=6379
+      - PSQL_HOSTNAME=${PSQL_HOSTNAME}
+      - PSQL_PORT=${PSQL_PORT}
+      - PSQL_DB_NAME=${PSQL_DB_NAME}
+      - PSQL_USER=${PSQL_USER}
+      - PSQL_PASS=${PSQL_PASS}
+      - REDIS_HOSTNAME=${REDIS_HOSTNAME}
+      - REDIS_PORT=${REDIS_PORT}
+      - MAIL_USER=${MAIL_USER}
+      - MAIL_PASS=${MAIL_PASS}
+      - FRONTEND_URL=${FRONTEND_URL} # cors
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - KEY_ALIAS=${KEY_ALIAS}
+      - JKS_NAME=${JKS_NAME}
+      - KEY_STORE_PASS=${KEY_STORE_PASS}
+      - SWAGGER_URL="http://${SWAGGER_URL}:${SWAGGER_UI_PORT}" # cors
     networks:
       - private
       - public
@@ -29,35 +37,38 @@ services:
         - db
         - server-cache
     volumes:
-      - backend-data:/var/log/restful-api-jwt.log
+      - backend-data:/logs
 
 
   db:
-    image: postgres:latest
     container_name: db
-    hostname: db
+    hostname: ${PSQL_HOSTNAME}
+    image: postgres:15
     volumes:
       - postgres-data:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d
     networks:
       - private
+    ports:
+      - "${PSQL_PORT}:5432"
     environment:
-      POSTGRES_USER: $PSQL_USER
-      POSTGRES_PASSWORD: $PSQL_PASS
-      POSTGRES_DB: restful-api-jwt
-    restart: always
+      POSTGRES_USER: ${PSQL_USER}
+      POSTGRES_PASSWORD: ${PSQL_PASS}
+      POSTGRES_DB: ${PSQL_DB_NAME}
+    restart: unless-stopped
 
-
+# todo: add healthchecks
 
 
   server-cache:
     image: redis:latest
     container_name: redis
-    hostname: redis
-    restart: always
+    hostname: ${REDIS_HOSTNAME}
+    restart: unless-stopped
     volumes:
       -  redis-data:/data
     environment:
-      REDIS_ARGS: --requirepass admin
+      REDIS_ARGS: --requirepass ${REDIS_PASS}
     ports:
       - "6379:6379"
     networks:
@@ -66,13 +77,14 @@ services:
   swagger-ui:
     image: swaggerapi/swagger-ui:latest
     container_name: swagger-ui
-    hostname: swagger-ui
+    hostname: ${SWAGGER_UI_HOSTNAME}
     environment:
       - SWAGGER_JSON=/openapi-description.yaml
     volumes:
       - ./openapi-description.yaml:/openapi-description.yaml
     ports:
-      - "8081:8080"
+      - "${SWAGGER_UI_PORT}:8080"
+    restart: unless-stopped
     networks:
       - public
 

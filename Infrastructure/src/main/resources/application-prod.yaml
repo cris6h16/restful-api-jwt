@@ -10,21 +10,22 @@ spring:
       - classpath:token.yaml
 
   datasource:
-    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
-    username: ${DB_USER}
-    password: ${DB_PASS}
+    url: jdbc:postgresql://${PSQL_HOSTNAME}:${PSQL_PORT}/${PSQL_DB_NAME}
+    username: ${PSQL_USER}
+    password: ${PSQL_PASS}
     hikari:
       schema: prod
   data:
     redis:
-      host: ${REDIS_HOST}
+      host: ${REDIS_HOSTNAME}
       port: ${REDIS_PORT}
+      password: ${REDIS_PASS}
       ttl:
         minutes: 5
 
   jpa:
     hibernate:
-      ddl-auto: validate # todo: in docker file make a stage for create, later update for prod
+      ddl-auto: update # todo: in docker file make a stage for create, later update for prod
 
   mail:
     host: smtp.gmail.com

@@ -137,11 +137,13 @@ public class ApplicationBeans {
     @Bean
     public DeleteAccountPort deleteAccountPort(
             UserValidator userValidator,
-            UserRepository userRepository
+            UserRepository userRepository,
+            ErrorMessages errorMessages
     ) {
         return new DeleteAccountUseCase(
                 userValidator,
-                userRepository
+                userRepository,
+                errorMessages
         );
     }
 

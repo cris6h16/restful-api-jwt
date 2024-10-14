@@ -117,6 +117,15 @@ public class JwtUtilsImplTest {
         assertThat(claims.keySet()).containsAll(List.of("sub", "iat", "exp", "roles"));
     }
 
+    @Test
+    void getRoles_dontContainTheRolesClaimThenEmptySet() {
+        Long id = 123L;
+        String refreshToken = jwtUtilsImpl.genRefreshToken(id);
+
+        Set<ERoles> extractedRoles = jwtUtilsImpl.getRoles(refreshToken);
+        assertEquals(extractedRoles.size(), 0);
+    }
+
     @ParameterizedTest
     @MethodSource("provideRoles")
     void getRoles(Set<ERoles> roles) {

@@ -1,5 +1,6 @@
 package org.cris6h16.Adapters.Out.SpringData.Entities;
 
+import CustomConfigs.JpaTestConfig;
 import org.cris6h16.Adapters.Out.SpringData.UserJpaRepository;
 import org.cris6h16.Config.SpringBoot.Main;
 import org.cris6h16.Models.ERoles;
@@ -20,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 // principally tested the constraints
-@SpringBootTest(classes = Main.class)
+@SpringBootTest(classes = JpaTestConfig.class)
 @ActiveProfiles("test")
 public class UserEntityTest {
 

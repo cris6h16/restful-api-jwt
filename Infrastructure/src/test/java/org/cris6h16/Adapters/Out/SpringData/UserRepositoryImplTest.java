@@ -330,4 +330,16 @@ public class UserRepositoryImplTest {
                 .lastModified(null)
                 .build();
     }
+
+    @Test
+    void findEmailById(){
+        Long id = 6541L;
+        Optional<String> op = Optional.of("email@gmail.com");
+        when(userJpaRepository.findEmailById(id)).thenReturn(op);
+
+        Optional<String> result = userRepository.findEmailById(id);
+
+        assertEquals(result, op);
+        verify(userJpaRepository, times(1)).findEmailById(id);
+    }
 }

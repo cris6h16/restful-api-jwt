@@ -10,7 +10,9 @@ import org.cris6h16.Config.SpringBoot.Properties.CorsProperties;
 import org.cris6h16.Config.SpringBoot.Properties.EmailServiceProperties;
 import org.cris6h16.Config.SpringBoot.Properties.JwtProperties;
 import org.cris6h16.Config.SpringBoot.Utils.JwtUtilsImpl;
+import org.cris6h16.Utils.ErrorMessages;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -55,6 +57,8 @@ public class JwtAuthenticationFilterIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
+    @MockBean
+    private ErrorMessages errorMessages;
 
     @MockBean
     private JwtUtilsImpl jwtUtils;

@@ -67,17 +67,15 @@ class RequestUpdateEmailUseCaseTest {
     @Test
     void handle_success(){
         // Arrange
-        UserModel user = new UserModel.Builder()
-                .setId(10L)
-                .setEmail("cristianmherrera21@gmail.com")
-                .build();
+        String email = "cristianmherrera21@gmail.com";
+        Long id = 112L;
 
-        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(userRepository.findEmailById(id)).thenReturn(Optional.of(email));
 
         // Act
-        requestUpdateEmailUseCase.handle(user.getId());
+        requestUpdateEmailUseCase.handle(id);
 
         // Assert
-        verify(emailService).sendRequestUpdateEmail(user.getId(), user.getEmail());
+        verify(emailService).sendRequestUpdateEmail(id, email);
     }
 }

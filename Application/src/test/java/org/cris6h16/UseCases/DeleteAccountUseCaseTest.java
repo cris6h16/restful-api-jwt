@@ -1,6 +1,8 @@
 package org.cris6h16.UseCases;
 
+import org.cris6h16.Exceptions.Impls.NotFoundException;
 import org.cris6h16.Repositories.UserRepository;
+import org.cris6h16.Utils.ErrorMessages;
 import org.cris6h16.Utils.UserValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,6 +20,9 @@ public class DeleteAccountUseCaseTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private ErrorMessages errorMessages;
 
     @InjectMocks
     private DeleteAccountUseCase deleteAccountUseCase;
@@ -43,17 +48,33 @@ public class DeleteAccountUseCaseTest {
     }
 
     @Test
+    void handle_userNotExists() {
+        Long id = 999L;
+        doNothing().when(userValidator).validateId(anyLong());
+        when(userRepository.existsById(id)).thenReturn(false);
+        when(errorMessages.getUserNotFoundMessage()).thenReturn("the user wasn't found etc etc");
+
+        assertThatThrownBy(() -> deleteAccountUseCase.handle(id))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage("the user wasn't found etc etc");
+
+        verify(errorMessages).getUserNotFoundMessage();
+    }
+
+    @Test
     void handle_deactivateSuccessfully(){
         // Arrange
         Long id = 999L;
         doNothing().when(userValidator).validateId(anyLong());
         doNothing().when(userRepository).deactivate(anyLong());
+        when(userRepository.existsById(id)).thenReturn(true);
 
         // Act
         deleteAccountUseCase.handle(id);
 
         // Assert
         verify(userRepository).deactivate(id);
+        verify(userRepository).existsById(id);
         verify(userValidator).validateId(id);
     }
 

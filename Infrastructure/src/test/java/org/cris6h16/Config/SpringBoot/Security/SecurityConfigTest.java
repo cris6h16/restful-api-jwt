@@ -2,8 +2,13 @@ package org.cris6h16.Config.SpringBoot.Security;
 
 import org.cris6h16.Adapters.In.Rest.Facades.AuthenticationControllerFacade;
 import org.cris6h16.Adapters.In.Rest.Facades.UserAccountControllerFacade;
+import org.cris6h16.Adapters.In.Rest.UserAccountController;
+import org.cris6h16.Config.SpringBoot.Controllers.CustomControllerExceptionHandler;
 import org.cris6h16.Config.SpringBoot.Main;
 import org.cris6h16.Config.SpringBoot.Properties.ControllerProperties;
+import org.cris6h16.Config.SpringBoot.Properties.JwtProperties;
+import org.cris6h16.Config.SpringBoot.Utils.JwtUtilsImpl;
+import org.cris6h16.Utils.ErrorMessages;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -11,6 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -21,9 +29,22 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
-@SpringBootTest(classes = {Main.class})
+@Configuration
+@ComponentScan(basePackageClasses = {
+        UserAccountController.class,
+        CustomControllerExceptionHandler.class,
+        SecurityConfig.class,
+        JwtUtilsImpl.class,
+        JwtProperties.class
+})
+@ActiveProfiles("test")
+class ControllersWithAdviceAndSecurity {
+}
+
+@SpringBootTest(classes = {ControllersWithAdviceAndSecurity.class})
 @AutoConfigureMockMvc(addFilters = true)
 @ActiveProfiles("test")
 public class SecurityConfigTest {
@@ -39,6 +60,9 @@ public class SecurityConfigTest {
 
     @MockBean
     private AuthenticationControllerFacade authenticationControllerFacade;
+
+    @MockBean
+    private ErrorMessages errorMessages;
 
     @Autowired
     private MockMvc mockMvc;

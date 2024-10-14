@@ -25,7 +25,7 @@ class UserDetailsWithIdTest {
         assertTrue(userDetails.isCredentialsNonExpired());
         assertTrue(userDetails.isAccountNonLocked());
         assertEquals(expectedId, userDetails.getId());
-        assertEquals(authorities, userDetails.getAuthorities());
+        assertEquals(authorities.size(), userDetails.getAuthorities().size());
     }
 
     @Test

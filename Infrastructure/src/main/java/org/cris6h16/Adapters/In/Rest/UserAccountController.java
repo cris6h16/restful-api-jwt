@@ -3,10 +3,12 @@ package org.cris6h16.Adapters.In.Rest;
 import org.cris6h16.Adapters.In.Rest.DTOs.PublicProfileDTO;
 import org.cris6h16.Adapters.In.Rest.DTOs.UpdateMyPasswordDTO;
 import org.cris6h16.Adapters.In.Rest.Facades.UserAccountControllerFacade;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 public class UserAccountController {
 
     private final UserAccountControllerFacade userAccountControllerFacade;
-
     public UserAccountController(UserAccountControllerFacade userAccountControllerFacade) {
         this.userAccountControllerFacade = userAccountControllerFacade;
     }
@@ -39,7 +40,7 @@ public class UserAccountController {
 
     @PatchMapping(
             value = "${controller.user.account.update.password}",
-            consumes = "application/json"
+            consumes = MediaType.APPLICATION_JSON_VALUE
     )
     public ResponseEntity<Void> updateMyPassword(@RequestBody UpdateMyPasswordDTO dto) {
         return userAccountControllerFacade.updateMyPassword(dto);

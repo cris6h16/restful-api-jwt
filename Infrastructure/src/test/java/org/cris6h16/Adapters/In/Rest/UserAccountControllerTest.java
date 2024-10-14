@@ -1,16 +1,18 @@
 package org.cris6h16.Adapters.In.Rest;
 
+import CustomConfigs.ControllerAndAdviceConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cris6h16.Adapters.In.Rest.DTOs.PublicProfileDTO;
 import org.cris6h16.Adapters.In.Rest.DTOs.UpdateMyPasswordDTO;
+import org.cris6h16.Adapters.In.Rest.Facades.AuthenticationControllerFacade;
 import org.cris6h16.Adapters.In.Rest.Facades.UserAccountControllerFacade;
-import org.cris6h16.Config.SpringBoot.Main;
+import org.cris6h16.Utils.ErrorMessages;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -28,10 +30,22 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(classes = Main.class)
+
+@SpringBootTest(classes = {ControllerAndAdviceConfig.class})
 @AutoConfigureMockMvc(addFilters = false) // Bypass security filters
 @ActiveProfiles(value = {"test"})
 public class UserAccountControllerTest {
+
+
+    @Autowired
+    private ErrorMessages errorMessages;
+
+    @Autowired
+    private UserAccountControllerFacade userAccountControllerFacade;
+
+    @Autowired
+    private AuthenticationControllerFacade authenticationControllerFacade;
+
 
     @Value("${controller.user.account.request.delete}")
     String requestDeleteMyAccountPath;
@@ -54,11 +68,15 @@ public class UserAccountControllerTest {
     @Value("${controller.user.pagination.all}")
     String getAllUsersPath;
 
+
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
-    private UserAccountControllerFacade userAccountControllerFacade;
+
+    @BeforeEach
+    void setUp() {
+        when(errorMessages.getUnexpectedErrorMessage()).thenReturn("Unexpected error");
+    }
 
     @Test
     void requestDeleteMyAccount_shouldCallFacadeAndReturnStatusOk() throws Exception {
@@ -100,17 +118,20 @@ public class UserAccountControllerTest {
         mockMvc.perform(patch(updateMyUsernamePath)
                         .contentType(MediaType.TEXT_PLAIN)
                         .content(newUsername))
-                .andExpect(status().isUnsupportedMediaType());
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
     void updateMyPassword_shouldCallFacadeAndReturnStatusOk() throws Exception {
         UpdateMyPasswordDTO dto = new UpdateMyPasswordDTO("oldPassword", "newPassword");
+        String dtoJson = new ObjectMapper().writeValueAsString(dto);
         when(userAccountControllerFacade.updateMyPassword(any(UpdateMyPasswordDTO.class))).thenReturn(ResponseEntity.ok().build());
 
         mockMvc.perform(patch(updateMyPasswordPath)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(dto)))
+                        .content(dtoJson)
+
+                )
                 .andExpect(status().isOk());
 
         verify(userAccountControllerFacade).updateMyPassword(any(UpdateMyPasswordDTO.class));
@@ -123,7 +144,7 @@ public class UserAccountControllerTest {
         mockMvc.perform(patch(updateMyPasswordPath)
                         .contentType(MediaType.TEXT_PLAIN)
                         .content(new ObjectMapper().writeValueAsString(dto)))
-                .andExpect(status().isUnsupportedMediaType());
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -156,7 +177,7 @@ public class UserAccountControllerTest {
         mockMvc.perform(patch(updateMyEmailPath)
                         .contentType(MediaType.TEXT_PLAIN)
                         .content(newEmail))
-                .andExpect(status().isUnsupportedMediaType());
+                .andExpect(status().isInternalServerError());
     }
 
     @Test

@@ -5,6 +5,9 @@ services:
     hostname: backend
     build:
       context: .
+      args:
+        - KEYPASS=12345678kp
+        - STOREPASS=12345678sp
       dockerfile: Dockerfile
     ports:
       - "8000:8080"

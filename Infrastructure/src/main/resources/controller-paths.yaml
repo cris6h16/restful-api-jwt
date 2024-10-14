@@ -1,0 +1,27 @@
+controller:
+  base: /api/v1
+  authentication:
+    core: ${controller.base}/auth
+    signup: ${controller.authentication.core}/signup
+    login: ${controller.authentication.core}/login
+    verify-email: ${controller.authentication.core}/verify-email
+    request-reset-password: ${controller.authentication.core}/request-reset-password
+    reset-password: ${controller.authentication.core}/password
+    refresh-access-token: ${controller.authentication.core}/refresh-token
+
+  user:
+    core: ${controller.base}/user
+    pagination:
+      all: ${controller.user.core}/all
+
+    account:
+      core: ${controller.user.core}/account
+      request:
+        core: ${controller.user.account.core}/request
+        delete: ${controller.user.account.request.core}/delete
+        update-email: ${controller.user.account.request.core}/update-email
+      update:
+        core: ${controller.user.account.core}/update
+        username: ${controller.user.account.update.core}/username
+        password: ${controller.user.account.update.core}/password
+        email: ${controller.user.account.update.core}/email

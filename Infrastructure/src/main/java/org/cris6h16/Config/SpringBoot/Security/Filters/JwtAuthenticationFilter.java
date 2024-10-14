@@ -76,7 +76,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      * @param request the request containing the cookies
      * @return if the access token is found, it is returned, otherwise the refresh token is returned ( null if not found any of them )
      */
-    private String getAccessOrRefreshTokenFromCookies(HttpServletRequest request) {
+    protected String getAccessOrRefreshTokenFromCookies(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
         if (cookies == null) {
             log.debug("No cookies found in request");
@@ -89,7 +89,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         return accessToken != null ? accessToken : refreshToken;
     }
 
-    private String getRefreshTokenFromCookie(Cookie[] cookies) {
+    protected String getRefreshTokenFromCookie(Cookie[] cookies) {
         String refreshTokenCookieName = jwtProperties.getToken().getRefresh().getCookie().getName();
         for (Cookie cookie : cookies) {
             if (cookie.getName().equals(refreshTokenCookieName)) {
@@ -100,7 +100,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         return null;
     }
 
-    private String getAccessTokenFromCookie(Cookie[] cookies) {
+    protected String getAccessTokenFromCookie(Cookie[] cookies) {
         String accessTokenCookieName = jwtProperties.getToken().getAccess().getCookie().getName();
         for (Cookie cookie : cookies) {
             if (cookie.getName().equals(accessTokenCookieName)) {

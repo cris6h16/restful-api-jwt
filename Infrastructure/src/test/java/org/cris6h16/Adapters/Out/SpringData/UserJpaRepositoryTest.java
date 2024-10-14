@@ -1,18 +1,15 @@
 package org.cris6h16.Adapters.Out.SpringData;
 
+import CustomConfigs.JpaTestConfig;
 import org.cris6h16.Adapters.Out.SpringData.Entities.UserEntity;
-import org.cris6h16.Config.SpringBoot.Main;
 import org.cris6h16.Models.ERoles;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,8 +25,10 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
-
-@SpringBootTest(classes = Main.class)
+// todo: doc about how the yaml separation helps us improve test isolation
+@DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@ContextConfiguration(classes = {JpaTestConfig.class})
 @Transactional(isolation = Isolation.READ_COMMITTED)
 public class UserJpaRepositoryTest {
 

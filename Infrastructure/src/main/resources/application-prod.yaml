@@ -1,0 +1,83 @@
+spring:
+
+  config:
+    import:
+      - classpath:base.yaml
+      - classpath:controller-paths.yaml
+      - classpath:error-messages.yaml
+      - classpath:email-service.yaml
+      - classpath:cors.yaml
+      - classpath:token.yaml
+
+  datasource:
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    username: ${DB_USER}
+    password: ${DB_PASS}
+    hikari:
+      schema: prod
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      ttl:
+        minutes: 5
+
+  jpa:
+    hibernate:
+      ddl-auto: validate # todo: in docker file make a stage for create, later update for prod
+
+  mail:
+    host: smtp.gmail.com
+    port: 465
+    username: ${MAIL_USER}
+    password: ${MAIL_PASS}
+    protocol: smtp
+    properties:
+      mail:
+        smtp:
+          ssl:
+            enable: true
+            trust: smtp.gmail.com
+            checkserveridentity: true
+        debug: false
+
+server:
+  ssl:
+    key-store: classpath:${JKS_NAME}
+    key-store-password: ${KEY_STORE_PASS}
+    key-store-type: JKS
+    key-alias: ${KEY_ALIAS}
+    enabled: true
+  compression:
+    enabled: true
+    mime-types: application/json
+    min-response-size: 2048
+
+logging:
+  level:
+    root: error
+  logback:
+    rollingpolicy:
+      file-name-pattern: ./logs/restful-api-jwt.%d{yyyy-MM-dd}.log  # one per day
+      clean-history-on-start: false
+      max-history: 7  # 7 days
+      total-size-cap: 200MB  # limit total logs size
+
+
+  # My ISP is blocking port 587, so I have to use port 465
+  #  mail:
+  #    host: smtp.gmail.com
+  #    port: 587
+  #    username: ${MAIL_USER}
+  #    password: ${MAIL_PASS}
+  #    protocol: smtp
+  #    properties:
+  #      mail:
+  #        debug: true
+  #        transport:
+  #          protocol: smtp
+  #        smtp:
+  #          auth: true
+  #          starttls:
+  #            enable: true
+  #            required: true

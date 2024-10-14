@@ -1,0 +1,25 @@
+error:
+  messages:
+    system:
+      unexpected: "Unexpected error, please try again later"
+    user:
+      not-found: "User not found"
+      email-not-verified: "Email not verified, please check your email"
+      updating-password:
+        password-not-match: "Your current password not matches"
+      login:
+        invalid-credentials: "Invalid credentials"
+      unique:
+        username: "Username already exists"
+        email: "Email already exists"
+      invalid:
+        email: "Invalid email"
+        id:
+          null-val: "Id cannot be null"
+        username:
+          length: "Username length must be between 3 & 20 ( included )"
+        password:
+          length:
+            tooShort: "Password must be at least 8 characters long"
+        roles:
+          empty: "A user must have at least one role"

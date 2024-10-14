@@ -1,0 +1,38 @@
+
+frontend:
+  core: ${FRONTEND_URL}
+
+
+email-service:
+  host: ${frontend.core}
+  token:
+    parameter: token
+    variable-in-link-template: "{token}"
+
+  verification:
+    link-template: ${email-service.host}/auth/verification-email?${email-service.token.parameter}=${email-service.token.variable-in-link-template}
+    subject: "Email verification"
+    html:
+      name: "email-verification.html"
+      href-variable: "link"
+
+  reset-password:
+    link-template: ${email-service.host}/auth/reset-password?${email-service.token.parameter}=${email-service.token.variable-in-link-template}
+    subject: "Reset password"
+    html:
+      name: "reset-password.html"
+      href-variable: "link"
+
+  delete-account:
+    link-template: ${email-service.host}/me/delete-account?${email-service.token.parameter}=${email-service.token.variable-in-link-template}
+    subject: "Delete account"
+    html:
+      name: "delete-account.html"
+      href-variable: "link"
+
+  update-email:
+    link-template: ${email-service.host}/me/update-email?${email-service.token.parameter}=${email-service.token.variable-in-link-template}
+    subject: "Update email"
+    html:
+      name: "update-email.html"
+      href-variable: "link"

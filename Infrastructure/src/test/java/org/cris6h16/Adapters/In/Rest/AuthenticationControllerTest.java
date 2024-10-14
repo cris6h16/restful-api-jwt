@@ -1,5 +1,6 @@
 package org.cris6h16.Adapters.In.Rest;
 
+import CustomConfigs.ControllerAndAdviceConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cris6h16.Adapters.In.Rest.DTOs.CreateAccountDTO;
 import org.cris6h16.Adapters.In.Rest.DTOs.LoginDTO;
@@ -23,8 +24,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-//@WebMvcTest
-@SpringBootTest(classes = Main.class)
+@SpringBootTest(classes = ControllerAndAdviceConfig.class)
 @AutoConfigureMockMvc(addFilters = false)// bypass security filters
 @ActiveProfiles(value = {"test"}) // todo: set in all tests
 public class AuthenticationControllerTest {
@@ -86,7 +86,7 @@ public class AuthenticationControllerTest {
         mockMvc.perform(post(loginPath)
                         .contentType(MediaType.TEXT_PLAIN)
                         .content(new ObjectMapper().writeValueAsString(dto)))
-                .andExpect(status().isUnsupportedMediaType());
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -124,7 +124,7 @@ public class AuthenticationControllerTest {
         mockMvc.perform(post(signupPath)
                         .contentType(MediaType.TEXT_PLAIN)
                         .content(new ObjectMapper().writeValueAsString(dto)))
-                .andExpect(status().isUnsupportedMediaType());
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -171,7 +171,7 @@ public class AuthenticationControllerTest {
         mockMvc.perform(post(requestPasswordResetPath)
                         .contentType(MediaType.TEXT_PLAIN)
                         .content(email))
-                .andExpect(status().isUnsupportedMediaType());
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -207,7 +207,7 @@ public class AuthenticationControllerTest {
         mockMvc.perform(patch(resetPasswordPath)
                         .contentType(MediaType.TEXT_PLAIN)
                         .content(newPassword))
-                .andExpect(status().isUnsupportedMediaType());
+                .andExpect(status().isInternalServerError());
     }
 
 

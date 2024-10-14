@@ -1,0 +1,27 @@
+jwt:
+  secret-key: 123456789987654321123456789987654321123456789
+  token:
+    refresh:
+      expiration:
+        secs: 1296000 # 15 days
+      cookie:
+        name: refreshToken
+        path: /auth/refresh-token
+    access:
+      expiration:
+        secs: 1800 # 30 minutes
+      cookie:
+        name: accessToken
+        path: /
+
+      request:
+        email:
+          verification:
+            secs: 86400 # 1 day todo: add to docs this change ( initiallly was 5 minutes)
+          delete-account:
+            secs: 1800 # 30 minutes
+          update-email:
+            secs: 1800 # 30 minutes
+          reset:
+            password:
+              secs: 1800 # 30 minutes

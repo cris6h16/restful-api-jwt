@@ -1,0 +1,18 @@
+spring:
+
+  application:
+    name: restful-api-jwt
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+
+server:
+  port: 8080
+  error:
+    include-message: never
+    include-exception: off
+    include-stacktrace: never
+
+
+
+

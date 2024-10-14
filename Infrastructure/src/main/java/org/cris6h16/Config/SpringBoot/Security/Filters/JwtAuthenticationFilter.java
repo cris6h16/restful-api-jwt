@@ -89,7 +89,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         return accessToken != null ? accessToken : refreshToken;
     }
 
-    protected String getRefreshTokenFromCookie(Cookie[] cookies) {
+    private String getRefreshTokenFromCookie(Cookie[] cookies) {
         String refreshTokenCookieName = jwtProperties.getToken().getRefresh().getCookie().getName();
         for (Cookie cookie : cookies) {
             if (cookie.getName().equals(refreshTokenCookieName)) {
@@ -100,7 +100,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         return null;
     }
 
-    protected String getAccessTokenFromCookie(Cookie[] cookies) {
+    private String getAccessTokenFromCookie(Cookie[] cookies) {
         String accessTokenCookieName = jwtProperties.getToken().getAccess().getCookie().getName();
         for (Cookie cookie : cookies) {
             if (cookie.getName().equals(accessTokenCookieName)) {

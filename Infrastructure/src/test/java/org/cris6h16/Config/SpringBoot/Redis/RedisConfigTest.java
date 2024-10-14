@@ -12,6 +12,7 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+
 @SpringBootTest(classes = RedisConfig.class)
 class RedisConfigTest {
 

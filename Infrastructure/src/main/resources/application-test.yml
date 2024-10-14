@@ -4,6 +4,8 @@ spring:
     import:
       - classpath:base.yaml
       - classpath:controller-paths.yaml
+      - classpath:cors.yaml
+      - classpath:token.yaml
 
 #  profiles.active: base I can't active a profile being this file a specific-profile
 

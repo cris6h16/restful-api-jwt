@@ -3,22 +3,52 @@ package org.cris6h16.Config.SpringBoot.Security.Filters;
 
 import jakarta.servlet.http.Cookie;
 import org.cris6h16.Adapters.In.Rest.Facades.AuthenticationControllerFacade;
+import org.cris6h16.Adapters.In.Rest.Facades.UserAccountControllerFacade;
+import org.cris6h16.Adapters.In.Rest.Facades.UserControllerFacadeTest;
 import org.cris6h16.Config.SpringBoot.Main;
+import org.cris6h16.Config.SpringBoot.Properties.CorsProperties;
+import org.cris6h16.Config.SpringBoot.Properties.EmailServiceProperties;
+import org.cris6h16.Config.SpringBoot.Properties.JwtProperties;
 import org.cris6h16.Config.SpringBoot.Utils.JwtUtilsImpl;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(classes = {Main.class})
+@Configuration
+@EnableAutoConfiguration
+@ComponentScan(basePackages = {
+        "org.cris6h16.Config.SpringBoot.Security",
+        "org.cris6h16.Adapters.In.Rest",
+        "org.cris6h16.Config.SpringBoot.Properties",
+}, excludeFilters = {
+        @ComponentScan.Filter(
+                type = FilterType.ASSIGNABLE_TYPE,
+                value = {
+                        EmailServiceProperties.class,
+                }
+        )
+}
+)
+class CustomConfig {
+}
+
+
+@SpringBootTest(classes = {CustomConfig.class})
 @AutoConfigureMockMvc // MockMvc
 @ActiveProfiles("test")
 public class JwtAuthenticationFilterIntegrationTest {
@@ -29,9 +59,11 @@ public class JwtAuthenticationFilterIntegrationTest {
     @MockBean
     private JwtUtilsImpl jwtUtils;
 
-
     @MockBean // avoid real interactions with the port
     private AuthenticationControllerFacade authenticationControllerFacade;
+
+    @MockBean
+    private UserAccountControllerFacade userAccountControllerFacade;
 
     @Value("${jwt.token.access.cookie.name}")
     private String accessTokenCookieName;

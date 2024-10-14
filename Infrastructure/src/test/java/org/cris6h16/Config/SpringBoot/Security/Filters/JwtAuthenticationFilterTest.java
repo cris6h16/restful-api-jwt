@@ -49,16 +49,15 @@ public class JwtAuthenticationFilterTest {
     }
 
     private void mockProperties() {
-        JwtProperties aux = new JwtProperties();
-        aux.setToken(new JwtProperties.Token());
-        aux.getToken().setAccess(new JwtProperties.Token.Access());
-        aux.getToken().setRefresh(new JwtProperties.Token.Refresh());
-        aux.getToken().getAccess().setCookie(new JwtProperties.Token.Access.Cookie());
-        aux.getToken().getRefresh().setCookie(new JwtProperties.Token.Refresh.Cookie());
-        aux.getToken().getAccess().getCookie().setName(accessTokenCookieName);
-        aux.getToken().getRefresh().getCookie().setName(refreshTokenCookieName);
 
-        when(jwtProperties.getToken()).thenReturn(aux.getToken());
+        when(jwtProperties.getToken()).thenReturn(mock(JwtProperties.Token.class));
+        when(jwtProperties.getToken().getAccess()).thenReturn(mock(JwtProperties.Token.Access.class));
+        when(jwtProperties.getToken().getRefresh()).thenReturn(mock(JwtProperties.Token.Refresh.class));
+        when(jwtProperties.getToken().getAccess().getCookie()).thenReturn(mock(JwtProperties.Token.Access.Cookie.class));
+        when(jwtProperties.getToken().getRefresh().getCookie()).thenReturn(mock(JwtProperties.Token.Refresh.Cookie.class));
+
+        when(jwtProperties.getToken().getAccess().getCookie().getName()).thenReturn(accessTokenCookieName);
+        when(jwtProperties.getToken().getRefresh().getCookie().getName()).thenReturn(refreshTokenCookieName);
     }
 
     @AfterEach
@@ -131,7 +130,7 @@ public class JwtAuthenticationFilterTest {
         HttpServletRequest request = mock(HttpServletRequest.class);
 
 
-        when(request.getCookies()).thenReturn(createCookiesContainingCustom(validToken));
+        when(request.getCookies()).thenReturn(createCookiesContainingCustom(refreshTokenCookieName, validToken));
         when(jwtUtilsImpl.validate(validToken)).thenReturn(true);
         when(jwtUtilsImpl.getId(validToken)).thenReturn(id);
         when(jwtUtilsImpl.getRoles(validToken)).thenReturn(roles);
@@ -222,6 +221,25 @@ public class JwtAuthenticationFilterTest {
 //     */
 
     @Test
+    void getAccessOrRefreshTokenFromCookies_CorrectInteractions() {
+        // Arrange
+        String accessToken = "accessToken";
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        Cookie[] cookies = createCookiesContainingCustom(accessTokenCookieName, accessToken);
+        when(request.getCookies()).thenReturn(cookies);
+
+        // Act
+        String result = jwtAuthenticationFilter.getAccessOrRefreshTokenFromCookies(request);
+
+        // Assert
+        verify(request, times(1)).getCookies();
+        verify(jwtProperties.getToken().getAccess().getCookie(), times(1)).getName();
+        verify(jwtProperties.getToken().getRefresh().getCookie(), times(1)).getName();
+    }
+
+
+    // todo: in used technologies in docs add what are the functionality of each one
+    @Test
     void getAccessOrRefreshTokenFromCookies_cookiesNull() {
         // Arrange
         HttpServletRequest request = mock(HttpServletRequest.class);
@@ -236,7 +254,7 @@ public class JwtAuthenticationFilterTest {
     }
 
     @Test
-    void getAccessOrRefreshTokenFromCookies_accessTkFound_refreshTkFound_accessTkReturned() {
+    void getAccessOrRefreshTokenFromCookies_bothTokensFound_returnAccessTkReturned() {
         // Arrange
         HttpServletRequest request = mock(HttpServletRequest.class);
         String accessToken = "accessToken";
@@ -244,16 +262,64 @@ public class JwtAuthenticationFilterTest {
         Cookie[] withAccess = createCookiesContainingCustom(accessTokenCookieName, accessToken);
         Cookie[] withRefresh = createCookiesContainingCustom(refreshTokenCookieName, refreshToken);
 
-        when(request.getCookies()).thenReturn(add(withAccess, withRefresh));
+        when(request.getCookies()).thenReturn(combine(withAccess, withRefresh));
 
         // Act
+        String result = jwtAuthenticationFilter.getAccessOrRefreshTokenFromCookies(request);
+
+        // Assert
+        assertEquals(accessToken, result);
+    }
 
 
+    @Test
+    void getAccessOrRefreshTokenFromCookies_onlyAccessTokenFound_returnAccessTkReturned() {
+        // Arrange
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        String accessToken = "accessToken";
+        Cookie[] withAccess = createCookiesContainingCustom(accessTokenCookieName, accessToken);
 
+        when(request.getCookies()).thenReturn(withAccess);
 
-}
+        // Act
+        String result = jwtAuthenticationFilter.getAccessOrRefreshTokenFromCookies(request);
 
-    private Cookie[] add(Cookie[] withAccess, Cookie[] withRefresh) {
+        // Assert
+        assertEquals(accessToken, result);
+    }
+
+    @Test
+    void getAccessOrRefreshTokenFromCookies_onlyRefreshTokenFound_returnRefreshTkReturned() {
+        // Arrange
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        String refreshToken = "refreshToken";
+        Cookie[] withRefresh = createCookiesContainingCustom(refreshTokenCookieName, refreshToken);
+
+        when(request.getCookies()).thenReturn(withRefresh);
+
+        // Act
+        String result = jwtAuthenticationFilter.getAccessOrRefreshTokenFromCookies(request);
+
+        // Assert
+        assertEquals(refreshToken, result);
+    }
+
+    @Test
+    void getAccessOrRefreshTokenFromCookies_noTokenFound_returnNull() {
+        // Arrange
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        Cookie[] noToken = new Cookie[0];
+
+        when(request.getCookies()).thenReturn(noToken);
+
+        // Act
+        String result = jwtAuthenticationFilter.getAccessOrRefreshTokenFromCookies(request);
+
+        // Assert
+        assertNull(result);
+    }
+
+    private Cookie[] combine(Cookie[] withAccess, Cookie[] withRefresh) {
         Cookie[] result = new Cookie[withAccess.length + withRefresh.length];
         int i = 0;
         for (Cookie cookie : withAccess) {
@@ -264,3 +330,4 @@ public class JwtAuthenticationFilterTest {
         }
         return result;
     }
+}

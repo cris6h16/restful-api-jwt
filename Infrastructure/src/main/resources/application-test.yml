@@ -1,3 +1,11 @@
+frontend:
+  core: http://mocked.com
+
+swagger:
+  ui:
+    core: http://mocked2.com
+
+
 spring:
 
   config:
@@ -23,9 +31,6 @@ spring:
     properties:
       hibernate:
         format_sql: true
-
-redis:
-  enabled: false
 
 logging:
   level:

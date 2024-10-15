@@ -37,7 +37,8 @@ public class Main {
                 log.error("userRepository or passwordEncoder is null");
                 return;
             }
-            userRepository.save(new UserModel.Builder()
+
+            UserModel um = new UserModel.Builder()
                     .setId(null)
                     .setUsername("cris6h16")
                     .setEmail("cristianmherrera21@gmail.com")
@@ -46,8 +47,14 @@ public class Main {
                     .setPassword(passwordEncoder.encode("12345678"))
                     .setLastModified(LocalDateTime.now())
                     .setRoles(new HashSet<>(Set.of(ERoles.ROLE_USER, ERoles.ROLE_ADMIN)))
-                    .build()
-            );
+                    .build();
+
+            if (userRepository.existsByUsername(um.getUsername()) || userRepository.existsByEmail(um.getEmail())) {
+                log.info("User already exists");
+                return;
+            }
+
+            userRepository.save(um);
         };
     }
 }

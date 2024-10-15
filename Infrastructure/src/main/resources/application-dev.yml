@@ -1,20 +1,26 @@
-spring:
+frontend:
+  core: http://mocked.com
 
+swagger:
+  ui:
+    core: http://localhost:8015
+
+spring:
   config:
     import:
       - classpath:base.yaml
       - classpath:controller-paths.yaml
       - classpath:error-messages.yaml
-      - classpath:cors.yaml
       - classpath:email-service.yaml
       - classpath:token.yaml
+      - classpath:cors.yaml
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/restful-api-jwt
+    url: jdbc:postgresql://localhost:9000/api
     username: cris6h16
     password: 12345678
     hikari:
-      schema: dev
+      schema: prod
 
   jpa:
     show-sql: true
@@ -25,14 +31,38 @@ spring:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
+  mail:
+    host: smtp.gmail.com
+    port: 465
+    username: ${MAIL_USER}
+    password: ${MAIL_PASS}
+    protocol: smtp
+    properties:
+      mail:
+        smtp:
+          ssl:
+            enable: true
+            trust: smtp.gmail.com
+            checkserveridentity: true
+        debug: false
+
   data:
     redis:
       host: localhost
-      port: 6379
-
-
+      port: 8015
+      ttl:
+        minutes: 5
 logging:
   level:
     root: debug
-
-
+#server:
+#  ssl:
+#    key-store: classpath:${JKS_NAME}
+#    key-store-password: ${KEY_STORE_PASS}
+#    key-store-type: JKS
+#    key-alias: ${KEY_ALIAS}
+#    enabled: true
+#  compression:
+#    enabled: true
+#    mime-types: application/json
+#    min-response-size: 2048

@@ -20,6 +20,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.List;
 import java.util.function.Function;
 
 // todo: tests for this and add cors config
@@ -63,7 +64,7 @@ public class SecurityConfig {
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
                 .logout(AbstractHttpConfigurer::disable)
-//                .cors(AbstractHttpConfigurer::disable)
+                .cors(conf -> conf.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         return http.build();
@@ -144,7 +145,6 @@ public class SecurityConfig {
     }
 
 
-    @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = getCorsConfiguration();
 
@@ -163,6 +163,7 @@ public class SecurityConfig {
     }
 
     private CorsConfiguration getCorsConfiguration() {
+
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(corsProperties.getAllowedOrigins());
         configuration.setAllowedMethods(corsProperties.getAllowedMethods());
@@ -170,6 +171,16 @@ public class SecurityConfig {
         configuration.setExposedHeaders(corsProperties.getExposedHeaders());
         configuration.setAllowCredentials(corsProperties.isAllowCredentials());
         configuration.setMaxAge(corsProperties.getMaxAge());
+
+        log.info("Cors configuration loaded with allowed origins: {}, allowed methods: {}, allowed headers: {}, exposed headers: {}, allow credentials: {}, max age: {}",
+                configuration.getAllowedOrigins(),
+                configuration.getAllowedMethods(),
+                configuration.getAllowedHeaders(),
+                configuration.getExposedHeaders(),
+                configuration.getAllowCredentials(),
+                configuration.getMaxAge()
+        );
+
         return configuration;
     }
 }

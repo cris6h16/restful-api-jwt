@@ -1,18 +1,17 @@
-
 cors:
   path-pattern: /**
   allowed-origins:
     - ${frontend.core}
-    - ${SWAGGER_URL}
+    - ${swagger.ui.core}
   allowed-methods:
     - GET
     - POST
     - PUT
     - DELETE
-  allowed-headers:
-    #        - Authorization
+  allowed-headers: # when is empty will be '*'
     - Content-Type
-  exposed-headers:
-  #        - Authorization
+    - accept
+  exposed-headers: # when is empty will be '*'
+    - Set-Cookie
   allow-credentials: true
   max-age: 3600 #seconds

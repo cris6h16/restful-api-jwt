@@ -1,3 +1,10 @@
+frontend:
+  core: http://mocked.com
+
+swagger:
+  ui:
+    core: ${SWAGGER_CORE}
+
 spring:
 
   config:
@@ -56,7 +63,7 @@ server:
 
 logging:
   level:
-    root: error
+    root: info
   logback:
     rollingpolicy:
       file-name-pattern: ./logs/restful-api-jwt.%d{yyyy-MM-dd}.log  # one per day

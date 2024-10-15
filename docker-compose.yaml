@@ -29,7 +29,7 @@ services:
       - KEY_ALIAS=${KEY_ALIAS}
       - JKS_NAME=${JKS_NAME}
       - KEY_STORE_PASS=${KEY_STORE_PASS}
-      - SWAGGER_URL="http://${SWAGGER_URL}:${SWAGGER_UI_PORT}" # cors
+      - SWAGGER_CORE="http://localhost:${SWAGGER_UI_PORT}" # cors, localhost because hostname can be used just inside the containers
     networks:
       - private
       - public

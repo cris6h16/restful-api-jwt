@@ -1,8 +1,4 @@
 
-frontend:
-  core: ${FRONTEND_URL}
-
-
 email-service:
   host: ${frontend.core}
   token:

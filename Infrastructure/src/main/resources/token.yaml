@@ -1,5 +1,5 @@
 jwt:
-  secret-key: ${JWT_SECRET_KEY}
+  secret-key: 123456789oiujhygtfdscdx
   token:
     refresh:
       expiration:

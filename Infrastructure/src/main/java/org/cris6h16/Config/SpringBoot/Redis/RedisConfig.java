@@ -5,6 +5,7 @@ import org.cris6h16.In.Commands.GetAllPublicProfilesCommand;
 import org.cris6h16.In.Results.GetAllPublicProfilesOutput;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.Page;
@@ -14,6 +15,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
@@ -28,18 +30,13 @@ public class RedisConfig {
         this.redisProperty = redisProperty;
     }
 
-    @Bean
-    LettuceConnectionFactory connectionFactory() {
-        return new LettuceConnectionFactory();
-    }
-
     @Bean(name = "getAllPublicProfilesTemplate")
     RedisTemplate<GetAllPublicProfilesCommand, GetAllPublicProfilesOutput> getAllTemplate(RedisConnectionFactory connectionFactory) {
 
         RedisTemplate<GetAllPublicProfilesCommand, GetAllPublicProfilesOutput> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
-        template.setKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        template.setKeySerializer(new Jackson2JsonRedisSerializer<>(GetAllPublicProfilesCommand.class));
+        template.setValueSerializer(new Jackson2JsonRedisSerializer<>(GetAllPublicProfilesOutput.class));
         return template;
     }
 

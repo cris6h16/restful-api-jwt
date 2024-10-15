@@ -23,19 +23,11 @@ public class JwtProperties {
         @Setter
         public static class Refresh {
             private Expiration expiration;
-            private Cookie cookie;
 
             @Getter
             @Setter
             public static class Expiration {
                 private long secs;
-            }
-
-            @Getter
-            @Setter
-            public static class Cookie {
-                private String name;
-                private String path;
             }
         }
 
@@ -43,20 +35,12 @@ public class JwtProperties {
         @Setter
         public static class Access {
             private Expiration expiration;
-            private Cookie cookie;
             private Request request;
 
             @Getter
             @Setter
             public static class Expiration {
                 private long secs;
-            }
-
-            @Getter
-            @Setter
-            public static class Cookie {
-                private String name;
-                private String path;
             }
 
             @Getter

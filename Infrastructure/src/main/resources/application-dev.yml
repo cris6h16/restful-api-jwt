@@ -46,15 +46,19 @@ spring:
             checkserveridentity: true
         debug: false
 
+
   data:
     redis:
       host: localhost
-      port: 8015
+      port: 6000
       ttl:
         minutes: 5
+#      password: admin
+#      username: default
+
 logging:
   level:
-    root: trace
+    root: debug
 #server:
 #  ssl:
 #    key-store: classpath:${JKS_NAME}

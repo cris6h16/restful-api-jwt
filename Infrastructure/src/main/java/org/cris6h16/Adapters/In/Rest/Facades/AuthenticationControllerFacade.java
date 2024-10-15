@@ -1,9 +1,7 @@
 package org.cris6h16.Adapters.In.Rest.Facades;
 
 import lombok.extern.slf4j.Slf4j;
-import org.cris6h16.Adapters.In.Rest.DTOs.CreateAccountDTO;
-import org.cris6h16.Adapters.In.Rest.DTOs.LoginDTO;
-import org.cris6h16.Adapters.In.Rest.DTOs.LoginResponseDTO;
+import org.cris6h16.Adapters.In.Rest.DTOs.*;
 import org.cris6h16.Config.SpringBoot.Properties.ControllerProperties;
 import org.cris6h16.Config.SpringBoot.Properties.JwtProperties;
 import org.cris6h16.Exceptions.Impls.NotFoundException;
@@ -12,6 +10,7 @@ import org.cris6h16.In.Ports.*;
 import org.cris6h16.In.Results.LoginOutput;
 import org.cris6h16.Models.ERoles;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -84,45 +83,11 @@ public class AuthenticationControllerFacade {
         String accessToken = output.accessToken();
         String refreshToken = output.refreshToken();
 
-        ResponseCookie cookieAccessToken = createAccessTokenCookie(accessToken);
-        ResponseCookie cookieRefreshToken = createRefreshTokenCookie(refreshToken);
-
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, cookieAccessToken.toString(), cookieRefreshToken.toString())
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .headers(Common.jsonHeader())
                 .body(new LoginResponseDTO(accessToken, refreshToken));
     }
-
-    private ResponseCookie createRefreshTokenCookie(String refreshToken) {
-        String name = jwtProperties.getToken().getRefresh().getCookie().getName();
-        String path = jwtProperties.getToken().getRefresh().getCookie().getPath();
-        long expiration = jwtProperties.getToken().getRefresh().getExpiration().getSecs();
-
-        return ResponseCookie.from(name, refreshToken)
-                .httpOnly(true)
-                .sameSite("Strict")
-                .secure(true)
-                .path(path)
-                .maxAge(expiration)
-                .build();
-
-    }
-
-    private ResponseCookie createAccessTokenCookie(String accessToken) {
-        if (accessToken == null) throw new IllegalArgumentException("accessToken cannot be null");
-
-        String name = jwtProperties.getToken().getAccess().getCookie().getName();
-        String path = jwtProperties.getToken().getAccess().getCookie().getPath();
-        long expiration = jwtProperties.getToken().getAccess().getExpiration().getSecs();
-
-        return ResponseCookie.from(name, accessToken)
-                .httpOnly(true)
-                .sameSite("Strict")
-                .secure(true)  // todo: add in docs info about HTTPS and a reverse proxy
-                .path(path)
-                .maxAge(expiration)
-                .build();
-    }
-
 
     // read-only operation (no transactional)
     public ResponseEntity<Void> requestPasswordReset(String email) {
@@ -148,13 +113,14 @@ public class AuthenticationControllerFacade {
 
 
     // no transactional because it's a read-only operation
-    public ResponseEntity<Void> refreshAccessToken() {
+    public ResponseEntity<RefreshAccessTokenResponseDTO> refreshAccessToken() {
         Long id = Common.getPrincipalId();
         String accessToken = refreshAccessTokenPort.handle(id);
 
-        return ResponseEntity.ok()
-                .header("Set-Cookie", createAccessTokenCookie(accessToken).toString())
-                .build();
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .headers(Common.jsonHeader())
+                .body(new RefreshAccessTokenResponseDTO(accessToken));
     }
 
 

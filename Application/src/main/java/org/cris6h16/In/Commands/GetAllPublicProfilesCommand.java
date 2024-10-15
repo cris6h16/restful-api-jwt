@@ -3,6 +3,7 @@ package org.cris6h16.In.Commands;
 
 import org.cris6h16.Repositories.Page.MySortOrder;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 

@@ -611,15 +611,18 @@ components:
 
 
   securitySchemes:
+
     refreshTokenCookie:
+      type: http
       name: refreshToken
-      type: apiKey
-      in: cookie
-      description: Refresh token cookie
+      scheme: bearer
+      bearerFormat: JWT
+      description: Refresh token in Authorization Header
 
     accessTokenCookie:
-      type: apiKey
-      in: cookie
+      type: http
       name: accessToken
-      description: Access token cookie
+      scheme: bearer
+      bearerFormat: JWT
+      description: Access token in Authorization Header
 

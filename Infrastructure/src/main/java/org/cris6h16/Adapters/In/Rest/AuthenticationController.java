@@ -3,6 +3,7 @@ package org.cris6h16.Adapters.In.Rest;
 import org.cris6h16.Adapters.In.Rest.DTOs.CreateAccountDTO;
 import org.cris6h16.Adapters.In.Rest.DTOs.LoginDTO;
 import org.cris6h16.Adapters.In.Rest.DTOs.LoginResponseDTO;
+import org.cris6h16.Adapters.In.Rest.DTOs.RefreshAccessTokenResponseDTO;
 import org.cris6h16.Adapters.In.Rest.Facades.AuthenticationControllerFacade;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,7 +27,8 @@ public class AuthenticationController {
 
     @PostMapping(
             value = "${controller.authentication.login}",
-            consumes = "application/json"
+            consumes = "application/json",
+            produces = "application/json"
     )
     public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginDTO dto) { //todo: if is logged in, say something
         return facade.login(dto);
@@ -56,9 +58,10 @@ public class AuthenticationController {
     }
 
     @PostMapping(
-            value = "${controller.authentication.refresh-access-token}"
+            value = "${controller.authentication.refresh-access-token}",
+            produces = "application/json"
     )
-    public ResponseEntity<Void> refreshAccessToken() {
+    public ResponseEntity<RefreshAccessTokenResponseDTO> refreshAccessToken() {
         return facade.refreshAccessToken();
     }
 

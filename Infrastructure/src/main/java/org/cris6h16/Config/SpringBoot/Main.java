@@ -9,6 +9,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
@@ -24,6 +25,7 @@ import java.util.Set;
 @EnableJpaRepositories(basePackages = {"org.cris6h16.*"})
 @EntityScan(basePackages = {"org.cris6h16.*"})
 @EnableAsync // at the moment used for email sending
+@EnableCaching
 @Slf4j
 public class Main {
     public static void main(String[] args) {

@@ -229,7 +229,7 @@ public class JwtAuthenticationFilterTest {
         when(request.getCookies()).thenReturn(cookies);
 
         // Act
-        String result = jwtAuthenticationFilter.getAccessOrRefreshTokenFromCookies(request);
+        String result = jwtAuthenticationFilter.getTokenFromRequest(request);
 
         // Assert
         verify(request, times(1)).getCookies();
@@ -247,7 +247,7 @@ public class JwtAuthenticationFilterTest {
         when(request.getCookies()).thenReturn(null);
 
         // Act
-        String result = jwtAuthenticationFilter.getAccessOrRefreshTokenFromCookies(request);
+        String result = jwtAuthenticationFilter.getTokenFromRequest(request);
 
         // Assert
         assertNull(result);
@@ -265,7 +265,7 @@ public class JwtAuthenticationFilterTest {
         when(request.getCookies()).thenReturn(combine(withAccess, withRefresh));
 
         // Act
-        String result = jwtAuthenticationFilter.getAccessOrRefreshTokenFromCookies(request);
+        String result = jwtAuthenticationFilter.getTokenFromRequest(request);
 
         // Assert
         assertEquals(accessToken, result);
@@ -282,7 +282,7 @@ public class JwtAuthenticationFilterTest {
         when(request.getCookies()).thenReturn(withAccess);
 
         // Act
-        String result = jwtAuthenticationFilter.getAccessOrRefreshTokenFromCookies(request);
+        String result = jwtAuthenticationFilter.getTokenFromRequest(request);
 
         // Assert
         assertEquals(accessToken, result);
@@ -298,7 +298,7 @@ public class JwtAuthenticationFilterTest {
         when(request.getCookies()).thenReturn(withRefresh);
 
         // Act
-        String result = jwtAuthenticationFilter.getAccessOrRefreshTokenFromCookies(request);
+        String result = jwtAuthenticationFilter.getTokenFromRequest(request);
 
         // Assert
         assertEquals(refreshToken, result);
@@ -313,7 +313,7 @@ public class JwtAuthenticationFilterTest {
         when(request.getCookies()).thenReturn(noToken);
 
         // Act
-        String result = jwtAuthenticationFilter.getAccessOrRefreshTokenFromCookies(request);
+        String result = jwtAuthenticationFilter.getTokenFromRequest(request);
 
         // Assert
         assertNull(result);

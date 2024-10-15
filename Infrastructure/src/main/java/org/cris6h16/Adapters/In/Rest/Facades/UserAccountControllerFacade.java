@@ -12,7 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -97,8 +97,12 @@ public class UserAccountControllerFacade {
     // read-only ( non-transactional )
     public ResponseEntity<PublicProfileDTO> getMyAccount() {
         GetPublicProfileOutput output = getPublicProfilePort.handle(Common.getPrincipalId());
-        return ResponseEntity.ok(new PublicProfileDTO(output));
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .headers(Common.jsonHeader())
+                .body(new PublicProfileDTO(output));
     }
+
 
     // read-only ( non-transactional )
     public ResponseEntity<Page<PublicProfileDTO>> getAllUsers(Pageable pageable) {
@@ -106,7 +110,11 @@ public class UserAccountControllerFacade {
 
         GetAllPublicProfilesCommand cmd = _createCmd(pageable);
         GetAllPublicProfilesOutput output = _getAllPublicProfiles(cmd);
-        return ResponseEntity.ok(_createPageImpl(output, pageable));
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .headers(Common.jsonHeader())
+                .body(_createPageImpl(output, pageable));
     }
 
     private Page<PublicProfileDTO> _createPageImpl(GetAllPublicProfilesOutput output, Pageable pageable) {

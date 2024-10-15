@@ -67,7 +67,9 @@ public class CustomControllerExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleException(Exception e) {
-        log.error("Unhandled exception in: {}", e.toString());
+        log.error("Unhandled exception in: {}, stacktace: {}", e.toString());
+        e.printStackTrace();
+
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .header("Content-Type", "application/json")

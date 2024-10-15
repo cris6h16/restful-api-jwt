@@ -24,13 +24,10 @@ import java.util.Collection;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtilsImpl jwtUtilsImpl;
-    private final JwtProperties jwtProperties;
 
 
-    public JwtAuthenticationFilter(JwtUtilsImpl jwtUtilsImpl,
-                                   JwtProperties jwtProperties) {
+    public JwtAuthenticationFilter(JwtUtilsImpl jwtUtilsImpl) {
         this.jwtUtilsImpl = jwtUtilsImpl;
-        this.jwtProperties = jwtProperties;
     }
 
     @Override
@@ -40,10 +37,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         log.debug("entered to JwtAuthenticationFilter.doFilterInternal");
 
-        // accessToken=...; Path=/; Secure; HttpOnly; Expires=Fri, 12 Sep 2025 02:17:49 GMT;
-        String token = getAccessOrRefreshTokenFromCookies(request);
+        String token = getTokenFromRequest(request);
         if (token == null) {
-            log.debug("No token found, skipping filter");
+            log.debug("Token found null, skipping filter");
             filterChain.doFilter(request, response);
             return;
         }
@@ -70,44 +66,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    /**
-     * Extracts the token from the cookies in the request
-     *
-     * @param request the request containing the cookies
-     * @return if the access token is found, it is returned, otherwise the refresh token is returned ( null if not found any of them )
-     */
-    protected String getAccessOrRefreshTokenFromCookies(HttpServletRequest request) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies == null) {
-            log.debug("Cookies are null");
+
+    protected String getTokenFromRequest(HttpServletRequest request) {
+        String bearer = request.getHeader("Authorization");
+
+        if (bearer == null) {
+            log.debug("Authorization header are null");
             return null;
         }
 
-        String accessToken = getAccessTokenFromCookie(cookies);
-        String refreshToken = getRefreshTokenFromCookie(cookies);
-
-        return accessToken != null ? accessToken : refreshToken;
+        return extractToken(bearer);
     }
 
-    private String getRefreshTokenFromCookie(Cookie[] cookies) {
-        String refreshTokenCookieName = jwtProperties.getToken().getRefresh().getCookie().getName();
-        for (Cookie cookie : cookies) {
-            if (cookie.getName().equals(refreshTokenCookieName)) {
-                log.debug("found refresh token cookie");
-                return cookie.getValue();
-            }
-        }
-        return null;
+    private String extractToken(String bearer) {
+        log.trace("Extracting token from: '{}'", bearer);
+        String token = bearer.substring(7); // *beginIndex* <|> 'Bearer eyJh....'
+        log.trace("Extracted token: '{}'", token);
+        return token;
     }
 
-    private String getAccessTokenFromCookie(Cookie[] cookies) {
-        String accessTokenCookieName = jwtProperties.getToken().getAccess().getCookie().getName();
-        for (Cookie cookie : cookies) {
-            if (cookie.getName().equals(accessTokenCookieName)) {
-                log.debug("found access token cookie");
-                return cookie.getValue();
-            }
-        }
-        return null;
-    }
 }

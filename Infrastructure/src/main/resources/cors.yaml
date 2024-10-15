@@ -8,11 +8,10 @@ cors:
     - POST
     - PUT
     - DELETE
-  allowed-headers: # when is empty will be '*'
+  allowed-headers:
     - Content-Type
-    - accept
-    - Cookie
-  exposed-headers: # when is empty will be '*'
-    - Set-Cookie
-  allow-credentials: true
+    - Authorization
+  exposed-headers:
+    - Content-Type
+  allow-credentials: false
   max-age: 3600 #seconds

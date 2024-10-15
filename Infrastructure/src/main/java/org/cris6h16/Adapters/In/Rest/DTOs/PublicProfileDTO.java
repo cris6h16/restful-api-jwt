@@ -1,8 +1,8 @@
 package org.cris6h16.Adapters.In.Rest.DTOs;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.extern.slf4j.Slf4j;
 import org.cris6h16.In.Results.GetPublicProfileOutput;
 
 import java.io.Serializable;
@@ -14,8 +14,11 @@ import java.util.stream.Collectors;
 
 @EqualsAndHashCode
 @NoArgsConstructor
-@JsonSerialize
-public class PublicProfileDTO implements Serializable {
+@Slf4j
+@ToString
+@Getter
+@Setter
+public class PublicProfileDTO {
 
     private String id;
     private String username;
@@ -36,5 +39,6 @@ public class PublicProfileDTO implements Serializable {
         this.active = output.getActive();
         this.emailVerified = output.getEmailVerified();
         this.lastModified = String.valueOf(output.getLastModified());
+        log.trace("PublicProfileDTO built: {}", this.toString());
     }
 }

@@ -42,6 +42,18 @@ paths:
                 type: string
                 name: "Set-Cookie"
                 example: "Set-Cookie: accessToken=tkn1234567; Path=/api/v1; Max-Age=1800; Expires=Tue, 15 Oct 2024 14:38:28 GMT; Secure; HttpOnly; SameSite=Strict; HttpOnly, Set-Cookie: refreshToken=tkn123456789; Path=/api/v1/auth/refresh-token; Max-Age=1296000; Expires=Wed, 30 Oct 2024 14:08:28 GMT; Secure; HttpOnly; SameSite=Strict"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                  refreshToken:
+                    type: string
+                required:
+                  - accessToken
+                  - refreshToken
 
         400:
           $ref: '#/components/responses/InvalidPropertyProvided'
@@ -610,3 +622,4 @@ components:
       in: cookie
       name: accessToken
       description: Access token cookie
+

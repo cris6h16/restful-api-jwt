@@ -54,7 +54,7 @@ spring:
         minutes: 5
 logging:
   level:
-    root: debug
+    root: trace
 #server:
 #  ssl:
 #    key-store: classpath:${JKS_NAME}

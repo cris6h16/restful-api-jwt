@@ -2,6 +2,7 @@ package org.cris6h16.Adapters.In.Rest;
 
 import org.cris6h16.Adapters.In.Rest.DTOs.CreateAccountDTO;
 import org.cris6h16.Adapters.In.Rest.DTOs.LoginDTO;
+import org.cris6h16.Adapters.In.Rest.DTOs.LoginResponseDTO;
 import org.cris6h16.Adapters.In.Rest.Facades.AuthenticationControllerFacade;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +28,7 @@ public class AuthenticationController {
             value = "${controller.authentication.login}",
             consumes = "application/json"
     )
-    public ResponseEntity<Void> login(@RequestBody LoginDTO dto) { //todo: if is logged in, say something
+    public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginDTO dto) { //todo: if is logged in, say something
         return facade.login(dto);
     }
 

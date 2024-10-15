@@ -50,7 +50,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 
         if (!jwtUtilsImpl.validate(token)) {
-            log.debug("Invalid access token, skipping filter");
+            log.debug("Invalid token, skipping filter");
             filterChain.doFilter(request, response);
             return;
         }
@@ -79,7 +79,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected String getAccessOrRefreshTokenFromCookies(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
         if (cookies == null) {
-            log.debug("No cookies found in request");
+            log.debug("Cookies are null");
             return null;
         }
 

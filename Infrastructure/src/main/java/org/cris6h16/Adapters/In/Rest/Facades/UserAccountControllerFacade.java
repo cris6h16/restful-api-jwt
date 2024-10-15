@@ -77,7 +77,7 @@ public class UserAccountControllerFacade {
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public ResponseEntity<Void> updateMyPassword(UpdateMyPasswordDTO dto) {
-        updatePasswordPort.handle(Common.getPrincipalId(), dto.currentPassword(), dto.newPassword());
+        updatePasswordPort.handle(Common.getPrincipalId(), dto.getCurrentPassword(), dto.getNewPassword());
         return ResponseEntity.noContent().build();
     }
 

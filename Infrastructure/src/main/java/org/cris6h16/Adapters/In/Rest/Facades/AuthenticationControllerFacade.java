@@ -3,6 +3,7 @@ package org.cris6h16.Adapters.In.Rest.Facades;
 import lombok.extern.slf4j.Slf4j;
 import org.cris6h16.Adapters.In.Rest.DTOs.CreateAccountDTO;
 import org.cris6h16.Adapters.In.Rest.DTOs.LoginDTO;
+import org.cris6h16.Adapters.In.Rest.DTOs.LoginResponseDTO;
 import org.cris6h16.Config.SpringBoot.Properties.ControllerProperties;
 import org.cris6h16.Config.SpringBoot.Properties.JwtProperties;
 import org.cris6h16.Exceptions.Impls.NotFoundException;
@@ -76,7 +77,7 @@ public class AuthenticationControllerFacade {
 
 
     // read-only operation (no transactional)
-    public ResponseEntity<Void> login(LoginDTO dto) {
+    public ResponseEntity<LoginResponseDTO> login(LoginDTO dto) {
         if (dto == null) throw new IllegalArgumentException("dto cannot be null");
 
         LoginOutput output = loginPort.handle(dto.getEmail(), dto.getPassword());
@@ -88,7 +89,7 @@ public class AuthenticationControllerFacade {
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookieAccessToken.toString(), cookieRefreshToken.toString())
-                .build();
+                .body(new LoginResponseDTO(accessToken, refreshToken));
     }
 
     private ResponseCookie createRefreshTokenCookie(String refreshToken) {

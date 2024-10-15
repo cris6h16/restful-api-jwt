@@ -11,6 +11,7 @@ cors:
   allowed-headers: # when is empty will be '*'
     - Content-Type
     - accept
+    - Cookie
   exposed-headers: # when is empty will be '*'
     - Set-Cookie
   allow-credentials: true

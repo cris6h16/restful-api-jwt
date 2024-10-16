@@ -254,10 +254,6 @@ public class EmailServiceImplTest {
         refreshExpiration.setSecs(3600);
         refresh.setExpiration(refreshExpiration);
 
-        JwtProperties.Token.Refresh.Cookie refreshCookie = new JwtProperties.Token.Refresh.Cookie();
-        refreshCookie.setName("refreshCookieName");
-        refreshCookie.setPath("/");
-        refresh.setCookie(refreshCookie);
 
         token.setRefresh(refresh);
 
@@ -266,11 +262,6 @@ public class EmailServiceImplTest {
         JwtProperties.Token.Access.Expiration accessExpiration = new JwtProperties.Token.Access.Expiration();
         accessExpiration.setSecs(300);
         access.setExpiration(accessExpiration);
-
-        JwtProperties.Token.Access.Cookie accessCookie = new JwtProperties.Token.Access.Cookie();
-        accessCookie.setName("accessCookieName");
-        accessCookie.setPath("/");
-        access.setCookie(accessCookie);
 
         // Request
         JwtProperties.Token.Access.Request request = new JwtProperties.Token.Access.Request();

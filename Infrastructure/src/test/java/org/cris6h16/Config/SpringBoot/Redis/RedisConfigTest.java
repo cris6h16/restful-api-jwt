@@ -14,6 +14,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.time.Duration;
@@ -41,20 +42,15 @@ class RedisConfigTest {
     RedisTemplate<GetAllPublicProfilesCommand, GetAllPublicProfilesOutput> getAllTemplate;
 
     @Test
-    void connectionFactory_lettuce(){
-        LettuceConnectionFactory factory = redisConfig.connectionFactory();
-        assertNotNull(factory);
-    }
-    @Test
-    void getAllPublicProfilesTemplate_usingStringRedisSerializerForKey() {
+    void getAllPublicProfilesTemplate_keyUsingJackson2JsonRedisSerializer() {
         getAllTemplate = redisConfig.getAllTemplate(mock(RedisConnectionFactory.class));
-        assertThat(getAllTemplate.getKeySerializer() ).isInstanceOf(StringRedisSerializer.class);
+        assertThat(getAllTemplate.getKeySerializer() ).isInstanceOf(Jackson2JsonRedisSerializer.class);
     }
 
     @Test
-    void getAllPublicProfilesTemplate_usingGenericJackson2JsonRedisSerializerForValue() {
+    void getAllPublicProfilesTemplate_ValueUsingJackson2JsonRedisSerializer() {
         getAllTemplate = redisConfig.getAllTemplate(mock(RedisConnectionFactory.class));
-        assertThat(getAllTemplate.getValueSerializer() ).isInstanceOf(GenericJackson2JsonRedisSerializer.class);
+        assertThat(getAllTemplate.getValueSerializer() ).isInstanceOf(Jackson2JsonRedisSerializer.class);
     }
 
     @Test

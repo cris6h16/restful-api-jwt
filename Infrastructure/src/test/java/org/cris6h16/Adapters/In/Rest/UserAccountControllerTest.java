@@ -1,6 +1,6 @@
 package org.cris6h16.Adapters.In.Rest;
 
-import CustomConfigs.ControllerAndAdviceConfig;
+import CommonConfigs.ControllerAndAdviceConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cris6h16.Adapters.In.Rest.DTOs.PublicProfileDTO;
 import org.cris6h16.Adapters.In.Rest.DTOs.UpdateMyPasswordDTO;

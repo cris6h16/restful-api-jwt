@@ -23,6 +23,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
+import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -69,9 +70,6 @@ public class JwtAuthenticationFilterIntegrationTest {
     @MockBean
     private UserAccountControllerFacade userAccountControllerFacade;
 
-    @Value("${jwt.token.access.cookie.name}")
-    private String accessTokenCookieName;
-
     @Value("${controller.authentication.refresh-access-token}")
     private String postAndAuthenticatedPath;
 
@@ -80,18 +78,24 @@ public class JwtAuthenticationFilterIntegrationTest {
     public void whenRequestWithValidJwt_thenAuthenticated() throws Exception {
         // Arrange
         String validJwt = "validJwt";
-        Cookie accessTokenCookie = new Cookie(accessTokenCookieName, validJwt);
+        HttpHeaders headers = authenticationHeader(validJwt);
 
         when(jwtUtils.validate(validJwt)).thenReturn(true);
         when(jwtUtils.getId(validJwt)).thenReturn(1L);
 
         // Act
         mockMvc.perform(post(postAndAuthenticatedPath)
-                        .cookie(accessTokenCookie))
+                        .headers(headers))
                 .andExpect(status().isOk());
 
         // Assert
         verify(authenticationControllerFacade, times(1)).refreshAccessToken(); // the method behind postAndAuthenticatedPath
+    }
+
+    private HttpHeaders authenticationHeader(String validJwt) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", "Bearer " + validJwt);
+        return headers;
     }
 
 
@@ -99,13 +103,13 @@ public class JwtAuthenticationFilterIntegrationTest {
     public void whenRequestWithInvalidJwt_thenUnauthenticated() throws Exception {
         // Arrange
         String invalidJwt = "invalidJwtToken";
-        Cookie accessTokenCookie = new Cookie(accessTokenCookieName, invalidJwt);
+        HttpHeaders headers = authenticationHeader(invalidJwt);
 
         when(jwtUtils.validate(invalidJwt)).thenReturn(false);
 
         // Act
         mockMvc.perform(post(postAndAuthenticatedPath)
-                        .cookie(accessTokenCookie))
+                        .headers(headers))
                 .andExpect(status().isForbidden());
     }
 }

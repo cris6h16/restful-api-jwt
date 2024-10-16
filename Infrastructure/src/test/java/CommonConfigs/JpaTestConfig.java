@@ -1,4 +1,4 @@
-package CustomConfigs;
+package CommonConfigs;
 
 import org.cris6h16.Adapters.Out.SpringData.UserRepositoryImpl;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;

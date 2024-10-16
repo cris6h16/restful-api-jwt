@@ -1,6 +1,6 @@
 package org.cris6h16.Adapters.Out.SpringData;
 
-import CustomConfigs.JpaTestConfig;
+import CommonConfigs.JpaTestConfig;
 import org.cris6h16.Adapters.Out.SpringData.Entities.UserEntity;
 import org.cris6h16.Models.ERoles;
 import org.junit.jupiter.api.BeforeEach;

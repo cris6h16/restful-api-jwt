@@ -125,7 +125,7 @@ public class UserControllerFacadeTest {
         assertThat(res.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
         assertThat(res.getBody()).isNull();
         verify(principalMocked).getId();
-        verify(updatePasswordPort).handle(666L, dto.currentPassword(), dto.newPassword());
+        verify(updatePasswordPort).handle(666L, dto.getCurrentPassword(), dto.getNewPassword());
     }
 
     @Test

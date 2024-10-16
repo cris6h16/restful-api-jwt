@@ -2,10 +2,8 @@ package org.cris6h16.Config.SpringBoot.Security.Filters;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.cris6h16.Config.SpringBoot.Properties.JwtProperties;
 import org.cris6h16.Config.SpringBoot.Security.UserDetails.UserDetailsWithId;
 import org.cris6h16.Config.SpringBoot.Utils.JwtUtilsImpl;
 import org.cris6h16.Models.ERoles;
@@ -33,9 +31,6 @@ public class JwtAuthenticationFilterTest {
     @Mock
     private JwtUtilsImpl jwtUtilsImpl;
 
-    @Mock
-    private JwtProperties jwtProperties;
-
     @InjectMocks
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
@@ -45,19 +40,6 @@ public class JwtAuthenticationFilterTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        mockProperties();
-    }
-
-    private void mockProperties() {
-
-        when(jwtProperties.getToken()).thenReturn(mock(JwtProperties.Token.class));
-        when(jwtProperties.getToken().getAccess()).thenReturn(mock(JwtProperties.Token.Access.class));
-        when(jwtProperties.getToken().getRefresh()).thenReturn(mock(JwtProperties.Token.Refresh.class));
-        when(jwtProperties.getToken().getAccess().getCookie()).thenReturn(mock(JwtProperties.Token.Access.Cookie.class));
-        when(jwtProperties.getToken().getRefresh().getCookie()).thenReturn(mock(JwtProperties.Token.Refresh.Cookie.class));
-
-        when(jwtProperties.getToken().getAccess().getCookie().getName()).thenReturn(accessTokenCookieName);
-        when(jwtProperties.getToken().getRefresh().getCookie().getName()).thenReturn(refreshTokenCookieName);
     }
 
     @AfterEach
@@ -67,13 +49,16 @@ public class JwtAuthenticationFilterTest {
     }
 
     @Test
-    void doFilterInternal_cookiesNull() throws ServletException, IOException {
+    void doFilterInternal_doesntExistAuthorizationHeader() throws ServletException, IOException {
         // Arrange
+        HttpServletRequest request = mock(HttpServletRequest.class);
         FilterChain filterChain = mock(FilterChain.class);
+
+        when(request.getHeader("Authorization")).thenReturn(null);
 
         //Act
         jwtAuthenticationFilter.doFilterInternal(
-                mock(HttpServletRequest.class),
+                request,
                 mock(HttpServletResponse.class),
                 filterChain
         );
@@ -91,7 +76,7 @@ public class JwtAuthenticationFilterTest {
         FilterChain filterChain = mock(FilterChain.class);
         HttpServletRequest request = mock(HttpServletRequest.class);
 
-        when(request.getCookies()).thenReturn(createCookiesContainingCustom(accessTokenCookieName, invalidToken));
+        when(request.getHeader("Authorization")).thenReturn("Bearer " + invalidToken);
         when(jwtUtilsImpl.validate(invalidToken)).thenReturn(false);
 
         //Act
@@ -102,19 +87,9 @@ public class JwtAuthenticationFilterTest {
         );
 
         // Assert
-        verify(jwtUtilsImpl, times(1)).validate(any());
-        verify(jwtUtilsImpl, never()).getId(any());
+        verify(jwtUtilsImpl, times(1)).validate(invalidToken);
         verify(filterChain, times(1)).doFilter(any(), any());
-    }
-
-    private Cookie[] createCookiesContainingCustom(String cookieName, String value) {
-        Cookie other1 = new Cookie("other1", "value of the cookie1");
-        Cookie other2 = new Cookie("other2", "value of the cookie2");
-        Cookie custom = new Cookie(cookieName, value);
-        Cookie other3 = new Cookie("other3", "value of the cookie3");
-        Cookie other4 = new Cookie("other4", "value of the cookie4");
-
-        return new Cookie[]{other1, other2, custom, other3, other4};
+        verify(jwtUtilsImpl, never()).getId(any());
     }
 
 
@@ -130,7 +105,7 @@ public class JwtAuthenticationFilterTest {
         HttpServletRequest request = mock(HttpServletRequest.class);
 
 
-        when(request.getCookies()).thenReturn(createCookiesContainingCustom(refreshTokenCookieName, validToken));
+        when(request.getHeader("Authorization")).thenReturn("Bearer " + validToken);
         when(jwtUtilsImpl.validate(validToken)).thenReturn(true);
         when(jwtUtilsImpl.getId(validToken)).thenReturn(id);
         when(jwtUtilsImpl.getRoles(validToken)).thenReturn(roles);
@@ -177,157 +152,34 @@ public class JwtAuthenticationFilterTest {
         return securityContext;
     }
 
-
-//      /**
-//     * Extracts the token from the cookies in the request
-//     *
-//     * @param request the request containing the cookies
-//     * @return if the access token is found, it is returned, otherwise the refresh token is returned ( null if not found any of them )
-//     */
-//protected String getAccessOrRefreshTokenFromCookies(HttpServletRequest request) {
-//    Cookie[] cookies = request.getCookies();
-//    if (cookies == null) {
-//        log.debug("No cookies found in request");
-//        return null;
-//    }
-//
-//    String accessToken = getAccessTokenFromCookie(cookies);
-//    String refreshToken = getRefreshTokenFromCookie(cookies);
-//
-//    return accessToken != null ? accessToken : refreshToken;
-//}
-//
-//    protected String getRefreshTokenFromCookie(Cookie[] cookies) {
-//        String refreshTokenCookieName = jwtProperties.getToken().getRefresh().getCookie().getName();
-//        for (Cookie cookie : cookies) {
-//            if (cookie.getName().equals(refreshTokenCookieName)) {
-//                log.debug("found refresh token cookie");
-//                return cookie.getValue();
-//            }
-//        }
-//        return null;
-//    }
-//
-//    protected String getAccessTokenFromCookie(Cookie[] cookies) {
-//        String accessTokenCookieName = jwtProperties.getToken().getAccess().getCookie().getName();
-//        for (Cookie cookie : cookies) {
-//            if (cookie.getName().equals(accessTokenCookieName)) {
-//                log.debug("found access token cookie");
-//                return cookie.getValue();
-//            }
-//        }
-//        return null;
-//    }
-//     */
-
     @Test
-    void getAccessOrRefreshTokenFromCookies_CorrectInteractions() {
+    void getTokenFromRequest_AuthorizationHeaderDoesntExist() {
         // Arrange
-        String accessToken = "accessToken";
         HttpServletRequest request = mock(HttpServletRequest.class);
-        Cookie[] cookies = createCookiesContainingCustom(accessTokenCookieName, accessToken);
-        when(request.getCookies()).thenReturn(cookies);
+        when(request.getHeader("Authorization")).thenReturn(null);
 
         // Act
         String result = jwtAuthenticationFilter.getTokenFromRequest(request);
 
         // Assert
-        verify(request, times(1)).getCookies();
-        verify(jwtProperties.getToken().getAccess().getCookie(), times(1)).getName();
-        verify(jwtProperties.getToken().getRefresh().getCookie(), times(1)).getName();
-    }
-
-
-    // todo: in used technologies in docs add what are the functionality of each one
-    @Test
-    void getAccessOrRefreshTokenFromCookies_cookiesNull() {
-        // Arrange
-        HttpServletRequest request = mock(HttpServletRequest.class);
-
-        when(request.getCookies()).thenReturn(null);
-
-        // Act
-        String result = jwtAuthenticationFilter.getTokenFromRequest(request);
-
-        // Assert
+        verify(request, times(1)).getHeader("Authorization");
         assertNull(result);
     }
 
-    @Test
-    void getAccessOrRefreshTokenFromCookies_bothTokensFound_returnAccessTkReturned() {
-        // Arrange
-        HttpServletRequest request = mock(HttpServletRequest.class);
-        String accessToken = "accessToken";
-        String refreshToken = "refreshToken";
-        Cookie[] withAccess = createCookiesContainingCustom(accessTokenCookieName, accessToken);
-        Cookie[] withRefresh = createCookiesContainingCustom(refreshTokenCookieName, refreshToken);
 
-        when(request.getCookies()).thenReturn(combine(withAccess, withRefresh));
+    @Test
+    void getTokenFromRequest_success() {
+        // Arrange
+        String header = "Bearer token123456789";
+        HttpServletRequest request = mock(HttpServletRequest.class);
+
+        when(request.getHeader("Authorization")).thenReturn(header);
 
         // Act
         String result = jwtAuthenticationFilter.getTokenFromRequest(request);
 
         // Assert
-        assertEquals(accessToken, result);
-    }
-
-
-    @Test
-    void getAccessOrRefreshTokenFromCookies_onlyAccessTokenFound_returnAccessTkReturned() {
-        // Arrange
-        HttpServletRequest request = mock(HttpServletRequest.class);
-        String accessToken = "accessToken";
-        Cookie[] withAccess = createCookiesContainingCustom(accessTokenCookieName, accessToken);
-
-        when(request.getCookies()).thenReturn(withAccess);
-
-        // Act
-        String result = jwtAuthenticationFilter.getTokenFromRequest(request);
-
-        // Assert
-        assertEquals(accessToken, result);
-    }
-
-    @Test
-    void getAccessOrRefreshTokenFromCookies_onlyRefreshTokenFound_returnRefreshTkReturned() {
-        // Arrange
-        HttpServletRequest request = mock(HttpServletRequest.class);
-        String refreshToken = "refreshToken";
-        Cookie[] withRefresh = createCookiesContainingCustom(refreshTokenCookieName, refreshToken);
-
-        when(request.getCookies()).thenReturn(withRefresh);
-
-        // Act
-        String result = jwtAuthenticationFilter.getTokenFromRequest(request);
-
-        // Assert
-        assertEquals(refreshToken, result);
-    }
-
-    @Test
-    void getAccessOrRefreshTokenFromCookies_noTokenFound_returnNull() {
-        // Arrange
-        HttpServletRequest request = mock(HttpServletRequest.class);
-        Cookie[] noToken = new Cookie[0];
-
-        when(request.getCookies()).thenReturn(noToken);
-
-        // Act
-        String result = jwtAuthenticationFilter.getTokenFromRequest(request);
-
-        // Assert
-        assertNull(result);
-    }
-
-    private Cookie[] combine(Cookie[] withAccess, Cookie[] withRefresh) {
-        Cookie[] result = new Cookie[withAccess.length + withRefresh.length];
-        int i = 0;
-        for (Cookie cookie : withAccess) {
-            result[i++] = cookie;
-        }
-        for (Cookie cookie : withRefresh) {
-            result[i++] = cookie;
-        }
-        return result;
+        verify(request, times(1)).getHeader("Authorization");
+        assertEquals("token123456789", result);
     }
 }

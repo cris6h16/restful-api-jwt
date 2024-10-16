@@ -1,4 +1,4 @@
-package CustomConfigs;
+package CommonConfigs;
 
 import org.cris6h16.Adapters.In.Rest.Facades.AuthenticationControllerFacade;
 import org.cris6h16.Adapters.In.Rest.Facades.UserAccountControllerFacade;

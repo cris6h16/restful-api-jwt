@@ -31,7 +31,6 @@ public class AuthenticationControllerFacade {
     private final RequestResetPasswordPort requestResetPasswordPort;
     private final ResetPasswordPort resetPasswordPort;
     private final RefreshAccessTokenPort refreshAccessTokenPort;
-    private final JwtProperties jwtProperties;
     private final ControllerProperties controllerProperties;
 
     public AuthenticationControllerFacade(CreateAccountPort createAccountPort,
@@ -46,7 +45,6 @@ public class AuthenticationControllerFacade {
         this.requestResetPasswordPort = requestResetPasswordPort;
         this.resetPasswordPort = resetPasswordPort;
         this.refreshAccessTokenPort = refreshAccessTokenPort;
-        this.jwtProperties = jwtProperties;
         this.controllerProperties = controllerProperties;
     }
 

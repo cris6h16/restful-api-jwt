@@ -8,6 +8,8 @@ import org.cris6h16.Adapters.In.Rest.Facades.AuthenticationControllerFacade;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
 @RestController
 public class AuthenticationController {
     private final AuthenticationControllerFacade facade;
@@ -18,7 +20,7 @@ public class AuthenticationController {
 
     @PostMapping(
             value = "${controller.authentication.signup}",
-            consumes = "application/json"
+            consumes = APPLICATION_JSON_VALUE
     )
     public ResponseEntity<Void> signUp(@RequestBody CreateAccountDTO dto) {
         return facade.signup(dto);
@@ -27,8 +29,8 @@ public class AuthenticationController {
 
     @PostMapping(
             value = "${controller.authentication.login}",
-            consumes = "application/json",
-            produces = "application/json"
+            consumes = APPLICATION_JSON_VALUE,
+            produces = APPLICATION_JSON_VALUE
     )
     public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginDTO dto) { //todo: if is logged in, say something
         return facade.login(dto);
@@ -43,7 +45,7 @@ public class AuthenticationController {
 
     @PostMapping(
             value = "${controller.authentication.request-reset-password}",
-            consumes = "application/json"
+            consumes = APPLICATION_JSON_VALUE
     )
     public ResponseEntity<Void> requestPasswordReset(@RequestBody String email) {
         return facade.requestPasswordReset(email);
@@ -51,7 +53,7 @@ public class AuthenticationController {
 
     @PatchMapping(
             value = "${controller.authentication.reset-password}",
-            consumes = "application/json"
+            consumes = APPLICATION_JSON_VALUE
     )
     public ResponseEntity<Void> resetPassword(@RequestBody String newPassword) {
         return facade.resetPassword(newPassword);
@@ -59,7 +61,7 @@ public class AuthenticationController {
 
     @PostMapping(
             value = "${controller.authentication.refresh-access-token}",
-            produces = "application/json"
+            produces = APPLICATION_JSON_VALUE
     )
     public ResponseEntity<RefreshAccessTokenResponseDTO> refreshAccessToken() {
         return facade.refreshAccessToken();

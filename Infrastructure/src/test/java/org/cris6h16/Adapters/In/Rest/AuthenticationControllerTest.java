@@ -1,11 +1,10 @@
 package org.cris6h16.Adapters.In.Rest;
 
-import CustomConfigs.ControllerAndAdviceConfig;
+import CommonConfigs.ControllerAndAdviceConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cris6h16.Adapters.In.Rest.DTOs.CreateAccountDTO;
 import org.cris6h16.Adapters.In.Rest.DTOs.LoginDTO;
 import org.cris6h16.Adapters.In.Rest.Facades.AuthenticationControllerFacade;
-import org.cris6h16.Config.SpringBoot.Main;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

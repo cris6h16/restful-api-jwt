@@ -50,8 +50,11 @@ public class JwtUtilsImpl implements JwtUtils {
             }
         }
 
+        String tk = jwtBuilder.compact();
+
         log.debug("Token generated");
-        return jwtBuilder.compact();
+        log.trace("Token generated: {}", tk);
+        return tk;
     }
 
 

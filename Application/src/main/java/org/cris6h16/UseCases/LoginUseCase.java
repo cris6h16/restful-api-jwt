@@ -12,8 +12,9 @@ import org.cris6h16.Utils.ErrorMessages;
 import org.cris6h16.Utils.JwtUtils;
 import org.cris6h16.Utils.UserValidator;
 
-public class LoginUseCase implements LoginPort {
+import java.util.logging.Logger;
 
+public class LoginUseCase implements LoginPort {
 
     private final UserRepository userRepository;
     private final MyPasswordEncoder passwordEncoder;

@@ -36,6 +36,8 @@ public class EmailServiceImpl implements EmailService {
         this.jwtUtils = jwtUtils;
         this.jwtProperties = jwtProperties;
         this.emailServiceProperties = webFrontProperties;
+        log.trace("EmailServiceImpl created with templateEngine: {}, mailSender: {}, jwtUtils: {}, jwtProperties: {}, emailServiceProperties: {}",
+                templateEngine, mailSender, jwtUtils, jwtProperties, emailServiceProperties);
     }
 
 
@@ -89,6 +91,8 @@ public class EmailServiceImpl implements EmailService {
 
         long emailVerificationTokenTimeLive = jwtProperties.getToken().getAccess().getRequest().getEmail().getVerification().getSecs();
         String token = jwtUtils.genToken(id, null, emailVerificationTokenTimeLive);
+
+        log.trace("emailVerificationTokenTimeLive: {}, token: {}", emailVerificationTokenTimeLive, token);
 
         String content = buildHtmlContent(
                 token,
@@ -193,7 +197,11 @@ public class EmailServiceImpl implements EmailService {
         String link = linkTemplate.replace(variableInLinkTemplate, token);
         Context context = new Context();
         context.setVariable(hrefVariableInHtml, link);
-        return templateEngine.process(htmlTemplateName, context);
+        String res = templateEngine.process(htmlTemplateName, context);
+
+        log.trace("generated html content: {}", res);
+
+        return res;
     }
 
 }

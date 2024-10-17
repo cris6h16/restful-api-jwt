@@ -3,6 +3,7 @@ package org.cris6h16.Adapters.In.Rest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.mail.MessagingException;
+import jakarta.mail.Multipart;
 import jakarta.mail.internet.MimeMessage;
 import org.cris6h16.Adapters.In.Rest.DTOs.CreateAccountDTO;
 import org.cris6h16.Adapters.In.Rest.DTOs.LoginDTO;
@@ -13,11 +14,14 @@ import org.cris6h16.Config.SpringBoot.Properties.ControllerProperties;
 import org.cris6h16.Config.SpringBoot.Utils.JwtUtilsImpl;
 import org.cris6h16.Utils.ErrorMessages;
 import org.junit.jupiter.api.*;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.core.task.SyncTaskExecutor;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -25,6 +29,11 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -32,7 +41,7 @@ import java.util.regex.Pattern;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -46,11 +55,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class AuthenticationControllerIntegrationTest {
 
-    @Mock
+    @TestConfiguration
+    static class CustomConf {
+        @Bean
+        public TaskExecutor taskExecutor() {
+            return new SyncTaskExecutor();
+        }
+    }
+
+    @Autowired
     private MockMvc mockMvc;
 
     @Autowired
-    private UserJpaRepository userJpaRepository;
+    private UserJpaRepository userJpaRepository; // used for debugging
 
     @Autowired
     private ControllerProperties controllerProperties;
@@ -65,26 +82,28 @@ class AuthenticationControllerIntegrationTest {
     @MockBean
     private JavaMailSender mailSender;
 
-    String newPassword = "newPassword123456789";
+    static String newPassword = "newPassword123456789";
 
-    String accessToken;
+    static String accessToken;
 
-    CreateAccountDTO created;
+    static CreateAccountDTO created;
 
-    static boolean setUpIsDone = false;
-    private String verificationToken;
+    static String verificationToken;
 
-    @BeforeEach
-    void setUp() {
-        if (setUpIsDone) return;
+    @BeforeAll
+    static void setUp(@Autowired UserJpaRepository userJpaRepository) {
         userJpaRepository.deleteAll();
     }
+
 
     @Test
     @Order(1)
     void signUp() throws Exception {
         created = createAccountDTO();
         String path = getSignupPath();
+        MimeMessage mimeMessage = mock(MimeMessage.class);
+
+        when(mailSender.createMimeMessage()).thenReturn(mimeMessage);
 
         String location = mockMvc.perform(post(path)
                         .contentType(APPLICATION_JSON)
@@ -94,7 +113,7 @@ class AuthenticationControllerIntegrationTest {
 
 
         assertEquals(location, controllerProperties.getUser().getCore());
-        verify(mailSender).send(any(MimeMessage.class)); /* just check mocks */
+        verify(mailSender).send(any(MimeMessage.class));
     }
 
     @Test
@@ -102,6 +121,9 @@ class AuthenticationControllerIntegrationTest {
     void login_afterCreationHasUnverifiedEmail() throws Exception {
         String path = getLoginPath();
         LoginDTO dto = toLoginDTO(created);
+        MimeMessage mimeMessage = mock(MimeMessage.class);
+
+        when(mailSender.createMimeMessage()).thenReturn(mimeMessage);
 
         mockMvc.perform(post(path)
                         .contentType(APPLICATION_JSON)
@@ -114,16 +136,17 @@ class AuthenticationControllerIntegrationTest {
         AtomicReference<String> capturedToken = new AtomicReference<>();
 
         // just check mocks ( if it happens send email again - use case )
-        verify(mailSender).send(argThat((MimeMessage mimeMsg) -> {
+        verify(mailSender).send(any(MimeMessage.class));
+        verify(mimeMessage).setContent(argThat(multipart -> {
             try {
-                capturedToken.set(getToken(mimeMsg));
+                capturedToken.set(getToken(multipart));
                 return true;
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-        })); /* just check mocks */
+        }));
 
-        this.verificationToken = capturedToken.get();
+        verificationToken = capturedToken.get();
     }
 
     /*
@@ -131,11 +154,11 @@ class AuthenticationControllerIntegrationTest {
     <a href="https://www.example.com?token=tkn123" class="button">Confirm Your Email</a>
     html ..........
      */
-    private String getToken(MimeMessage mimeMsg) throws MessagingException, IOException {
-        String content = mimeMsg.getContent().toString(); //html
+    private String getToken(Multipart multipart) throws MessagingException, IOException {
+        String content = getContent(multipart);
 
         // token=<anyString>
-        Pattern pattern = Pattern.compile("token=([\\w-]+)");  // token pattern in the URL
+        Pattern pattern = Pattern.compile("token=([^\\\"&]+)");  // token pattern in the URL
         Matcher matcher = pattern.matcher(content);
 
         if (matcher.find()) {
@@ -143,6 +166,16 @@ class AuthenticationControllerIntegrationTest {
         }
 
         throw new IllegalArgumentException("Token not found in the email content");
+    }
+
+    private String getContent(Multipart multipart) throws MessagingException, IOException {
+        Path file = Files.createTempFile("cris6h16", ".txt");
+        try (OutputStream os = Files.newOutputStream(file)) {
+            multipart.writeTo(os);
+        }
+        String content =  Files.readString(file, StandardCharsets.UTF_8);
+        System.out.println("Content: " + content);
+        return content;
     }
 
     @Test

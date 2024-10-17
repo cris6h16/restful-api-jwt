@@ -14,6 +14,9 @@ spring:
       - classpath:controller-paths.yaml
       - classpath:cors.yaml
       - classpath:token.yaml
+      - classpath:error-messages.yaml
+      - classpath:email-service.yaml
+      - classpath:token.yaml
 
 #  profiles.active: base I can't active a profile being this file a specific-profile
 
@@ -32,6 +35,13 @@ spring:
       hibernate:
         format_sql: true
 
+#  used in integration tests of endpoints
+  data:
+    redis:
+      host: localhost
+      port: 6000
+      ttl:
+        minutes: 5
 logging:
   level:
     root: debug

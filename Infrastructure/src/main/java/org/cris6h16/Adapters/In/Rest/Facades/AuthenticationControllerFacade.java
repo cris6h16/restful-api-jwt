@@ -77,6 +77,8 @@ public class AuthenticationControllerFacade {
     public ResponseEntity<LoginResponseDTO> login(LoginDTO dto) {
         if (dto == null) throw new IllegalArgumentException("dto cannot be null");
 
+        log.trace("Before handle the login, LoginDTO: {}", dto);
+
         LoginOutput output = loginPort.handle(dto.getEmail(), dto.getPassword());
         String accessToken = output.accessToken();
         String refreshToken = output.refreshToken();

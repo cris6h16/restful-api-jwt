@@ -20,7 +20,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.List;
 import java.util.function.Function;
 
 // todo: tests for this and add cors config
@@ -51,11 +50,14 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers(HttpMethod.POST, postPermitAllPaths()).permitAll()
                         .requestMatchers(HttpMethod.POST, postAuthenticatedPaths()).authenticated()
-                        .requestMatchers(HttpMethod.PUT, putAndUserPath()).hasAuthority(ROLE_USER)
+                        .requestMatchers(HttpMethod.PUT, putAndAuthenticated()).authenticated()
+                        .requestMatchers(HttpMethod.PATCH, patchAndAuthenticated()).authenticated()
+
                         .requestMatchers(HttpMethod.POST, postAndUserPaths()).hasAuthority(ROLE_USER)
                         .requestMatchers(HttpMethod.PATCH, patchAndUserPaths()).hasAuthority(ROLE_USER)
                         .requestMatchers(HttpMethod.DELETE, deleteAndUserPath()).hasAuthority(ROLE_USER)
                         .requestMatchers(HttpMethod.GET, getAndUserPaths()).hasAuthority(ROLE_USER)
+
                         .requestMatchers(HttpMethod.GET, getAndAdminPaths()).hasAuthority(ROLE_ADMIN)
                         .anyRequest().denyAll()
                 )
@@ -73,7 +75,22 @@ public class SecurityConfig {
     // todo: add tests for this
     private String[] postAuthenticatedPaths() {
         return new String[]{
-                extractPath(props -> props.getAuthentication().getRefreshAccessToken())
+                extractPath(props -> props.getAuthentication().getRefreshAccessToken()),
+                extractPath(props -> props.getAuthentication().getRequestResetPassword())
+        };
+    }
+
+    String[] putAndAuthenticated() {
+        log.debug("Extracting ( HTTP PUT & AUTHENTICATED ) paths");
+        return new String[]{
+                extractPath(props -> props.getAuthentication().getVerifyEmail())
+        };
+    }
+
+    String[] patchAndAuthenticated() {
+        log.debug("Extracting ( HTTP PATCH & AUTHENTICATED ) paths");
+        return new String[]{
+                extractPath(props -> props.getAuthentication().getResetPassword())
         };
     }
 
@@ -98,17 +115,11 @@ public class SecurityConfig {
         };
     }
 
-    String[] putAndUserPath() {
-        log.debug("Extracting ( HTTP PUT & USER ) paths");
-        return new String[]{
-                extractPath(props -> props.getAuthentication().getVerifyEmail())
-        };
-    }
+
 
     String[] postAndUserPaths() {
         log.debug("Extracting ( HTTP POST & USER ) paths");
         return new String[]{
-                extractPath(props -> props.getAuthentication().getRequestResetPassword()),
                 extractPath(props -> props.getUser().getAccount().getRequest().getDelete()),
                 extractPath(props -> props.getUser().getAccount().getRequest().getUpdateEmail())
         };
@@ -117,7 +128,6 @@ public class SecurityConfig {
     String[] patchAndUserPaths() {
         log.debug("Extracting ( HTTP PATCH & USER ) paths");
         return new String[]{
-                extractPath(props -> props.getAuthentication().getResetPassword()),
                 extractPath(props -> props.getUser().getAccount().getUpdate().getUsername()),
                 extractPath(props -> props.getUser().getAccount().getUpdate().getPassword()),
                 extractPath(props -> props.getUser().getAccount().getUpdate().getEmail())

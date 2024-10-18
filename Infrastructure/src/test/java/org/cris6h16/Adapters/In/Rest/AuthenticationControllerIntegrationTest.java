@@ -8,6 +8,7 @@ import jakarta.mail.internet.MimeMessage;
 import org.cris6h16.Adapters.In.Rest.DTOs.CreateAccountDTO;
 import org.cris6h16.Adapters.In.Rest.DTOs.LoginDTO;
 import org.cris6h16.Adapters.In.Rest.DTOs.LoginResponseDTO;
+import org.cris6h16.Adapters.In.Rest.DTOs.RefreshAccessTokenResponseDTO;
 import org.cris6h16.Adapters.Out.SpringData.UserJpaRepository;
 import org.cris6h16.Config.SpringBoot.Main;
 import org.cris6h16.Config.SpringBoot.Properties.ControllerProperties;
@@ -23,14 +24,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.core.task.SyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -43,8 +42,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.*;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static org.springframework.http.MediaType.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -82,28 +80,23 @@ class AuthenticationControllerIntegrationTest {
     @MockBean
     private JavaMailSender mailSender;
 
-    static String newPassword = "newPassword123456789";
-
-    static String accessToken;
-
-    static CreateAccountDTO created;
-
-    static String verificationToken;
+    final CreateAccountDTO created = createAccountDTO();
 
     @BeforeAll
     static void setUp(@Autowired UserJpaRepository userJpaRepository) {
         userJpaRepository.deleteAll();
     }
 
+    @AfterEach
+    void tearDown() {
+        userJpaRepository.deleteAll();
+    }
 
     @Test
     @Order(1)
     void signUp() throws Exception {
-        created = createAccountDTO();
         String path = getSignupPath();
-        MimeMessage mimeMessage = mock(MimeMessage.class);
-
-        when(mailSender.createMimeMessage()).thenReturn(mimeMessage);
+        MimeMessage mimeMessage = mockMime();
 
         String location = mockMvc.perform(post(path)
                         .contentType(APPLICATION_JSON)
@@ -116,37 +109,66 @@ class AuthenticationControllerIntegrationTest {
         verify(mailSender).send(any(MimeMessage.class));
     }
 
+    private MimeMessage mockMime() {
+        MimeMessage mimeMessage = mock(MimeMessage.class);
+        when(mailSender.createMimeMessage()).thenReturn(mimeMessage);
+        return mimeMessage;
+    }
+
     @Test
     @Order(2)
-    void login_afterCreationHasUnverifiedEmail() throws Exception {
-        String path = getLoginPath();
+    void verifyEmail_success() throws Exception {
+        String verificationToken = createUser();
+        String path = getVerifyEmailPath();
+        HttpHeaders headers = bearerTokenHeader(verificationToken);
+        mockMvc.perform(put(path)
+                        .headers(headers))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    @Order(3)
+    void login_endpoint() throws Exception {
+        String verificationToken = createUser();
+        verifyEmail(verificationToken);
+
         LoginDTO dto = toLoginDTO(created);
-        MimeMessage mimeMessage = mock(MimeMessage.class);
-
-        when(mailSender.createMimeMessage()).thenReturn(mimeMessage);
-
-        mockMvc.perform(post(path)
+        MimeMessage mimeMessage = mockMime()
+;
+        String body = mockMvc.perform(post(getLoginPath())
                         .contentType(APPLICATION_JSON)
                         .content(asJsonString(dto)))
-                .andExpect(status().isUnprocessableEntity())
+                .andExpect(status().isOk())
                 .andExpect(header().string(CONTENT_TYPE, APPLICATION_JSON_VALUE))
-                .andExpect(jsonPath("$.status").value(HttpStatus.UNPROCESSABLE_ENTITY.toString()))
-                .andExpect(jsonPath("$.message").value(errorMessages.getEmailNotVerifiedMessage()));
+                .andExpect(jsonPath("$.accessToken").isString())
+                .andExpect(jsonPath("$.refreshToken").isString())
+                .andReturn().getResponse().getContentAsString();
 
-        AtomicReference<String> capturedToken = new AtomicReference<>();
+        tokensAreValid(body);
+    }
 
-        // just check mocks ( if it happens send email again - use case )
+    private String createUser() throws Exception {
+        clearInvocations(mailSender);
+        AtomicReference<String> verificationToken = new AtomicReference<>();
+        MimeMessage mimeMessage = mock(MimeMessage.class);
+        when(mailSender.createMimeMessage()).thenReturn(mimeMessage);
+
+        mockMvc.perform(post(getSignupPath())
+                        .contentType(APPLICATION_JSON)
+                        .content(asJsonString(created)))
+                .andExpect(status().isCreated());
+
         verify(mailSender).send(any(MimeMessage.class));
         verify(mimeMessage).setContent(argThat(multipart -> {
             try {
-                capturedToken.set(getToken(multipart));
+                verificationToken.set(getToken(multipart));
                 return true;
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }));
 
-        verificationToken = capturedToken.get();
+        return verificationToken.get();
     }
 
     /*
@@ -173,20 +195,11 @@ class AuthenticationControllerIntegrationTest {
         try (OutputStream os = Files.newOutputStream(file)) {
             multipart.writeTo(os);
         }
-        String content =  Files.readString(file, StandardCharsets.UTF_8);
+        String content = Files.readString(file, StandardCharsets.UTF_8);
         System.out.println("Content: " + content);
         return content;
     }
 
-    @Test
-    @Order(3)
-    void verifyEmail() throws Exception {
-        String path = getVerifyEmailPath();
-        HttpHeaders headers = bearerTokenHeader(verificationToken);
-        mockMvc.perform(put(path)
-                        .headers(headers))
-                .andExpect(status().isOk());
-    }
 
     private HttpHeaders bearerTokenHeader(String verificationToken) {
         HttpHeaders headers = new HttpHeaders();
@@ -194,22 +207,13 @@ class AuthenticationControllerIntegrationTest {
         return headers;
     }
 
-    @Test
-    @Order(4)
-    void login_afterVerification() throws Exception {
-        String path = getLoginPath();
-        LoginDTO dto = toLoginDTO(created);
 
-        String body = mockMvc.perform(post(path)
-                        .contentType(APPLICATION_JSON)
-                        .content(asJsonString(dto)))
-                .andExpect(status().isOk())
-                .andExpect(header().string(CONTENT_TYPE, APPLICATION_JSON_VALUE))
-                .andExpect(jsonPath("$.accessToken").isString())
-                .andReturn().getResponse().getContentAsString();
-
-        tokensAreValid(body);
-        this.accessToken = getAccessTokenFromBody(body);
+    private void verifyEmail(String verificationToken) throws Exception {
+        String path = getVerifyEmailPath();
+        HttpHeaders headers = bearerTokenHeader(verificationToken);
+        mockMvc.perform(put(path)
+                        .headers(headers))
+                .andExpect(status().isNoContent());
     }
 
     private String getAccessTokenFromBody(String body) {
@@ -225,55 +229,147 @@ class AuthenticationControllerIntegrationTest {
     private void tokensAreValid(String body) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         LoginResponseDTO loginResponseDTO = mapper.readValue(body, LoginResponseDTO.class);
-        assertTrue(jwtUtilsImpl.validate(loginResponseDTO.accessToken()));
-        assertTrue(jwtUtilsImpl.validate(loginResponseDTO.refreshToken()));
+        tokenIsValid(loginResponseDTO.accessToken());
+    }
+
+    private boolean tokenIsValid(String token) {
+        return jwtUtilsImpl.validate(token);
+    }
+
+    @Test
+    @Order(4)
+    void requestPasswordReset() throws Exception {
+        String verificationToken = createUser();
+        verifyEmail(verificationToken);
+        String accessToken = login_accessToken();
+
+        clearInvocations(mailSender);
+
+        MimeMessage mimeMessage = mockMime()
+;
+        mockMvc.perform(post(getRequestResetPassword())
+                        .headers(bearerTokenHeader(accessToken))
+                        .contentType(TEXT_PLAIN_VALUE)
+                        .content(created.getEmail()))
+                .andExpect(status().isAccepted());
+
+        verify(mailSender).send(any(MimeMessage.class)); /* just check mocks */
+        verify(mimeMessage).setContent(argThat(multipart -> {
+            try {
+                return tokenIsValid(getToken(multipart));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }));
+    }
+
+    private String login_accessToken() {
+        LoginDTO dto = toLoginDTO(created);
+        try {
+            String body = mockMvc.perform(post(getLoginPath())
+                            .contentType(APPLICATION_JSON)
+                            .content(asJsonString(dto)))
+                    .andExpect(status().isOk())
+                    .andExpect(header().string(CONTENT_TYPE, APPLICATION_JSON_VALUE))
+                    .andExpect(jsonPath("$.accessToken").isString())
+                    .andReturn().getResponse().getContentAsString();
+
+            return getAccessTokenFromBody(body);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String login_refreshToken() {
+        LoginDTO dto = toLoginDTO(created);
+        try {
+            String body = mockMvc.perform(post(getLoginPath())
+                            .contentType(APPLICATION_JSON)
+                            .content(asJsonString(dto)))
+                    .andExpect(status().isOk())
+                    .andExpect(header().string(CONTENT_TYPE, APPLICATION_JSON_VALUE))
+                    .andExpect(jsonPath("$.refreshToken").isString())
+                    .andReturn().getResponse().getContentAsString();
+
+            return getRefreshTokenFromBody(body);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String getRefreshTokenFromBody(String body) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            LoginResponseDTO loginResponseDTO = mapper.readValue(body, LoginResponseDTO.class);
+            return loginResponseDTO.refreshToken();
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
     @Order(5)
-    void requestPasswordReset() throws Exception {
-        String path = getRequestResetPassword();
-        HttpHeaders headers = bearerTokenHeader(accessToken);
+    void resetPassword() throws Exception {
+        String verificationToken = createUser();
+        verifyEmail(verificationToken);
+        String accessToken = login_accessToken();
+        String resetPasswordToken = requestPasswordReset(accessToken);
 
-        mockMvc.perform(post(path)
-                        .headers(headers))
-                .andExpect(status().isAccepted());
-        verify(mailSender).send(any(MimeMessage.class)); /* just check mocks */
+        mockMvc.perform(patch(getResetPassword())
+                        .headers(bearerTokenHeader(resetPasswordToken))
+                        .contentType(TEXT_PLAIN_VALUE)
+                        .content("newPassword123456789"))
+                .andExpect(status().isNoContent());
     }
 
     @Test
     @Order(6)
-    void resetPassword() throws Exception {
-        String path = getResetPassword();
-        HttpHeaders headers = bearerTokenHeader(accessToken);
+    void refreshAccessToken() throws Exception {
+        String verificationToken = createUser();
+        verifyEmail(verificationToken);
+        String refreshToken = login_refreshToken();
 
-        mockMvc.perform(patch(path)
-                        .headers(headers)
-                        .contentType(APPLICATION_JSON)
-                        .content(asJsonString("newPassword", newPassword)))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    @Order(7)
-    void login_afterPasswordReset() throws Exception {
-        String path = getLoginPath();
-        LoginDTO dto = new LoginDTO(created.getEmail(), newPassword);
-
-        String body = mockMvc.perform(post(path)
-                        .contentType(APPLICATION_JSON)
-                        .content(asJsonString(dto)))
+        String body = mockMvc.perform(post(refreshAccessTokenPath())
+                        .headers(bearerTokenHeader(refreshToken)))
                 .andExpect(status().isOk())
                 .andExpect(header().string(CONTENT_TYPE, APPLICATION_JSON_VALUE))
                 .andExpect(jsonPath("$.accessToken").isString())
                 .andReturn().getResponse().getContentAsString();
 
-        tokensAreValid(body);
+        String accessToken = new ObjectMapper().readValue(body, RefreshAccessTokenResponseDTO.class).getAccessToken();
+        tokenIsValid(accessToken);
     }
 
+    private String refreshAccessTokenPath() {
+        return controllerProperties.getAuthentication().getRefreshAccessToken();
+    }
 
-    private String asJsonString(String name, String value) {
-        return String.format("{\"%s\":\"%s\"}", name, value);
+    private String requestPasswordReset(String accessToken) {
+        clearInvocations(mailSender);
+        AtomicReference<String> resetPasswordToken = new AtomicReference<>();
+        MimeMessage mimeMessage = mockMime()
+;
+        try {
+            mockMvc.perform(post(getRequestResetPassword())
+                            .headers(bearerTokenHeader(accessToken))
+                            .contentType(TEXT_PLAIN)
+                            .content(created.getEmail()))
+                    .andExpect(status().isAccepted());
+
+            verify(mailSender).send(any(MimeMessage.class)); /* just check mocks */
+            verify(mimeMessage).setContent(argThat(multipart -> {
+                try {
+                    resetPasswordToken.set(getToken(multipart));
+                    return tokenIsValid(getToken(multipart));
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return resetPasswordToken.get();
     }
 
     private String getResetPassword() {

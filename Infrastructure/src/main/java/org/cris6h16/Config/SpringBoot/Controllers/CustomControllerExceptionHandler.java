@@ -22,6 +22,7 @@ public class CustomControllerExceptionHandler {
     //InvalidAttributeException
     @ExceptionHandler(InvalidAttributeException.class)
     public ResponseEntity<String> handleInvalidAttributeException(InvalidAttributeException e) {
+        log.debug("InvalidAttributeException: {}", e.toString());
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .header("Content-Type", "application/json")
@@ -31,6 +32,7 @@ public class CustomControllerExceptionHandler {
     //EmailNotVerifiedException
     @ExceptionHandler(EmailNotVerifiedException.class)
     public ResponseEntity<String> handleEmailNotVerifiedException(EmailNotVerifiedException e) {
+        log.debug("EmailNotVerifiedException: {}", e.toString());
         return ResponseEntity
                 .status(HttpStatus.UNPROCESSABLE_ENTITY)
                 .header("Content-Type", "application/json")
@@ -40,6 +42,7 @@ public class CustomControllerExceptionHandler {
     //NotFoundException
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<String> handleNotFoundException(NotFoundException e) {
+        log.debug("NotFoundException: {}", e.toString());
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .header("Content-Type", "application/json")
@@ -49,6 +52,7 @@ public class CustomControllerExceptionHandler {
     //InvalidCredentialsException
     @ExceptionHandler(InvalidCredentialsException.class)
     public ResponseEntity<String> handleInvalidCredentialsException(InvalidCredentialsException e) {
+        log.debug("InvalidCredentialsException: {}", e.toString());
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
                 .header("Content-Type", "application/json")
@@ -58,6 +62,7 @@ public class CustomControllerExceptionHandler {
     //AlreadyExistException
     @ExceptionHandler(AlreadyExistsException.class)
     public ResponseEntity<String> handleAlreadyExistsException(AlreadyExistsException e) {
+        log.debug("AlreadyExistsException: {}", e.toString());
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
                 .header("Content-Type", "application/json")

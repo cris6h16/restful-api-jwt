@@ -12,6 +12,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
+
 @RestController
 public class UserAccountController {
 
@@ -32,7 +35,7 @@ public class UserAccountController {
 
     @PatchMapping(
             value = "${controller.user.account.update.username}",
-            consumes = "application/json"
+            consumes = TEXT_PLAIN_VALUE
     )
     public ResponseEntity<Void> updateMyUsername(@RequestBody String newUsername) {
         return userAccountControllerFacade.updateMyUsername(newUsername);
@@ -40,7 +43,7 @@ public class UserAccountController {
 
     @PatchMapping(
             value = "${controller.user.account.update.password}",
-            consumes = MediaType.APPLICATION_JSON_VALUE
+            consumes = APPLICATION_JSON_VALUE
     )
     public ResponseEntity<Void> updateMyPassword(@RequestBody UpdateMyPasswordDTO dto) {
         return userAccountControllerFacade.updateMyPassword(dto);
@@ -56,7 +59,7 @@ public class UserAccountController {
      */
     @PatchMapping(
             value = "${controller.user.account.update.email}" ,
-            consumes = "application/json"
+            consumes = TEXT_PLAIN_VALUE
     )
     public ResponseEntity<Void> updateMyEmail(@RequestBody String email) {
         return userAccountControllerFacade.updateMyEmail(email);
@@ -65,7 +68,7 @@ public class UserAccountController {
 
     @GetMapping(
             value = "${controller.user.account.core}",
-            produces = "application/json"
+            produces = APPLICATION_JSON_VALUE
     )
     public ResponseEntity<PublicProfileDTO> getMyAccount() {
         return userAccountControllerFacade.getMyAccount();
@@ -73,7 +76,7 @@ public class UserAccountController {
 
     @GetMapping(
             value = "${controller.user.pagination.all}",
-            produces = "application/json"
+            produces = APPLICATION_JSON_VALUE
     )
     public ResponseEntity<Page<PublicProfileDTO>> getAllUsers(@PageableDefault(
             size = 50,

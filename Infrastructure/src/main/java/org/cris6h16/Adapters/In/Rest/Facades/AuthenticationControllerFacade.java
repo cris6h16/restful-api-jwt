@@ -101,6 +101,7 @@ public class AuthenticationControllerFacade {
 
         } catch (NotFoundException e) { // I shouldn't say if the email exists or not in the request reset password ( else I'd be processed by the advice )
             // do nothing
+            log.debug("Email not found: '{}'", email);
         }
     }
 

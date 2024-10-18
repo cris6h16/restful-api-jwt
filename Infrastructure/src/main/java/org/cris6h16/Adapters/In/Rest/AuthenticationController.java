@@ -5,10 +5,12 @@ import org.cris6h16.Adapters.In.Rest.DTOs.LoginDTO;
 import org.cris6h16.Adapters.In.Rest.DTOs.LoginResponseDTO;
 import org.cris6h16.Adapters.In.Rest.DTOs.RefreshAccessTokenResponseDTO;
 import org.cris6h16.Adapters.In.Rest.Facades.AuthenticationControllerFacade;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
 
 @RestController
 public class AuthenticationController {
@@ -45,7 +47,7 @@ public class AuthenticationController {
 
     @PostMapping(
             value = "${controller.authentication.request-reset-password}",
-            consumes = APPLICATION_JSON_VALUE
+            consumes = TEXT_PLAIN_VALUE
     )
     public ResponseEntity<Void> requestPasswordReset(@RequestBody String email) {
         return facade.requestPasswordReset(email);
@@ -53,7 +55,7 @@ public class AuthenticationController {
 
     @PatchMapping(
             value = "${controller.authentication.reset-password}",
-            consumes = APPLICATION_JSON_VALUE
+            consumes = TEXT_PLAIN_VALUE
     )
     public ResponseEntity<Void> resetPassword(@RequestBody String newPassword) {
         return facade.resetPassword(newPassword);

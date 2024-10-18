@@ -4,7 +4,6 @@ import org.cris6h16.Adapters.In.Rest.Facades.AuthenticationControllerFacade;
 import org.cris6h16.Adapters.In.Rest.Facades.UserAccountControllerFacade;
 import org.cris6h16.Adapters.In.Rest.UserAccountController;
 import org.cris6h16.Config.SpringBoot.Controllers.CustomControllerExceptionHandler;
-import org.cris6h16.Config.SpringBoot.Main;
 import org.cris6h16.Config.SpringBoot.Properties.ControllerProperties;
 import org.cris6h16.Config.SpringBoot.Properties.JwtProperties;
 import org.cris6h16.Config.SpringBoot.Utils.JwtUtilsImpl;
@@ -16,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -187,7 +185,7 @@ public class SecurityConfigTest {
     }
 
     String[] putAndUserPath() {
-        return securityConfig.putAndUserPath();
+        return securityConfig.putAndAuthenticated();
     }
 
     String[] patchAndUserPaths() {

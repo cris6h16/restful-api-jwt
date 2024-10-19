@@ -15,7 +15,8 @@ public class GetPublicProfileOutput {
     private Boolean emailVerified;
     private LocalDateTime lastModified;
 
-    public GetPublicProfileOutput() {}
+    public GetPublicProfileOutput() { // required for deserialization / serialization
+    }
     public GetPublicProfileOutput(UserModel um) {
         this.id = um.getId();
         this.username = um.getUsername();

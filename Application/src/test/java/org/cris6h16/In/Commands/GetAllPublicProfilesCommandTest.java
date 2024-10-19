@@ -10,6 +10,19 @@ import java.util.List;
 public class GetAllPublicProfilesCommandTest {
 
     @Test
+    public void noArgsConstructor() {
+        // Act
+        GetAllPublicProfilesCommand command = new GetAllPublicProfilesCommand();
+
+        // Assert
+        assertNotNull(command);
+        assertEquals(0, command.getPageNumber());
+        assertEquals(0, command.getPageSize());
+        assertNull(command.getMySortOrders());
+    }
+
+
+    @Test
     public void testConstructorAndGetters() {
         // Arrange
         int pageNumber = 1;

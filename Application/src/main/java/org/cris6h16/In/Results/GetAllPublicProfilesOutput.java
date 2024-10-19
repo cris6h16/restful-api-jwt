@@ -12,7 +12,7 @@ public class GetAllPublicProfilesOutput {
     private GetAllPublicProfilesCommand command;
     private List<GetPublicProfileOutput> items;
 
-    public GetAllPublicProfilesOutput() {
+    public GetAllPublicProfilesOutput() { // required for deserialization / serialization
     }
 
     public GetAllPublicProfilesOutput(long totalElements, long totalPages, GetAllPublicProfilesCommand command, List<GetPublicProfileOutput> items) {

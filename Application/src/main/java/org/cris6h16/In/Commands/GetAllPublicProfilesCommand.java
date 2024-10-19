@@ -12,7 +12,7 @@ public class GetAllPublicProfilesCommand {
     private int pageSize;
     private List<MySortOrder> mySortOrders;
 
-    public GetAllPublicProfilesCommand() {
+    public GetAllPublicProfilesCommand() { // required for deserialization / serialization
     }
 
     public GetAllPublicProfilesCommand(int pageNumber, int pageSize, List<MySortOrder> mySortOrders) {

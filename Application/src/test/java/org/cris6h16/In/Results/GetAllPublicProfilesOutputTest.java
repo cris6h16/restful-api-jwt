@@ -13,6 +13,19 @@ import java.util.List;
 public class GetAllPublicProfilesOutputTest {
 
     @Test
+    public void noArgsConstructor() {
+        // Act
+        GetAllPublicProfilesOutput output = new GetAllPublicProfilesOutput();
+
+        // Assert
+        assertNull(output.getCommand());
+        assertNull(output.getItems());
+        assertEquals(0, output.getTotalElements());
+        assertEquals(0, output.getTotalPages());
+    }
+
+
+    @Test
     public void testConstructorAndGetters() {
         // Arrange
         long totalElements = 100L;

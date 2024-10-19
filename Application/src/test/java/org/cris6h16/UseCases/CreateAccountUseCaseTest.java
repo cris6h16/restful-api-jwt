@@ -142,6 +142,7 @@ public class CreateAccountUseCaseTest {
                 .setId(15L)
                 .setUsername(trimmed.getUsername())
                 .setEmail(trimmed.getEmail())
+                .setRoles(trimmed.getRoles())
                 .build());
 
         // Act

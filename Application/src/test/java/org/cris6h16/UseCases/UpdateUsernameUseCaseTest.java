@@ -1,5 +1,6 @@
 package org.cris6h16.UseCases;
 
+import org.cris6h16.Exceptions.Impls.AlreadyExistsException;
 import org.cris6h16.Exceptions.Impls.NotFoundException;
 import org.cris6h16.Repositories.UserRepository;
 import org.cris6h16.Utils.ErrorMessages;
@@ -15,11 +16,11 @@ import static org.mockito.Mockito.*;
 
 class UpdateUsernameUseCaseTest {
     @Mock
-    private  UserValidator userValidator;
+    private UserValidator userValidator;
     @Mock
-    private  UserRepository userRepository;
+    private UserRepository userRepository;
     @Mock
-    private  ErrorMessages errorMessages;
+    private ErrorMessages errorMessages;
     @InjectMocks
     private UpdateUsernameUseCase updateUsernameUseCase;
 
@@ -29,7 +30,7 @@ class UpdateUsernameUseCaseTest {
     }
 
     @Test
-    void handle_invalidIdThenValidatorThrows(){
+    void handle_invalidIdThenValidatorThrows() {
         // Arrange
         Long id = 1L;
         String username = "cris6h16";
@@ -45,7 +46,7 @@ class UpdateUsernameUseCaseTest {
     }
 
     @Test
-    void handle_invalidUsernameThenValidatorThrows(){
+    void handle_invalidUsernameThenValidatorThrows() {
         // Arrange
         Long id = 1L;
         String username = "cris6h16";
@@ -61,7 +62,7 @@ class UpdateUsernameUseCaseTest {
     }
 
     @Test
-    void handle_userNotFoundThenNotFoundException(){
+    void handle_userNotFoundThenNotFoundException() {
         // Arrange
         Long id = 1L;
         String username = "cris6h16";
@@ -79,7 +80,25 @@ class UpdateUsernameUseCaseTest {
     }
 
     @Test
-    void handle_successUntrimmed(){
+    void handle_usernameAlreadyExistsThenAlreadyExistsException() {
+        // Arrange
+        Long id = 1L;
+        String username = "cris6h16";
+
+        when(userRepository.existsById(id)).thenReturn(true);
+        when(userRepository.existsByUsername(username)).thenReturn(true);
+        when(errorMessages.getUsernameAlreadyExistsMessage()).thenReturn("Any msg asdfghjk");
+
+        // Act & Assert
+        assertThatThrownBy(() -> updateUsernameUseCase.handle(id, username))
+                .isInstanceOf(AlreadyExistsException.class)
+                .hasMessage("Any msg asdfghjk");
+        verify(errorMessages).getUsernameAlreadyExistsMessage();
+    }
+
+
+    @Test
+    void handle_successUntrimmed() {
         // Arrange
         Long id = 1L;
         String username = " cris6h16    ";

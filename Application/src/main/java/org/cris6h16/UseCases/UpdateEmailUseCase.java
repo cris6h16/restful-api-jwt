@@ -1,5 +1,6 @@
 package org.cris6h16.UseCases;
 
+import org.cris6h16.Exceptions.Impls.AlreadyExistsException;
 import org.cris6h16.Exceptions.Impls.NotFoundException;
 import org.cris6h16.In.Ports.UpdateEmailPort;
 import org.cris6h16.Models.ERoles;
@@ -31,11 +32,20 @@ public class UpdateEmailUseCase implements UpdateEmailPort {
         userValidator.validateEmail(newEmail);
 
         userExists(id);
+        emailNotInUse(newEmail);
+
         userRepository.updateEmailById(id, newEmail);
         userRepository.updateEmailVerifiedById(id, false);
+
         Set<ERoles> roles = userRepository.getRolesById(id);
 
         emailService.sendVerificationEmail(id, roles, newEmail);
+    }
+
+    private void emailNotInUse(String email) {
+        if (userRepository.existsByEmail(email)) {
+            throw new AlreadyExistsException(errorMessages.getEmailAlreadyExistsMessage());
+        }
     }
 
     private void userExists(Long id) {

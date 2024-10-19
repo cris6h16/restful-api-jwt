@@ -1,5 +1,6 @@
 package org.cris6h16.UseCases;
 
+import org.cris6h16.Exceptions.Impls.AlreadyExistsException;
 import org.cris6h16.Exceptions.Impls.NotFoundException;
 import org.cris6h16.In.Ports.UpdateUsernamePort;
 import org.cris6h16.Repositories.UserRepository;
@@ -26,7 +27,15 @@ public class UpdateUsernameUseCase implements UpdateUsernamePort {
         userValidator.validateUsername(newUsername);
 
         userExists(id);
+        usernameNotInUse(newUsername);
+
         userRepository.updateUsernameById(id, newUsername);
+    }
+
+    private void usernameNotInUse(String newUsername) {
+        if (userRepository.existsByUsername(newUsername)) {
+            throw new AlreadyExistsException(errorMessages.getUsernameAlreadyExistsMessage());
+        }
     }
 
     private void userExists(Long id) {

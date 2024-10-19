@@ -2,6 +2,12 @@ openapi: 3.1.0
 info:
   title: restful-api-jwt
   version: 1.0.0
+  description: RESTful API with JWT authentication
+  contact:
+    name: Cristian Herrera
+    email: cristianmherrera21@gmail.com
+    url: https://github.com/cris6h16
+
 servers:
   - url: https://localhost:3001
     description: Prod Server
@@ -13,8 +19,8 @@ paths:
     post:
       tags:
         - Unauthenticated Endpoints
-      summary: Authenticate user
-      description: Authenticates a user using email and password.
+      summary: Log in with email and password
+      description: Authenticates a user using their email and password. Returns access and refresh tokens.
       requestBody:
         required: true
         content:
@@ -34,26 +40,21 @@ paths:
 
       responses:
         200:
-          description: OK
-          headers:
-            Set-Cookie:
-              description: Access token and refresh token cookies.
-              schema:
-                type: string
-                name: "Set-Cookie"
-                example: "Set-Cookie: accessToken=tkn1234567; Path=/api/v1; Max-Age=1800; Expires=Tue, 15 Oct 2024 14:38:28 GMT; Secure; HttpOnly; SameSite=Strict; HttpOnly, Set-Cookie: refreshToken=tkn123456789; Path=/api/v1/auth/refresh-token; Max-Age=1296000; Expires=Wed, 30 Oct 2024 14:08:28 GMT; Secure; HttpOnly; SameSite=Strict"
+          description: OK - User was successfully authenticated
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  accessToken:
-                    type: string
-                  refreshToken:
-                    type: string
-                required:
-                  - accessToken
-                  - refreshToken
+                schema:
+                  type: object
+                  name: LoginResponseDTO
+                  properties:
+                    accessToken:
+                      type: string
+                    refreshToken:
+                      type: string
+                  required:
+                    - accessToken
+                    - refreshToken
 
         400:
           $ref: '#/components/responses/InvalidPropertyProvided'
@@ -127,24 +128,7 @@ paths:
           $ref: '#/components/responses/InvalidPropertyProvided'
 
         409:
-          description: Conflict - Username or email already exists
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorMessageSchema'
-              examples:
-                UsernameAlreadyExists:
-                  summary: Username already exists
-                  description: When the provided username is already in use.
-                  value:
-                    message: "Username already exists"
-                    status: "409"
-                EmailAlreadyExists:
-                  summary: Email already exists
-                  description: When the provided email is already in use.
-                  value:
-                    message: "Email already exists"
-                    status: "409"
+          $ref: '#/components/responses/Conflict'
 
         default:
           $ref: '#/components/responses/GenericFail'
@@ -157,7 +141,7 @@ paths:
       tags:
         - User Endpoints
       security:
-        - accessTokenCookie: []
+        - accessToken: [ ]
       responses:
         204:
           description: No content - email was verified successfully
@@ -175,8 +159,11 @@ paths:
       tags:
         - User Endpoints
 
+      security:
+        - accessToken: [ ]
+
       requestBody:
-        $ref: '#/components/requestBodies/EmailRequestBody'
+        $ref: '#/components/requestBodies/EmailTextPlain'
 
       responses:
         202:
@@ -193,24 +180,21 @@ paths:
       tags:
         - User Endpoints
       security:
-        - accessTokenCookie: [ ]
+        - accessToken: [ ]
       requestBody:
         required: true
         content:
-          application/json:
+          text/plain:
             schema:
-              type: object
-              properties:
-                newPassword:
-                  type: string
-                  format: password
-                required:
-                  - newPassword
+              type: string
+              format: password
+              minLength: 8
+
       responses:
         204:
           description: No Content - the new password was set
         403:
-          description: Forbidden - When the user is unauthenticated
+          $ref: '#/components/responses/Forbidden'
         404:
           $ref: '#/components/responses/NotFound'
         default:
@@ -218,17 +202,29 @@ paths:
 
   /api/v1/auth/refresh-token:
     post:
-      summary: refresh access token cookie
-      description: request a new access token cookie
+      summary: refresh access
+      description: request a new access token
       tags:
-        - Authenticated Endpoints
+        - User Endpoints
+
       security:
-        - refreshTokenCookie: [ ]
+        - refreshToken: [ ]
+
       responses:
         200:
-          description: a new access token generated successfully and returned it in a 'Set-Cookie' header
+          description: a new access token was generated successfully.
+          content:
+            application/json:
+            schema:
+              type: object
+              properties:
+              accessToken:
+                type: string
+              required:
+                - accessToken
+
         403:
-          description: Forbidden - When the user is unauthenticated
+          $ref: '#/components/responses/Forbidden'
         404:
           $ref: '#/components/responses/NotFound'
         default:
@@ -241,12 +237,12 @@ paths:
       tags:
         - User Endpoints
       security:
-        - accessTokenCookie: [ ]
+        - accessToken: [ ]
       responses:
         202:
           description: the request was successfully accepted and an email was sent to complete the process
         403:
-          description: Forbidden - When the user is unauthenticated
+          $ref: '#/components/responses/Forbidden'
         404:
           $ref: '#/components/responses/NotFound'
         default:
@@ -258,7 +254,7 @@ paths:
       tags:
         - User Endpoints
       security:
-        - accessTokenCookie: [ ]
+        - accessToken: [ ]
       responses:
         200:
           description: response containing my public account
@@ -267,23 +263,24 @@ paths:
               schema:
                 $ref: '#/components/schemas/PublicUserAccountSchema'
         403:
-          description: Forbidden - When the user is unauthenticated
+          $ref: '#/components/responses/Forbidden'
         404:
           $ref: '#/components/responses/NotFound'
         default:
           $ref: '#/components/responses/GenericFail'
+
     delete:
       summary: delete my account
       description: deactivate my account
       tags:
         - User Endpoints
       security:
-        - accessTokenCookie: [ ]
+        - accessToken: [ ]
       responses:
         204:
           description: the account was successfully deactivated
         403:
-          description: Forbidden - When the user is unauthenticated
+          $ref: '#/components/responses/Forbidden'
         404:
           $ref: '#/components/responses/NotFound'
         default:
@@ -293,7 +290,7 @@ paths:
     get:
       summary: Get all the public accounts
       security:
-        - accessTokenCookie: [ ]
+        - accessToken: [ ]
       tags:
         - Admin Endpoints
       parameters:
@@ -379,7 +376,7 @@ paths:
                   empty:
                     type: boolean
         403:
-          description: Forbidden - When the user isn't unauthenticated or he hasn't the ADMIN role
+          $ref: '#/components/responses/Forbidden'
         default:
           $ref: '#/components/responses/GenericFail'
 
@@ -392,28 +389,21 @@ paths:
       tags:
         - User Endpoints
       security:
-        - accessTokenCookie: [ ]
+        - accessToken: [ ]
       requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                newUsername:
-                  type: string
-                required:
-                  - newUsername
+        $ref: '#/components/requestBodies/UsernameTextPlain'
 
       responses:
         204:
           description: the username was successfully updated
-        403:
-          description: Forbidden - When the user is unauthenticated
-        404:
-          $ref: '#/components/responses/NotFound'
         400:
           $ref: '#/components/responses/InvalidPropertyProvided'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        409:
+          $ref: '#/components/responses/Conflict'
         default:
           $ref: '#/components/responses/GenericFail'
 
@@ -424,7 +414,7 @@ paths:
       tags:
         - User Endpoints
       security:
-        - accessTokenCookie: [ ]
+        - accessToken: [ ]
       requestBody:
         required: true
         content:
@@ -460,7 +450,7 @@ paths:
                     message: "Your current password not matches"
                     status: "401"
         403:
-          description: Forbidden - When the user is unauthenticated
+          $ref: '#/components/responses/Forbidden'
         404:
           $ref: '#/components/responses/NotFound'
         default:
@@ -473,12 +463,12 @@ paths:
       tags:
         - User Endpoints
       security:
-        - accessTokenCookie: [ ]
+        - accessToken: [ ]
       responses:
         202:
           description: The request was successful accepted and the email for complete the process was sent
         403:
-          description: Forbidden - When the user is unauthenticated
+          $ref: '#/components/responses/Forbidden'
         404:
           $ref: '#/components/responses/NotFound'
         default:
@@ -491,18 +481,22 @@ paths:
       tags:
         - User Endpoints
       security:
-        - accessTokenCookie: [ ]
+        - accessToken: [ ]
       requestBody:
-        $ref: '#/components/requestBodies/EmailRequestBody'
+        $ref: '#/components/requestBodies/EmailTextPlain'
       responses:
         204:
           description: the email was successfully updated
         400:
           $ref: '#/components/responses/InvalidPropertyProvided'
         403:
-          description: Forbidden - When the user is unauthenticated
+          $ref: '#/components/responses/Forbidden'
         404:
           $ref: '#/components/responses/NotFound'
+
+        409:
+          $ref: '#/components/responses/Conflict'
+
         default:
           $ref: '#/components/responses/GenericFail'
 
@@ -532,6 +526,15 @@ components:
         lastModified:
           type: string
 
+        required:
+          - id
+          - username
+          - email
+          - roles
+          - active
+          - emailVerified
+          - lastModified
+
     ErrorMessageSchema:
       type: object
       properties:
@@ -543,16 +546,28 @@ components:
         - message
         - status
 
-    EmailSchema:
-      type: object
-      properties:
-        email:
-          type: string
-          format: email
-        required:
-          - email
-
   responses:
+
+    Conflict:
+      description: Conflict - Username or email already exists
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessageSchema'
+          examples:
+            UsernameAlreadyExists:
+              summary: Username already exists
+              description: When the provided username is already in use.
+              value:
+                message: "Username already exists"
+                status: "409"
+            EmailAlreadyExists:
+              summary: Email already exists
+              description: When the provided email is already in use.
+              value:
+                message: "Email already exists"
+                status: "409"
+
     InvalidPropertyProvided:
       description: Bad Request - Invalid property provided like a invalid email, password too short, username length invalid, etc.
       content:
@@ -600,26 +615,38 @@ components:
     NotFound:
       description: Not Found - When the user is not found
 
+    Forbidden:
+      description: Forbidden - When the user is unauthenticated or has no permission to access the resource
+
   requestBodies:
 
-    EmailRequestBody:
+    EmailTextPlain:
       required: true
       content:
-        application/json:
+        text/plain:
           schema:
-            $ref: '#/components/schemas/EmailSchema'
+            type: string
+            format: email
 
+    UsernameTextPlain:
+      required: true
+      content:
+        text/plain:
+          schema:
+            type: string
+            minLength: 3
+            maxLength: 20
 
   securitySchemes:
 
-    refreshTokenCookie:
+    refreshToken:
       type: http
       name: refreshToken
       scheme: bearer
       bearerFormat: JWT
       description: Refresh token in Authorization Header
 
-    accessTokenCookie:
+    accessToken:
       type: http
       name: accessToken
       scheme: bearer

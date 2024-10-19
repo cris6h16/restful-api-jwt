@@ -1,5 +1,6 @@
 package org.cris6h16.UseCases;
 
+import org.cris6h16.Exceptions.Impls.AlreadyExistsException;
 import org.cris6h16.Exceptions.Impls.NotFoundException;
 import org.cris6h16.Models.ERoles;
 import org.cris6h16.Repositories.UserRepository;
@@ -78,6 +79,22 @@ class UpdateEmailUseCaseTest {
         assertThatThrownBy(() -> updateEmailUseCase.handle(id, email))
                .isInstanceOf(NotFoundException.class)
                .hasMessage("Any msg");
+    }
+
+    @Test
+    void handle_emailAlreadyInUseThenThrowAlreadyExistsException(){
+        // Arrange
+        Long id = 1L;
+        String email = "email";
+
+        when(userRepository.existsById(id)).thenReturn(true);
+        when(userRepository.existsByEmail(email)).thenReturn(true);
+        when(errorMessages.getEmailAlreadyExistsMessage()).thenReturn("Any msg qwerty");
+
+        // Act & Assert
+        assertThatThrownBy(() -> updateEmailUseCase.handle(id, email))
+               .isInstanceOf(AlreadyExistsException.class)
+               .hasMessage("Any msg qwerty");
     }
 
     @Test

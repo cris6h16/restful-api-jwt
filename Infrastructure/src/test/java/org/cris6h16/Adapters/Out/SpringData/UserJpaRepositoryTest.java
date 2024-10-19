@@ -4,6 +4,7 @@ import CommonConfigs.JpaTestConfig;
 import org.cris6h16.Adapters.Out.SpringData.Entities.UserEntity;
 import org.cris6h16.Models.ERoles;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -30,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @ContextConfiguration(classes = {JpaTestConfig.class})
 @Transactional(isolation = Isolation.READ_COMMITTED)
+@Tag("with-spring-context")
 public class UserJpaRepositoryTest {
 
     @Autowired

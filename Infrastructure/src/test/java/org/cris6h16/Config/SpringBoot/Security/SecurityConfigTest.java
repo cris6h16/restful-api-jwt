@@ -10,6 +10,7 @@ import org.cris6h16.Config.SpringBoot.Utils.JwtUtilsImpl;
 import org.cris6h16.Utils.ErrorMessages;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -45,6 +46,7 @@ class ControllersWithAdviceAndSecurity {
 @SpringBootTest(classes = {ControllersWithAdviceAndSecurity.class})
 @AutoConfigureMockMvc(addFilters = true)
 @ActiveProfiles("test")
+@Tag("with-spring-context")
 public class SecurityConfigTest {
 
     @Autowired
@@ -225,7 +227,12 @@ public class SecurityConfigTest {
 
     private MediaType getMediaType(String path) {
         // paths that are TEXT_PLAIN
-        String[] textPlain = new String[]{"/api/v1/auth/request-reset-password"};
+        String[] textPlain = new String[]{
+                "/api/v1/auth/request-reset-password",
+                "/api/v1/user/account/update/username",
+                "/api/v1/user/account/update/email",
+                "/api/v1/auth/password"
+        };
         for (String s : textPlain) {
             if (path.equals(s)) return MediaType.TEXT_PLAIN;
         }

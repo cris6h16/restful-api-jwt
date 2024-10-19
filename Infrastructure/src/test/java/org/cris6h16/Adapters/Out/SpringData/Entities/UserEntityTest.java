@@ -4,6 +4,7 @@ import CommonConfigs.JpaTestConfig;
 import org.cris6h16.Adapters.Out.SpringData.UserJpaRepository;
 import org.cris6h16.Models.ERoles;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 // principally tested the constraints
 @SpringBootTest(classes = JpaTestConfig.class)
 @ActiveProfiles("test")
+@Tag("with-spring-context")
 public class UserEntityTest {
 
     @Autowired

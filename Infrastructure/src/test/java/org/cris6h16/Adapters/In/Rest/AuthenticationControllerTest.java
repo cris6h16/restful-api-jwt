@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cris6h16.Adapters.In.Rest.DTOs.CreateAccountDTO;
 import org.cris6h16.Adapters.In.Rest.DTOs.LoginDTO;
 import org.cris6h16.Adapters.In.Rest.Facades.AuthenticationControllerFacade;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,6 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = ControllerAndAdviceConfig.class)
 @AutoConfigureMockMvc(addFilters = false)// bypass security filters
 @ActiveProfiles(value = {"test"}) // todo: set in all tests
+@Tag("with-spring-context")
 public class AuthenticationControllerTest {
 
     @Value("${controller.authentication.signup}")

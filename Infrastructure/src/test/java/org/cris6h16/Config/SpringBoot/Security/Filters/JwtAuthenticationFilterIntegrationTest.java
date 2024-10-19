@@ -11,6 +11,7 @@ import org.cris6h16.Config.SpringBoot.Properties.EmailServiceProperties;
 import org.cris6h16.Config.SpringBoot.Properties.JwtProperties;
 import org.cris6h16.Config.SpringBoot.Utils.JwtUtilsImpl;
 import org.cris6h16.Utils.ErrorMessages;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,6 +55,7 @@ class CustomConfig {
 @SpringBootTest(classes = {CustomConfig.class})
 @AutoConfigureMockMvc // MockMvc
 @ActiveProfiles("test")
+@Tag("with-spring-context")
 public class JwtAuthenticationFilterIntegrationTest {
 
     @Autowired

@@ -8,6 +8,7 @@ import org.cris6h16.Adapters.In.Rest.Facades.AuthenticationControllerFacade;
 import org.cris6h16.Adapters.In.Rest.Facades.UserAccountControllerFacade;
 import org.cris6h16.Utils.ErrorMessages;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,6 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = {ControllerAndAdviceConfig.class})
 @AutoConfigureMockMvc(addFilters = false) // Bypass security filters
 @ActiveProfiles(value = {"test"})
+@Tag("with-spring-context")
 public class UserAccountControllerTest {
 
 

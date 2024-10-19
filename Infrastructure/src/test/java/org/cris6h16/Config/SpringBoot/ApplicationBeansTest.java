@@ -8,17 +8,16 @@ import org.cris6h16.UseCases.*;
 import org.cris6h16.Utils.ErrorMessages;
 import org.cris6h16.Utils.JwtUtils;
 import org.cris6h16.Utils.UserValidator;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.MockitoAnnotations;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 // PD: this tests i consider irrelevant and is a test entirely wrote by ChatGPT
-@ExtendWith(MockitoExtension.class)
 public class ApplicationBeansTest {
 
     @InjectMocks
@@ -37,6 +36,11 @@ public class ApplicationBeansTest {
     private JwtUtils jwtUtils;
     @Mock
     private UserValidator userValidator;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
 
     // Test userValidator bean creation
     @Test

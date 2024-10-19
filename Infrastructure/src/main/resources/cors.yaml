@@ -8,6 +8,7 @@ cors:
     - POST
     - PUT
     - DELETE
+    - PATCH
   allowed-headers:
     - Content-Type
     - Authorization

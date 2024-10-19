@@ -93,7 +93,7 @@ paths:
   /api/v1/auth/signup:
     post:
       summary: Create a user
-      description: Create a user account.
+      description: Create a user account and send a verification email to complete the process
       tags:
         - Unauthenticated Endpoints
       requestBody:
@@ -215,13 +215,13 @@ paths:
           description: a new access token was generated successfully.
           content:
             application/json:
-            schema:
-              type: object
-              properties:
-              accessToken:
-                type: string
-              required:
-                - accessToken
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                required:
+                  - accessToken
 
         403:
           $ref: '#/components/responses/Forbidden'
@@ -297,21 +297,26 @@ paths:
         - name: size
           in: query
           allowEmptyValue: false
-          required: false
+          required: true
           description: the size of the page
           schema:
             type: integer
+
         - name: sort
           in: query
-          allowEmptyValue: false
-          required: false
-          description: The properties to sort each one with its direction (asc, desc)
+          description: sort properties with direction (e.g., name,asc)
+          required: true
           schema:
-            type:
+            type: array
+            style: simple
+            items:
+              type: string
+
+
         - name: page
           in: query
           allowEmptyValue: false
-          required: false
+          required: true
           description: the page number ( Zero-Index )
           schema:
             type: integer
@@ -428,9 +433,9 @@ paths:
                 currentPassword:
                   type: string
                   format: password
-                required:
-                  - newPassword
-                  - currentPassword
+              required:
+                - newPassword
+                - currentPassword
       responses:
         204:
           description: Password updated successfully

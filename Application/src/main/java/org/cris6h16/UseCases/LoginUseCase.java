@@ -49,7 +49,7 @@ public class LoginUseCase implements LoginPort {
         }
 
         if (!userModel.getEmailVerified()) {
-            emailService.sendVerificationEmail(userModel.getId(), userModel.getEmail());
+            emailService.sendVerificationEmail(userModel.getId(), userModel.getRoles(), userModel.getEmail());
             throw new EmailNotVerifiedException(errorMessages.getEmailNotVerifiedMessage());
         }
     }

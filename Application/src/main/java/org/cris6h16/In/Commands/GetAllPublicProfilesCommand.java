@@ -8,9 +8,12 @@ import java.util.List;
 import java.util.Objects;
 
 public class GetAllPublicProfilesCommand {
-    private final int pageNumber;
-    private final int pageSize;
-    private final List<MySortOrder> mySortOrders;
+    private int pageNumber;
+    private int pageSize;
+    private List<MySortOrder> mySortOrders;
+
+    public GetAllPublicProfilesCommand() {
+    }
 
     public GetAllPublicProfilesCommand(int pageNumber, int pageSize, List<MySortOrder> mySortOrders) {
         this.pageNumber = pageNumber;

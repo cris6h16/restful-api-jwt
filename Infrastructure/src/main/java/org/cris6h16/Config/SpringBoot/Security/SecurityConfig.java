@@ -49,10 +49,10 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers(HttpMethod.POST, postPermitAllPaths()).permitAll()
-                        .requestMatchers(HttpMethod.POST, postAuthenticatedPaths()).authenticated()
-                        .requestMatchers(HttpMethod.PUT, putAndAuthenticated()).authenticated()
-                        .requestMatchers(HttpMethod.PATCH, patchAndAuthenticated()).authenticated()
 
+                        .requestMatchers(HttpMethod.POST, postAndAuthenticated()).authenticated()
+
+                        .requestMatchers(HttpMethod.PUT, putAndUserPaths()).hasAuthority(ROLE_USER)
                         .requestMatchers(HttpMethod.POST, postAndUserPaths()).hasAuthority(ROLE_USER)
                         .requestMatchers(HttpMethod.PATCH, patchAndUserPaths()).hasAuthority(ROLE_USER)
                         .requestMatchers(HttpMethod.DELETE, deleteAndUserPath()).hasAuthority(ROLE_USER)
@@ -72,27 +72,21 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // todo: add tests for this
-    private String[] postAuthenticatedPaths() {
+     String[] postAndAuthenticated() {
+        log.debug("Extracting ( HTTP POST & Authenticated ) paths");
         return new String[]{
-                extractPath(props -> props.getAuthentication().getRefreshAccessToken()),
-                extractPath(props -> props.getAuthentication().getRequestResetPassword())
+                extractPath(props -> props.getAuthentication().getRefreshAccessToken())
         };
     }
 
-    String[] putAndAuthenticated() {
-        log.debug("Extracting ( HTTP PUT & AUTHENTICATED ) paths");
+
+    String[] putAndUserPaths() {
+        log.debug("Extracting ( HTTP PUT & USER ) paths");
         return new String[]{
                 extractPath(props -> props.getAuthentication().getVerifyEmail())
         };
     }
 
-    String[] patchAndAuthenticated() {
-        log.debug("Extracting ( HTTP PATCH & AUTHENTICATED ) paths");
-        return new String[]{
-                extractPath(props -> props.getAuthentication().getResetPassword())
-        };
-    }
 
     String[] getAndAdminPaths() {
         log.debug("Extracting ( HTTP GET & Admin ) paths");
@@ -121,7 +115,8 @@ public class SecurityConfig {
         log.debug("Extracting ( HTTP POST & USER ) paths");
         return new String[]{
                 extractPath(props -> props.getUser().getAccount().getRequest().getDelete()),
-                extractPath(props -> props.getUser().getAccount().getRequest().getUpdateEmail())
+                extractPath(props -> props.getUser().getAccount().getRequest().getUpdateEmail()),
+                extractPath(props -> props.getAuthentication().getRequestResetPassword())
         };
     }
 
@@ -130,7 +125,8 @@ public class SecurityConfig {
         return new String[]{
                 extractPath(props -> props.getUser().getAccount().getUpdate().getUsername()),
                 extractPath(props -> props.getUser().getAccount().getUpdate().getPassword()),
-                extractPath(props -> props.getUser().getAccount().getUpdate().getEmail())
+                extractPath(props -> props.getUser().getAccount().getUpdate().getEmail()),
+                extractPath(props -> props.getAuthentication().getResetPassword())
         };
     }
 

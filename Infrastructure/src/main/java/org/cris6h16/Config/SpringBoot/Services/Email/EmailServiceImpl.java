@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.cris6h16.Config.SpringBoot.Properties.JwtProperties;
 import org.cris6h16.Config.SpringBoot.Properties.EmailServiceProperties;
 import org.cris6h16.Config.SpringBoot.Utils.JwtUtilsImpl;
+import org.cris6h16.Models.ERoles;
 import org.cris6h16.Services.EmailService;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -14,6 +15,7 @@ import org.thymeleaf.ITemplateEngine;
 import org.thymeleaf.context.Context;
 
 import java.util.Arrays;
+import java.util.Set;
 import java.util.function.Function;
 
 @Slf4j
@@ -86,11 +88,11 @@ public class EmailServiceImpl implements EmailService {
     //todo: logg the app
     @Async
     @Override
-    public void sendVerificationEmail(Long id, String email) {
-        log.debug("Creating a verification email for id:{}, email: {}", id, email);
+    public void sendVerificationEmail(Long id, Set<ERoles> roles, String email) {
+        log.debug("Creating a Verification email for id:{}, email: {}, roles: {}", id, email, roles);
 
         long emailVerificationTokenTimeLive = jwtProperties.getToken().getAccess().getRequest().getEmail().getVerification().getSecs();
-        String token = jwtUtils.genToken(id, null, emailVerificationTokenTimeLive);
+        String token = jwtUtils.genAccessToken(id,roles, emailVerificationTokenTimeLive);
 
         log.trace("emailVerificationTokenTimeLive: {}, token: {}", emailVerificationTokenTimeLive, token);
 
@@ -112,11 +114,11 @@ public class EmailServiceImpl implements EmailService {
 
     @Async
     @Override
-    public void sendResetPasswordEmail(Long id, String email) {
-        log.debug("Creating a Reset Password email for id:{}, email: {}", id, email);
+    public void sendResetPasswordEmail(Long id, Set<ERoles> roles, String email) {
+        log.debug("Creating a Reset Password email for id:{}, email: {}, roles: {}", id, email, roles);
 
         long requestPasswordTokenTimeLive = jwtProperties.getToken().getAccess().getRequest().getEmail().getReset().getPassword().getSecs();
-        String token = jwtUtils.genToken(id, null, requestPasswordTokenTimeLive);
+        String token = jwtUtils.genAccessToken(id,roles, requestPasswordTokenTimeLive);
 
         String content = buildHtmlContent(
                 token,
@@ -135,11 +137,11 @@ public class EmailServiceImpl implements EmailService {
 
     @Async
     @Override
-    public void sendRequestDeleteAccountEmail(Long id, String email) {
-        log.debug("Creating a Request Delete Account email for id:{}, email: {}", id, email);
+    public void sendRequestDeleteAccountEmail(Long id, Set<ERoles> roles , String email) {
+        log.debug("Creating a Request Delete Account email for id:{}, email: {}, roles: {}", id, email, roles);
 
         long requestDeleteAccountTokenTimeLive = jwtProperties.getToken().getAccess().getRequest().getEmail().getDeleteAccount().getSecs();
-        String token = jwtUtils.genToken(id, null, requestDeleteAccountTokenTimeLive);
+        String token = jwtUtils.genAccessToken(id, roles, requestDeleteAccountTokenTimeLive);
 
         String content = buildHtmlContent(
                 token,
@@ -158,11 +160,11 @@ public class EmailServiceImpl implements EmailService {
 
     @Async
     @Override
-    public void sendRequestUpdateEmail(Long id, String email) {
-        log.debug("Creating a Request Update Email email for id:{}, email: {}", id, email);
+    public void sendRequestUpdateEmail(Long id,Set<ERoles> roles , String email) {
+        log.debug("Creating a Request Update Email email for id:{}, email: {}, roles: {}", id, email, roles);
 
         long requestUpdateEmailTokenTimeLive = jwtProperties.getToken().getAccess().getRequest().getEmail().getUpdateEmail().getSecs();
-        String token = jwtUtils.genToken(id, null, requestUpdateEmailTokenTimeLive);
+        String token = jwtUtils.genAccessToken(id, roles, requestUpdateEmailTokenTimeLive);
 
         String content = buildHtmlContent(
                 token,

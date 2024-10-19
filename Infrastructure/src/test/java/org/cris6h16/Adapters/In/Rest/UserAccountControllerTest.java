@@ -27,6 +27,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.http.MediaType.TEXT_PLAIN;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -105,7 +107,7 @@ public class UserAccountControllerTest {
 
 
         mockMvc.perform(patch(updateMyUsernamePath)
-                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(TEXT_PLAIN)
                         .content(newUsername))
                 .andExpect(status().isOk());
 
@@ -113,10 +115,10 @@ public class UserAccountControllerTest {
     }
 
     @Test
-    void updateMyUsername_shouldRejectNonJsonContentType() throws Exception {
+    void updateMyUsername_shouldRejectNonTextPlain() throws Exception {
         String newUsername = "newUsername";
         mockMvc.perform(patch(updateMyUsernamePath)
-                        .contentType(MediaType.TEXT_PLAIN)
+                        .contentType(APPLICATION_JSON)
                         .content(newUsername))
                 .andExpect(status().isInternalServerError());
     }
@@ -128,7 +130,7 @@ public class UserAccountControllerTest {
         when(userAccountControllerFacade.updateMyPassword(any(UpdateMyPasswordDTO.class))).thenReturn(ResponseEntity.ok().build());
 
         mockMvc.perform(patch(updateMyPasswordPath)
-                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(APPLICATION_JSON)
                         .content(dtoJson)
 
                 )
@@ -142,7 +144,7 @@ public class UserAccountControllerTest {
         UpdateMyPasswordDTO dto = new UpdateMyPasswordDTO("oldPassword", "newPassword");
 
         mockMvc.perform(patch(updateMyPasswordPath)
-                        .contentType(MediaType.TEXT_PLAIN)
+                        .contentType(TEXT_PLAIN)
                         .content(new ObjectMapper().writeValueAsString(dto)))
                 .andExpect(status().isInternalServerError());
     }
@@ -163,7 +165,7 @@ public class UserAccountControllerTest {
         when(userAccountControllerFacade.updateMyEmail(anyString())).thenReturn(ResponseEntity.ok().build());
 
         mockMvc.perform(patch(updateMyEmailPath)
-                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(TEXT_PLAIN)
                         .content(newEmail))
                 .andExpect(status().isOk());
 
@@ -171,11 +173,11 @@ public class UserAccountControllerTest {
     }
 
     @Test
-    void updateMyEmail_shouldRejectNonJsonContentType() throws Exception {
+    void updateMyEmail_shouldRejectNonTextPlain() throws Exception {
         String newEmail = "newemail@example.com";
 
         mockMvc.perform(patch(updateMyEmailPath)
-                        .contentType(MediaType.TEXT_PLAIN)
+                        .contentType(APPLICATION_JSON)
                         .content(newEmail))
                 .andExpect(status().isInternalServerError());
     }

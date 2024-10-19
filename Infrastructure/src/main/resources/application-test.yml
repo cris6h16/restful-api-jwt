@@ -44,5 +44,5 @@ spring:
         minutes: 5
 logging:
   level:
-    root: debug
+    root: trace
 

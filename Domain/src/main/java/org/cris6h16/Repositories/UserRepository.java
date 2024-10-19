@@ -40,4 +40,8 @@ public interface UserRepository {
 
     // todo: add tests
     Optional<String> findEmailById(Long id);
+
+    Set<ERoles> getRolesByEmail(String email);
+
+    Optional<Long> findIdByEmail(String email);
 }

@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
@@ -67,13 +68,15 @@ public class RequestDeleteAccountUseCaseTest {
     @Test
     void handle_success() {
         // Arrange
-        UserModel u  = new UserModel.Builder().setId(1L).setEmail("Hello World").build();
+        String email = "cristianmherrera21@gmail.com";
 
-        when(userRepository.findById(1L)).thenReturn(Optional.of(u));
+        when(userRepository.findEmailById(1L)).thenReturn(Optional.of(email));
+        when(userRepository.getRolesById(1L)).thenReturn(Set.of());
+
         // Act
         requestDeleteAccountUseCase.handle(1L);
 
         // Assert
-        verify(emailService).sendRequestDeleteAccountEmail(1L, "Hello World");
+        verify(emailService).sendRequestDeleteAccountEmail(1L, Set.of(),email);
     }
 }

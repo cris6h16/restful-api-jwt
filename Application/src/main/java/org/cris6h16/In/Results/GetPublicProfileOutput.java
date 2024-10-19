@@ -15,6 +15,7 @@ public class GetPublicProfileOutput {
     private Boolean emailVerified;
     private LocalDateTime lastModified;
 
+    public GetPublicProfileOutput() {}
     public GetPublicProfileOutput(UserModel um) {
         this.id = um.getId();
         this.username = um.getUsername();

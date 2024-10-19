@@ -33,7 +33,7 @@ public class JwtUtilsImpl implements JwtUtils {
     }
 
 
-    public String genToken(Long subject, Map<String, String> claims, long timeExpirationSecs) {
+     String genToken(Long subject, Map<String, String> claims, long timeExpirationSecs) {
         log.debug("Generating token");
 
         JwtBuilder jwtBuilder = Jwts.builder()
@@ -86,6 +86,7 @@ public class JwtUtilsImpl implements JwtUtils {
 
     /**
      * Extracts roles from token
+     *
      * @param token token to extract roles from
      * @return set of roles, if no roles found, returns empty set
      */
@@ -139,6 +140,11 @@ public class JwtUtilsImpl implements JwtUtils {
     public String genAccessToken(Long id, Set<ERoles> roles) {
         log.debug("Generating access token for user ID: {}", id);
         return genToken(id, Map.of(ROLE_CLAIM, roles.toString()), this.jwtProperties.getToken().getAccess().getExpiration().getSecs());
+    }
+
+    public String genAccessToken(Long id, Set<ERoles> roles, long expirationSecs) {
+        log.debug("Generating access token for user ID: {}, expiration: {}, roles: {}", id, expirationSecs, roles);
+        return genToken(id, Map.of(ROLE_CLAIM, roles.toString()), expirationSecs);
     }
 }
 

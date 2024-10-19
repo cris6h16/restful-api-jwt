@@ -36,30 +36,28 @@ public class CreateAccountUseCase implements CreateAccountPort {
 
     public Long handle(CreateAccountCommand command) {
         command = validateAndCleanCommand(command);
+        UserModel userModel = create(command);
 
-        String username = command.getUsername();
-        String password = command.getPassword();
-        String email = command.getEmail();
-        Set<ERoles> roles = command.getRoles();
+        checkDBForDuplicates(userModel);
+        userModel = userRepository.save(userModel);
 
-        UserModel userModel = new UserModel.Builder()
-                .setUsername(username)
-                .setPassword(passwordEncoder.encode(password))
-                .setEmail(email)
-                .setRoles(roles)
+        emailService.sendVerificationEmail(userModel.getId(), userModel.getRoles(), userModel.getEmail());
+
+        return userModel.getId();
+    }
+
+    private UserModel create(CreateAccountCommand command) {
+        return new UserModel.Builder()
+                .setUsername(command.getUsername())
+                .setPassword(passwordEncoder.encode(command.getPassword()))
+                .setEmail(command.getEmail())
+                .setRoles(command.getRoles())
                 .setActive(true)
                 .setEmailVerified(false)
                 .setLastModified(Instant.ofEpochMilli(System.currentTimeMillis())
                         .atZone(ZoneId.systemDefault())
                         .toLocalDateTime())
                 .build();
-
-        checkDBForDuplicates(userModel);
-        userModel = userRepository.save(userModel);
-
-        emailService.sendVerificationEmail(userModel.getId(), userModel.getEmail());
-
-        return userModel.getId();
     }
 
     private CreateAccountCommand validateAndCleanCommand(CreateAccountCommand cmd) {

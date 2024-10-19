@@ -65,7 +65,7 @@ public class UserEntityTest {
         // Act
         assertThatThrownBy(() -> userJpaRepository.save(u2))
                 .isInstanceOf(DataIntegrityViolationException.class)
-                .hasMessageContaining("[ERROR: value too long for type character varying(20)]");
+                .hasMessageContaining("ERROR: value too long for type character varying(20)");
     }
 
     @Test
@@ -89,7 +89,7 @@ public class UserEntityTest {
         // Act
         assertThatThrownBy(() -> userJpaRepository.save(u2))
                 .isInstanceOf(DataIntegrityViolationException.class)
-                .hasMessageContaining("[ERROR: value too long for type character varying(1000)]");
+                .hasMessageContaining("ERROR: value too long for type character varying(1000)");
     }
 
 
@@ -127,7 +127,7 @@ public class UserEntityTest {
         // Act
         assertThatThrownBy(() -> userJpaRepository.save(u2))
                 .isInstanceOf(DataIntegrityViolationException.class)
-                .hasMessageContaining("[ERROR: value too long for type character varying(50)]");
+                .hasMessageContaining("ERROR: value too long for type character varying(50)");
     }
 
     @Test

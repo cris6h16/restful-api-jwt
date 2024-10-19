@@ -1,5 +1,6 @@
 package org.cris6h16.Adapters.In.Rest;
 
+import CommonConfigs.NoAsyncConfig;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.mail.MessagingException;
@@ -21,6 +22,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.task.SyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.http.HttpHeaders;
@@ -47,19 +49,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
-@SpringBootTest(classes = Main.class)
+@SpringBootTest(classes = {Main.class, NoAsyncConfig.class})
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class AuthenticationControllerIntegrationTest {
-
-    @TestConfiguration
-    static class CustomConf {
-        @Bean
-        public TaskExecutor taskExecutor() {
-            return new SyncTaskExecutor();
-        }
-    }
 
     @Autowired
     private MockMvc mockMvc;

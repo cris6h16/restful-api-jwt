@@ -4,6 +4,7 @@ import jakarta.mail.internet.MimeMessage;
 import org.cris6h16.Config.SpringBoot.Properties.EmailServiceProperties;
 import org.cris6h16.Config.SpringBoot.Properties.JwtProperties;
 import org.cris6h16.Config.SpringBoot.Utils.JwtUtilsImpl;
+import org.cris6h16.Models.ERoles;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -13,6 +14,7 @@ import org.thymeleaf.ITemplateEngine;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.context.IContext;
 
+import java.util.Set;
 import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -82,7 +84,7 @@ public class EmailServiceImplTest {
     }
 
     @Test
-    void testSendEmail_MailSenderThrowsException_caughtAndIgnored()  { // the service was written to work async so exceptions are caught and ignored ( & logged of course )
+    void testSendEmail_MailSenderThrowsException_caughtAndIgnored() { // the service was written to work async so exceptions are caught and ignored ( & logged of course )
         // Arrange
         String email = "cristianmherrera21@gmail.com";
         String subject = emailServiceProperties.getUpdateEmail().getSubject();
@@ -114,19 +116,18 @@ public class EmailServiceImplTest {
         Long id = 1L;
         String email = "cristianmherrera21@gmail.com";
         String token = "generated-token";
+        Set<ERoles> roles = Set.of(ERoles.ROLE_USER, ERoles.ROLE_ADMIN);
         long emailVerificationTokenTimeLive = jwtProperties.getToken().getAccess().getRequest().getEmail().getVerification().getSecs();
         String expectedContent = "Email Content";
 
-        when(jwtUtils.genToken(id, null, emailVerificationTokenTimeLive))
-                .thenReturn(token);
-        when(templateEngine.process(anyString(), any(Context.class)))
-                .thenReturn(expectedContent);
+        when(jwtUtils.genAccessToken(id, roles, emailVerificationTokenTimeLive)).thenReturn(token);
+        when(templateEngine.process(anyString(), any(Context.class))).thenReturn(expectedContent);
 
         // Act
-        emailService.sendVerificationEmail(id, email);
+        emailService.sendVerificationEmail(id, roles, email);
 
         // Assert
-        verify(jwtUtils, times(1)).genToken(id, null, emailVerificationTokenTimeLive);
+        verify(jwtUtils, times(1)).genAccessToken(id, roles, emailVerificationTokenTimeLive);
         verify(templateEngine, times(1)).process(anyString(), any(Context.class));
         verify(mailSender, times(1)).send(mimeMessage);
     }
@@ -137,19 +138,18 @@ public class EmailServiceImplTest {
         Long id = 1L;
         String email = "cristianmherrera21@gmail.com";
         String token = "generated-token";
+        Set<ERoles> roles = Set.of(ERoles.ROLE_USER, ERoles.ROLE_ADMIN);
         long requestPasswordTokenTimeLive = jwtProperties.getToken().getAccess().getRequest().getEmail().getReset().getPassword().getSecs();
         String expectedContent = "Reset Password Content";
 
-        when(jwtUtils.genToken(id, null, requestPasswordTokenTimeLive))
-                .thenReturn(token);
-        when(templateEngine.process(anyString(), any(Context.class)))
-                .thenReturn(expectedContent);
+        when(jwtUtils.genAccessToken(id, roles, requestPasswordTokenTimeLive)).thenReturn(token);
+        when(templateEngine.process(anyString(), any(Context.class))).thenReturn(expectedContent);
 
         // Act
-        emailService.sendResetPasswordEmail(id, email);
+        emailService.sendResetPasswordEmail(id, roles, email);
 
         // Assert
-        verify(jwtUtils, times(1)).genToken(id, null, requestPasswordTokenTimeLive);
+        verify(jwtUtils, times(1)).genAccessToken(id, roles, requestPasswordTokenTimeLive);
         verify(templateEngine, times(1)).process(anyString(), any(Context.class));
         verify(mailSender, times(1)).send(mimeMessage);
     }
@@ -159,20 +159,21 @@ public class EmailServiceImplTest {
         // Arrange
         Long id = 1L;
         String email = "cristianmherrera21@gmail.com";
+        Set<ERoles> roles = Set.of(ERoles.ROLE_USER, ERoles.ROLE_ADMIN);
         String token = "generated-token";
         long requestDeleteAccountTokenTimeLive = jwtProperties.getToken().getAccess().getRequest().getEmail().getDeleteAccount().getSecs();
         String expectedContent = "Delete Account Content";
 
-        when(jwtUtils.genToken(id, null, requestDeleteAccountTokenTimeLive))
+        when(jwtUtils.genAccessToken(id, roles, requestDeleteAccountTokenTimeLive))
                 .thenReturn(token);
         when(templateEngine.process(anyString(), any(Context.class)))
                 .thenReturn(expectedContent);
 
         // Act
-        emailService.sendRequestDeleteAccountEmail(id, email);
+        emailService.sendRequestDeleteAccountEmail(id, roles, email);
 
         // Assert
-        verify(jwtUtils, times(1)).genToken(id, null, requestDeleteAccountTokenTimeLive);
+        verify(jwtUtils, times(1)).genAccessToken(id, roles, requestDeleteAccountTokenTimeLive);
         verify(templateEngine, times(1)).process(anyString(), any(Context.class));
         verify(mailSender, times(1)).send(mimeMessage);
     }
@@ -183,17 +184,18 @@ public class EmailServiceImplTest {
         Long id = 1L;
         String email = "cristianmherrera21@gmail.com";
         String token = "generated-token";
+        Set<ERoles> roles = Set.of(ERoles.ROLE_USER, ERoles.ROLE_ADMIN);
         long requestUpdateEmailTokenTimeLive = jwtProperties.getToken().getAccess().getRequest().getEmail().getUpdateEmail().getSecs();
         String expectedContent = "Update Email Content";
 
-        when(jwtUtils.genToken(id, null, requestUpdateEmailTokenTimeLive)).thenReturn(token);
+        when(jwtUtils.genAccessToken(id,roles, requestUpdateEmailTokenTimeLive)).thenReturn(token);
         when(templateEngine.process(anyString(), any(Context.class))).thenReturn(expectedContent);
 
         // Act
-        emailService.sendRequestUpdateEmail(id, email);
+        emailService.sendRequestUpdateEmail(id, roles, email);
 
         // Assert
-        verify(jwtUtils, times(1)).genToken(id, null, requestUpdateEmailTokenTimeLive);
+        verify(jwtUtils, times(1)).genAccessToken(id,roles, requestUpdateEmailTokenTimeLive);
         verify(templateEngine, times(1)).process(anyString(), any(Context.class));
         verify(mailSender, times(1)).send(mimeMessage);
     }

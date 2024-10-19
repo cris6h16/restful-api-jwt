@@ -129,6 +129,16 @@ public class UserRepositoryImpl implements UserRepository {
         return userJpaRepository.findEmailById(id);
     }
 
+    @Override
+    public Set<ERoles> getRolesByEmail(String email) {
+        return userJpaRepository.findRolesByEmail(email);
+    }
+
+    @Override
+    public Optional<Long> findIdByEmail(String email) {
+        return userJpaRepository.findIdByEmail(email);
+    }
+
     static MyPage<UserModel> toUserModelPage(Page<UserEntity> uePage, MyPageable used) {
         List<UserModel> uml = uePage.getContent().stream()
                 .map(UserRepositoryImpl::toUserModel)

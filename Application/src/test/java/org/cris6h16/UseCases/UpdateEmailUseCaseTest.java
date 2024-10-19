@@ -1,6 +1,7 @@
 package org.cris6h16.UseCases;
 
 import org.cris6h16.Exceptions.Impls.NotFoundException;
+import org.cris6h16.Models.ERoles;
 import org.cris6h16.Repositories.UserRepository;
 import org.cris6h16.Services.EmailService;
 import org.cris6h16.Utils.ErrorMessages;
@@ -10,6 +11,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
@@ -82,8 +85,10 @@ class UpdateEmailUseCaseTest {
         // Arrange
         Long id = 1L;
         String email = "      email   ";
+        Set<ERoles> roles = Set.of(ERoles.ROLE_USER, ERoles.ROLE_ADMIN);
 
         when(userRepository.existsById(id)).thenReturn(true);
+        when(userRepository.getRolesById(id)).thenReturn(roles);
 
         // Act
         updateEmailUseCase.handle(id, email);
@@ -91,6 +96,6 @@ class UpdateEmailUseCaseTest {
         // Assert
         verify(userRepository).updateEmailById(id, email.trim());
         verify(userRepository).updateEmailVerifiedById(id, false);
-        verify(emailService).sendVerificationEmail(id, email.trim());
+        verify(emailService).sendVerificationEmail(id, roles,  email.trim());
     }
 }

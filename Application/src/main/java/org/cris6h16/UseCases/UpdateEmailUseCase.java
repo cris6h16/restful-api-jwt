@@ -2,10 +2,13 @@ package org.cris6h16.UseCases;
 
 import org.cris6h16.Exceptions.Impls.NotFoundException;
 import org.cris6h16.In.Ports.UpdateEmailPort;
+import org.cris6h16.Models.ERoles;
 import org.cris6h16.Repositories.UserRepository;
 import org.cris6h16.Services.EmailService;
 import org.cris6h16.Utils.ErrorMessages;
 import org.cris6h16.Utils.UserValidator;
+
+import java.util.Set;
 
 public class UpdateEmailUseCase implements UpdateEmailPort {
     private final UserValidator userValidator;
@@ -30,8 +33,9 @@ public class UpdateEmailUseCase implements UpdateEmailPort {
         userExists(id);
         userRepository.updateEmailById(id, newEmail);
         userRepository.updateEmailVerifiedById(id, false);
+        Set<ERoles> roles = userRepository.getRolesById(id);
 
-        emailService.sendVerificationEmail(id, newEmail);
+        emailService.sendVerificationEmail(id, roles, newEmail);
     }
 
     private void userExists(Long id) {

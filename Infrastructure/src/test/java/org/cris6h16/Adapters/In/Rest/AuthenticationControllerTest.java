@@ -20,6 +20,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.http.MediaType.TEXT_PLAIN;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -58,7 +60,7 @@ public class AuthenticationControllerTest {
         when(facade.login(any(LoginDTO.class))).thenReturn(ResponseEntity.ok().build());
 
         mockMvc.perform(post(loginPath)
-                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(dto)))
                 .andExpect(status().isOk());
 
@@ -71,7 +73,7 @@ public class AuthenticationControllerTest {
         when(facade.login(any(LoginDTO.class))).thenReturn(ResponseEntity.ok().build());
 
         mockMvc.perform(post(loginPath)
-                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(dto)))
                 .andExpect(status().isOk());
 
@@ -83,7 +85,7 @@ public class AuthenticationControllerTest {
         LoginDTO dto = new LoginDTO();
 
         mockMvc.perform(post(loginPath)
-                        .contentType(MediaType.TEXT_PLAIN)
+                        .contentType(TEXT_PLAIN)
                         .content(new ObjectMapper().writeValueAsString(dto)))
                 .andExpect(status().isInternalServerError());
     }
@@ -96,7 +98,7 @@ public class AuthenticationControllerTest {
 
         // Act & Assert
         mockMvc.perform(post(signupPath)
-                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(dto)))
                 .andExpect(status().isOk());
 
@@ -109,7 +111,7 @@ public class AuthenticationControllerTest {
         when(facade.signup(any(CreateAccountDTO.class))).thenReturn(ResponseEntity.ok().build());
 
         mockMvc.perform(post(signupPath)
-                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(dto)))
                 .andExpect(status().isOk());
 
@@ -121,7 +123,7 @@ public class AuthenticationControllerTest {
         CreateAccountDTO dto = new CreateAccountDTO();
 
         mockMvc.perform(post(signupPath)
-                        .contentType(MediaType.TEXT_PLAIN)
+                        .contentType(TEXT_PLAIN)
                         .content(new ObjectMapper().writeValueAsString(dto)))
                 .andExpect(status().isInternalServerError());
     }
@@ -143,7 +145,7 @@ public class AuthenticationControllerTest {
         when(facade.requestPasswordReset(anyString())).thenReturn(ResponseEntity.ok().build());
 
         mockMvc.perform(post(requestPasswordResetPath)
-                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(TEXT_PLAIN)
                         .content(email))
                 .andExpect(status().isOk());
 
@@ -151,12 +153,12 @@ public class AuthenticationControllerTest {
     }
 
     @Test
-    void requestPasswordReset_shouldAcceptJsonContentType() throws Exception {
+    void requestPasswordReset_shouldAcceptTextPlain() throws Exception {
         String email = "test@example.com";
         when(facade.requestPasswordReset(anyString())).thenReturn(ResponseEntity.ok().build());
 
         mockMvc.perform(post(requestPasswordResetPath)
-                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(TEXT_PLAIN)
                         .content(email))
                 .andExpect(status().isOk());
 
@@ -164,11 +166,11 @@ public class AuthenticationControllerTest {
     }
 
     @Test
-    void requestPasswordReset_shouldRejectNonJsonContentType() throws Exception {
+    void requestPasswordReset_shouldRejectNonTextPlain() throws Exception {
         String email = "test@example.com";
 
         mockMvc.perform(post(requestPasswordResetPath)
-                        .contentType(MediaType.TEXT_PLAIN)
+                        .contentType(APPLICATION_JSON)
                         .content(email))
                 .andExpect(status().isInternalServerError());
     }
@@ -179,7 +181,7 @@ public class AuthenticationControllerTest {
         when(facade.resetPassword(anyString())).thenReturn(ResponseEntity.ok().build());
 
         mockMvc.perform(patch(resetPasswordPath)
-                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(TEXT_PLAIN)
                         .content(newPassword))
                 .andExpect(status().isOk());
 
@@ -187,12 +189,12 @@ public class AuthenticationControllerTest {
     }
 
     @Test
-    void resetPassword_shouldAcceptJsonContentType() throws Exception {
+    void resetPassword_shouldAcceptTextPlain() throws Exception {
         String newPassword = "newPassword123";
         when(facade.resetPassword(anyString())).thenReturn(ResponseEntity.ok().build());
 
         mockMvc.perform(patch(resetPasswordPath)
-                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(TEXT_PLAIN)
                         .content(newPassword))
                 .andExpect(status().isOk());
 
@@ -200,11 +202,11 @@ public class AuthenticationControllerTest {
     }
 
     @Test
-    void resetPassword_shouldRejectNonJsonContentType() throws Exception {
+    void resetPassword_shouldRejectNonTextPlain() throws Exception {
         String newPassword = "newPassword123";
 
         mockMvc.perform(patch(resetPasswordPath)
-                        .contentType(MediaType.TEXT_PLAIN)
+                        .contentType(APPLICATION_JSON)
                         .content(newPassword))
                 .andExpect(status().isInternalServerError());
     }

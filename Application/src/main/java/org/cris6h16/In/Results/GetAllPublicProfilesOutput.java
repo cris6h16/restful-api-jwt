@@ -7,10 +7,13 @@ import org.cris6h16.Repositories.Page.MyPage;
 import java.util.List;
 
 public class GetAllPublicProfilesOutput {
-    private final long totalElements;
-    private final long totalPages;
-    private final GetAllPublicProfilesCommand command;
-    private final List<GetPublicProfileOutput> items;
+    private long totalElements;
+    private long totalPages;
+    private GetAllPublicProfilesCommand command;
+    private List<GetPublicProfileOutput> items;
+
+    public GetAllPublicProfilesOutput() {
+    }
 
     public GetAllPublicProfilesOutput(long totalElements, long totalPages, GetAllPublicProfilesCommand command, List<GetPublicProfileOutput> items) {
         this.totalElements = totalElements;

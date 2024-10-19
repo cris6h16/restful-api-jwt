@@ -1,5 +1,8 @@
 package org.cris6h16.Config.SpringBoot.Redis;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.cris6h16.Config.SpringBoot.Properties.RedisProperty;
 import org.cris6h16.In.Commands.GetAllPublicProfilesCommand;
 import org.cris6h16.In.Results.GetAllPublicProfilesOutput;
@@ -35,9 +38,22 @@ public class RedisConfig {
 
         RedisTemplate<GetAllPublicProfilesCommand, GetAllPublicProfilesOutput> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
+
+        // key
         template.setKeySerializer(new Jackson2JsonRedisSerializer<>(GetAllPublicProfilesCommand.class));
-        template.setValueSerializer(new Jackson2JsonRedisSerializer<>(GetAllPublicProfilesOutput.class));
+
+        // value
+        Jackson2JsonRedisSerializer<GetAllPublicProfilesOutput> serializer = new Jackson2JsonRedisSerializer<>(objectMapper(), GetAllPublicProfilesOutput.class);
+        template.setValueSerializer(serializer);
+
         return template;
+    }
+
+    private ObjectMapper objectMapper() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+//        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        return objectMapper;
     }
 
 

@@ -1,6 +1,7 @@
 package org.cris6h16.UseCases;
 
 import org.cris6h16.Exceptions.Impls.NotFoundException;
+import org.cris6h16.Models.ERoles;
 import org.cris6h16.Models.UserModel;
 import org.cris6h16.Repositories.UserRepository;
 import org.cris6h16.Services.EmailService;
@@ -13,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
@@ -69,17 +71,17 @@ public class RequestResetPasswordUseCaseTest {
     void handle_success() {
         // Arrange
         String email = "email";
-        var user = new UserModel();
-        user.setId(1L);
-        user.setEmail(email);
+        var aux = new UserModel();
+        Long id = 1L;
+        Set<ERoles> roles = Set.of(ERoles.ROLE_USER, ERoles.ROLE_ADMIN);
 
-        when(userRepository.findByEmail(email))
-                .thenReturn(Optional.of(user));
+        when(userRepository.findIdByEmail(email)).thenReturn(Optional.of(id));
+        when(userRepository.getRolesByEmail(email)).thenReturn(roles);
 
         // Act
         requestResetPasswordUseCase.handle(email);
 
         // Assert
-        verify(emailService).sendResetPasswordEmail(user.getId(), user.getEmail());
+        verify(emailService).sendResetPasswordEmail(id, roles, email);
     }
 }

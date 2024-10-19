@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
@@ -71,11 +72,12 @@ class RequestUpdateEmailUseCaseTest {
         Long id = 112L;
 
         when(userRepository.findEmailById(id)).thenReturn(Optional.of(email));
+        when(userRepository.getRolesById(id)).thenReturn(Set.of());
 
         // Act
         requestUpdateEmailUseCase.handle(id);
 
         // Assert
-        verify(emailService).sendRequestUpdateEmail(id, email);
+        verify(emailService).sendRequestUpdateEmail(id, Set.of(), email);
     }
 }

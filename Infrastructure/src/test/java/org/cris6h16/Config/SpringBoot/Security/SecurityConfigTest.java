@@ -86,7 +86,7 @@ public class SecurityConfigTest {
             int expectedStatus = HttpStatus.FORBIDDEN.value();
 
             String[] gets = concat(getAndAdminPaths(), getAndUserPaths());
-            String[] posts = postAndUserPaths();
+            String[] posts = concat(postAndUserPaths(), postAndAuthenticated());
             String[] puts = putAndUserPath();
             String[] patches = patchAndUserPaths();
             String[] deletes = deleteAndUserPath();
@@ -117,7 +117,7 @@ public class SecurityConfigTest {
         void testAuthorizedPaths() throws Exception {
             int expectedStatus = HttpStatus.OK.value();
             String[] gets = getAndUserPaths();
-            String[] posts = concat(postAndUserPaths(), postPermitAllPaths());
+            String[] posts = concat(postAndUserPaths(), postPermitAllPaths(), postAndAuthenticated());
             String[] puts = putAndUserPath();
             String[] patches = patchAndUserPaths();
             String[] deletes = deleteAndUserPath();
@@ -160,7 +160,7 @@ public class SecurityConfigTest {
         void testAuthorizedPaths() throws Exception {
             int expectedStatus = HttpStatus.OK.value();
             String[] gets = concat(getAndAdminPaths());
-            String[] posts = postPermitAllPaths();
+            String[] posts = concat(postPermitAllPaths(), postAndAuthenticated());
 
             for (String path : gets) performAndAssert("GET", path, expectedStatus);
             for (String path : posts) performAndAssert("POST", path, expectedStatus);
@@ -184,8 +184,12 @@ public class SecurityConfigTest {
         return securityConfig.postAndUserPaths();
     }
 
+    String[] postAndAuthenticated() {
+        return securityConfig.postAndAuthenticated();
+    }
+
     String[] putAndUserPath() {
-        return securityConfig.putAndAuthenticated();
+        return securityConfig.putAndUserPaths();
     }
 
     String[] patchAndUserPaths() {
@@ -207,12 +211,25 @@ public class SecurityConfigTest {
             default -> throw new IllegalArgumentException();
         };
 
+        MediaType mediaType = getMediaType(path);
+
+        System.out.println("Performing " + method + " request to " + path + " with media type " + mediaType);
+
         int status = mockMvc.perform(request
-                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(mediaType)
                         .content("{}"))
                 .andReturn().getResponse().getStatus();
 
         assertEquals(status, expectedStatus);
+    }
+
+    private MediaType getMediaType(String path) {
+        // paths that are TEXT_PLAIN
+        String[] textPlain = new String[]{"/api/v1/auth/request-reset-password"};
+        for (String s : textPlain) {
+            if (path.equals(s)) return MediaType.TEXT_PLAIN;
+        }
+        return MediaType.APPLICATION_JSON;
     }
 
 

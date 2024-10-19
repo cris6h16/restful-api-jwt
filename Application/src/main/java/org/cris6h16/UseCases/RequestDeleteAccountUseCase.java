@@ -2,11 +2,14 @@ package org.cris6h16.UseCases;
 
 import org.cris6h16.Exceptions.Impls.NotFoundException;
 import org.cris6h16.In.Ports.RequestDeleteAccountPort;
+import org.cris6h16.Models.ERoles;
 import org.cris6h16.Models.UserModel;
 import org.cris6h16.Repositories.UserRepository;
 import org.cris6h16.Services.EmailService;
 import org.cris6h16.Utils.ErrorMessages;
 import org.cris6h16.Utils.UserValidator;
+
+import java.util.Set;
 
 public class RequestDeleteAccountUseCase implements RequestDeleteAccountPort {
 
@@ -26,15 +29,20 @@ public class RequestDeleteAccountUseCase implements RequestDeleteAccountPort {
     @Override
     public void handle(Long id) {
         userValidator.validateId(id);
-        UserModel user = findByIdElseThrow(id);
+        String email = getEmailByIdOrThrow(id);
+        Set<ERoles> roles = getRolesById(id);
 
-        emailService.sendRequestDeleteAccountEmail(user.getId(), user.getEmail());
+        emailService.sendRequestDeleteAccountEmail(id, roles, email);
     }
 
-    private UserModel findByIdElseThrow(Long id) {
+    private Set<ERoles> getRolesById(Long id) {
+        return userRepository.getRolesById(id);
+    }
+
+    private String getEmailByIdOrThrow(Long id) {
         return userRepository
-                .findById(id)
+                .findEmailById(id)
                 .orElseThrow(() -> new NotFoundException(errorMessages.getUserNotFoundMessage()));
-
     }
+
 }

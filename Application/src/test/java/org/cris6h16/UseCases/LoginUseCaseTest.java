@@ -19,7 +19,9 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -148,14 +150,12 @@ public class LoginUseCaseTest {
         // Arrange
         String password = "pass";
         String email = "email";
-        UserModel model = new UserModel.Builder().setActive(true).setEmailVerified(false).build();
+        Set<ERoles> roles = Set.of(ERoles.ROLE_USER, ERoles.ROLE_ADMIN);
+        UserModel model = new UserModel.Builder().setActive(true).setEmailVerified(false).setRoles(roles).build();
 
-        when(userRepository.findByEmail(any()))
-                .thenReturn(Optional.of(model));
-        when(passwordEncoder.matches(any(), any()))
-                .thenReturn(true);
-        when(errorMessages.getEmailNotVerifiedMessage())
-                .thenReturn("email not verified msg");
+        when(userRepository.findByEmail(any())).thenReturn(Optional.of(model));
+        when(passwordEncoder.matches(any(), any())).thenReturn(true);
+        when(errorMessages.getEmailNotVerifiedMessage()).thenReturn("email not verified msg");
 
         // Act & Assert
         assertThatThrownBy(() -> loginUseCase.handle(email, password))
@@ -163,7 +163,7 @@ public class LoginUseCaseTest {
                 .hasMessage("email not verified msg");
 
         verify(errorMessages).getEmailNotVerifiedMessage();
-        verify(emailService).sendVerificationEmail(model.getId(), model.getEmail());
+        verify(emailService).sendVerificationEmail(model.getId(), roles, model.getEmail());
     }
 
     @Test

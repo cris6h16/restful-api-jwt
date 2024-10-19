@@ -2,11 +2,13 @@ package org.cris6h16.UseCases;
 
 import org.cris6h16.Exceptions.Impls.NotFoundException;
 import org.cris6h16.In.Ports.RequestResetPasswordPort;
-import org.cris6h16.Models.UserModel;
+import org.cris6h16.Models.ERoles;
 import org.cris6h16.Repositories.UserRepository;
 import org.cris6h16.Services.EmailService;
 import org.cris6h16.Utils.ErrorMessages;
 import org.cris6h16.Utils.UserValidator;
+
+import java.util.Set;
 
 public class RequestResetPasswordUseCase implements RequestResetPasswordPort {
 
@@ -27,13 +29,19 @@ public class RequestResetPasswordUseCase implements RequestResetPasswordPort {
     public void handle(String email) {
         userValidator.validateEmail(email);
 
-        UserModel user = findByEmailElseThrow(email);
-        emailService.sendResetPasswordEmail(user.getId(), user.getEmail());
+        Long id = findIdByEmailElseThrow(email);
+        Set<ERoles> roles = getRolesByEmail(email);
+
+        emailService.sendResetPasswordEmail(id, roles, email);
     }
 
-    private UserModel findByEmailElseThrow(String email) {
-        return userRepository
-                .findByEmail(email)
+    private Long findIdByEmailElseThrow(String email) {
+        return userRepository.findIdByEmail(email)
                 .orElseThrow(() -> new NotFoundException(errorMessages.getUserNotFoundMessage()));
     }
+
+    private Set<ERoles> getRolesByEmail(String email) {
+        return userRepository.getRolesByEmail(email);
+    }
+
 }

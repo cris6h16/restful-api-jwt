@@ -1,15 +1,43 @@
 spring:
 
+  config:
+    import:
+      - classpath:controller-paths.yaml
+      - classpath:error-messages.yaml
+      - classpath:email-service.yaml
+      - classpath:cors.yaml
+      - classpath:token.yaml
+
   application:
     name: restful-api-jwt
 
-  datasource:
-    driver-class-name: org.postgresql.Driver
-
   jpa:
+    show-sql: ${jpa.show-sql}
+    hibernate:
+      ddl-auto: ${jpa.properties.hibernate.ddl-auto}
     properties:
       hibernate:
+        format_sql: ${jpa.properties.hibernate.format_sql}
+        ddl-auto: ${jpa.properties.hibernate.ddl-auto}
         dialect: org.hibernate.dialect.PostgreSQLDialect
+
+
+  datasource:
+    url: jdbc:postgresql://${db.host}:${db.port}/${db.db-name}
+    driver-class-name: org.postgresql.Driver
+    username: ${db.username}
+    password: ${db.password}
+    hikari:
+      schema: ${db.hikari.schema}
+
+  data:
+    redis:
+      host: ${redis.host}
+      port: ${redis.port}
+      password: ${redis.password}
+      ttl:
+        minutes: 5
+
 
 server:
   port: 8080
@@ -17,7 +45,10 @@ server:
     include-message: never
     include-exception: off
     include-stacktrace: never
-
+  compression:
+    enabled: true
+    mime-types: application/json
+    min-response-size: 2048
 
 
 

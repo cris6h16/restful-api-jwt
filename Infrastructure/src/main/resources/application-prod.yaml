@@ -1,38 +1,50 @@
 frontend:
-  core: http://mocked.com
+  core: ${FRONTEND_CORE}
 
 swagger:
   ui:
     core: ${SWAGGER_CORE}
+
+db:
+  host: ${PSQL_HOSTNAME}
+  port: ${PSQL_PORT}
+  db-name: ${PSQL_DB_NAME}
+  username: ${PSQL_USER}
+  password: ${PSQL_PASS}
+  hikari:
+    schema: prod
+
+jpa:
+  show-sql: false
+  properties:
+    hibernate:
+      format_sql: false
+      ddl-auto: update
+
+redis:
+  host: ${REDIS_HOSTNAME}
+  port: ${REDIS_PORT}
+  password: ${REDIS_PASS}
+
+
+
+
+logging:
+  level:
+    root: error
+  logback:
+    rollingpolicy:
+      file-name-pattern: ./logs/restful-api-jwt.%d{yyyy-MM-dd}.log  # one per day
+      clean-history-on-start: false
+      max-history: 7  # 7 days
+      total-size-cap: 200MB  # limit total logs size
+
 
 spring:
 
   config:
     import:
       - classpath:base.yaml
-      - classpath:controller-paths.yaml
-      - classpath:error-messages.yaml
-      - classpath:email-service.yaml
-      - classpath:cors.yaml
-      - classpath:token.yaml
-
-  datasource:
-    url: jdbc:postgresql://${PSQL_HOSTNAME}:${PSQL_PORT}/${PSQL_DB_NAME}
-    username: ${PSQL_USER}
-    password: ${PSQL_PASS}
-    hikari:
-      schema: prod
-  data:
-    redis:
-      host: ${REDIS_HOSTNAME}
-      port: ${REDIS_PORT}
-      password: ${REDIS_PASS}
-      ttl:
-        minutes: 5
-
-  jpa:
-    hibernate:
-      ddl-auto: update # todo: in docker file make a stage for create, later update for prod
 
   mail:
     host: smtp.gmail.com
@@ -49,27 +61,6 @@ spring:
             checkserveridentity: true
         debug: false
 
-server:
-  ssl:
-    key-store: classpath:${JKS_NAME}
-    key-store-password: ${KEY_STORE_PASS}
-    key-store-type: JKS
-    key-alias: ${KEY_ALIAS}
-    enabled: true
-  compression:
-    enabled: true
-    mime-types: application/json
-    min-response-size: 2048
-
-logging:
-  level:
-    root: info
-  logback:
-    rollingpolicy:
-      file-name-pattern: ./logs/restful-api-jwt.%d{yyyy-MM-dd}.log  # one per day
-      clean-history-on-start: false
-      max-history: 7  # 7 days
-      total-size-cap: 200MB  # limit total logs size
 
 
   # My ISP is blocking port 587, so I have to use port 465
@@ -89,3 +80,14 @@ logging:
   #          starttls:
   #            enable: true
   #            required: true
+
+
+  # SSL disabled due to chrome is blocking self-signed certificates...
+
+#server:
+#  ssl:
+#    key-store: classpath:${JKS_NAME}
+#    key-store-password: ${KEY_STORE_PASS}
+#    key-store-type: JKS
+#    key-alias: ${KEY_ALIAS}
+#    enabled: true

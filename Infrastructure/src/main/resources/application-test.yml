@@ -5,44 +5,38 @@ swagger:
   ui:
     core: http://mocked2.com
 
+db:
+  host: ${PSQL_HOSTNAME}
+  port: ${PSQL_PORT}
+  db-name: ${PSQL_DB_NAME}
+  username: ${PSQL_USER}
+  password: ${PSQL_PASS}
+  hikari:
+    schema: prod
 
-spring:
-
-  config:
-    import:
-      - classpath:base.yaml
-      - classpath:controller-paths.yaml
-      - classpath:cors.yaml
-      - classpath:token.yaml
-      - classpath:error-messages.yaml
-      - classpath:email-service.yaml
-      - classpath:token.yaml
-
-#  profiles.active: base I can't active a profile being this file a specific-profile
-
-  datasource:
-    url: jdbc:postgresql://localhost:5432/restful-api-jwt
-    username: cris6h16
-    password: 12345678
-    hikari:
-      schema: test
-
-  jpa:
+jpa:
     show-sql: true
-    hibernate:
-      ddl-auto: create
     properties:
       hibernate:
         format_sql: true
+        ddl-auto: update
 
-#  used in integration tests of endpoints
-  data:
-    redis:
-      host: localhost
-      port: 6000
-      ttl:
-        minutes: 5
+redis:
+  host: ${REDIS_HOSTNAME}
+  port: ${REDIS_PORT}
+  password: ${REDIS_PASS}
+
+
+
 logging:
   level:
     root: trace
+
+
+spring:
+  config:
+    import:
+      - classpath:base.yaml
+
+
 

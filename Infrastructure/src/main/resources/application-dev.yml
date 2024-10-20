@@ -5,31 +5,37 @@ swagger:
   ui:
     core: http://localhost:8015
 
+db:
+  host: ${PSQL_HOSTNAME}
+  port: ${PSQL_PORT}
+  db-name: ${PSQ L_DB_NAME}
+  username: ${PSQL_USER}
+  password: ${PSQL_PASS}
+  hikari:
+    schema: dev
+
+jpa:
+  show-sql: true
+  properties:
+    hibernate:
+      format_sql: true
+      ddl-auto: create
+
+redis:
+  host: ${REDIS_HOSTNAME}
+  port: ${REDIS_PORT}
+  password: ${REDIS_PASS}
+
+
+logging:
+  level:
+    root: debug
+
+
 spring:
   config:
     import:
       - classpath:base.yaml
-      - classpath:controller-paths.yaml
-      - classpath:error-messages.yaml
-      - classpath:email-service.yaml
-      - classpath:token.yaml
-      - classpath:cors.yaml
-
-  datasource:
-    url: jdbc:postgresql://localhost:9000/api
-    username: cris6h16
-    password: 12345678
-    hikari:
-      schema: prod
-
-  jpa:
-    show-sql: true
-    hibernate:
-      ddl-auto: create
-    properties:
-      hibernate:
-        format_sql: true
-        dialect: org.hibernate.dialect.PostgreSQLDialect
 
   mail:
     host: smtp.gmail.com
@@ -46,27 +52,3 @@ spring:
             checkserveridentity: true
         debug: false
 
-
-  data:
-    redis:
-      host: localhost
-      port: 6000
-      ttl:
-        minutes: 5
-#      password: admin
-#      username: default
-
-logging:
-  level:
-    root: debug
-#server:
-#  ssl:
-#    key-store: classpath:${JKS_NAME}
-#    key-store-password: ${KEY_STORE_PASS}
-#    key-store-type: JKS
-#    key-alias: ${KEY_ALIAS}
-#    enabled: true
-#  compression:
-#    enabled: true
-#    mime-types: application/json
-#    min-response-size: 2048

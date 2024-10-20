@@ -5,11 +5,6 @@ services:
     hostname: backend
     build:
       context: .
-      args:
-        - KEY_PASS=${KEY_PASS}
-        - KEY_STORE_PASS=${KEY_STORE_PASS}
-        - JKS_NAME=${JKS_NAME}
-        - KEY_ALIAS=${KEY_ALIAS}
       dockerfile: Dockerfile-app
     ports:
       - "${BACK_PORT}:8080"
@@ -26,9 +21,6 @@ services:
       - MAIL_PASS=${MAIL_PASS}
       - FRONTEND_URL=${FRONTEND_URL} # cors
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
-      - KEY_ALIAS=${KEY_ALIAS}
-      - JKS_NAME=${JKS_NAME}
-      - KEY_STORE_PASS=${KEY_STORE_PASS}
       - SWAGGER_CORE="http://localhost:${SWAGGER_UI_PORT}" # cors, localhost because hostname can be used just inside the containers
     networks:
       - private

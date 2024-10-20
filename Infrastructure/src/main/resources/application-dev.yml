@@ -32,6 +32,10 @@ mail:
   username: ${MAIL_USER}
   password: ${MAIL_PASS}
 
+token:
+  jwt:
+    secret-key: 123456789123456012345678912345678
+
 logging:
   level:
     root: debug

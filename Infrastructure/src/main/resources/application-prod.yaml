@@ -1,5 +1,5 @@
 frontend:
-  core: ${FRONTEND_CORE}
+  core: ${FRONTEND_URL}
 
 swagger:
   ui:
@@ -26,7 +26,9 @@ redis:
   port: ${REDIS_PORT}
   password: ${REDIS_PASS}
 
-
+token:
+  jwt:
+    secret-key: ${JWT_SECRET_KEY}
 
 mail:
   username: ${MAIL_USER}
@@ -50,4 +52,3 @@ spring:
     import:
       - classpath:base.yaml
       - classpath:mail.yaml
-

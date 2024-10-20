@@ -7,9 +7,11 @@ services:
       context: .
       dockerfile: Dockerfile-app
     ports:
-      - "${BACK_PORT}:8080"
+      - "${BACK_PUBLIC_PORT}:8080"
     restart: unless-stopped
     environment:
+      - FRONTEND_URL=${FRONTEND_URL} # cors
+      - SWAGGER_CORE="http://localhost:${SWAGGER_UI_PORT}" # cors, localhost because hostname can be used just inside the containers
       - PSQL_HOSTNAME=${PSQL_HOSTNAME}
       - PSQL_PORT=${PSQL_PORT}
       - PSQL_DB_NAME=${PSQL_DB_NAME}
@@ -17,11 +19,10 @@ services:
       - PSQL_PASS=${PSQL_PASS}
       - REDIS_HOSTNAME=${REDIS_HOSTNAME}
       - REDIS_PORT=${REDIS_PORT}
+      - REDIS_PASS=${REDIS_PASS}
       - MAIL_USER=${MAIL_USER}
       - MAIL_PASS=${MAIL_PASS}
-      - FRONTEND_URL=${FRONTEND_URL} # cors
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
-      - SWAGGER_CORE="http://localhost:${SWAGGER_UI_PORT}" # cors, localhost because hostname can be used just inside the containers
     networks:
       - private
       - public

@@ -3,7 +3,7 @@ frontend:
 
 swagger:
   ui:
-    core: http://localhost:8015
+    core: http://localhost:8007
 
 db:
   host: localhost
@@ -12,7 +12,7 @@ db:
   username: cris6h16
   password: 12345678
   hikari:
-    schema: dev
+    schema: prod
 
 jpa:
   show-sql: true
@@ -23,7 +23,7 @@ jpa:
 
 redis:
   host: localhost
-  port: 6000
+  port: 6379
   password: admin
 
 

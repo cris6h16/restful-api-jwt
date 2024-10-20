@@ -11,18 +11,19 @@ services:
     restart: unless-stopped
     environment:
       - FRONTEND_URL=${FRONTEND_URL} # cors
-      - SWAGGER_CORE="http://localhost:${SWAGGER_UI_PORT}" # cors, localhost because hostname can be used just inside the containers
+      - SWAGGER_CORE="http://172.28.192.1:${SWAGGER_UI_EXTERNAL_PORT}" # cors, localhost because hostname can be used just inside the containers
       - PSQL_HOSTNAME=${PSQL_HOSTNAME}
-      - PSQL_PORT=${PSQL_PORT}
+      - PSQL_PORT=5432
       - PSQL_DB_NAME=${PSQL_DB_NAME}
       - PSQL_USER=${PSQL_USER}
       - PSQL_PASS=${PSQL_PASS}
       - REDIS_HOSTNAME=${REDIS_HOSTNAME}
-      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_PORT=6379
       - REDIS_PASS=${REDIS_PASS}
       - MAIL_USER=${MAIL_USER}
       - MAIL_PASS=${MAIL_PASS}
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - LOGGING_LEVEL_ROOT=${LOGGING_LEVEL_ROOT}
     networks:
       - private
       - public
@@ -42,8 +43,6 @@ services:
       - ./db/init:/docker-entrypoint-initdb.d
     networks:
       - private
-    ports:
-      - "${PSQL_PORT}:5432"
     environment:
       POSTGRES_USER: ${PSQL_USER}
       POSTGRES_PASSWORD: ${PSQL_PASS}
@@ -62,8 +61,6 @@ services:
       -  redis-data:/data
     environment:
       REDIS_ARGS: --requirepass ${REDIS_PASS}
-    ports:
-      - "6379:6379"
     networks:
       - private
 
@@ -76,7 +73,7 @@ services:
     volumes:
       - ./openapi-description.yaml:/openapi-description.yaml
     ports:
-      - "${SWAGGER_UI_PORT}:8080"
+      - "${SWAGGER_UI_EXTERNAL_PORT}:8080"
     restart: unless-stopped
     networks:
       - public

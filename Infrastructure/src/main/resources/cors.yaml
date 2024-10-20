@@ -1,14 +1,16 @@
 cors:
   path-pattern: /**
   allowed-origins:
-    - ${frontend.core}
-    - ${swagger.ui.core}
+#    - ${frontend.core}
+#    - ${swagger.ui.core}
+    - '*'
   allowed-methods:
     - GET
     - POST
     - PUT
     - DELETE
     - PATCH
+    - OPTIONS
   allowed-headers:
     - Content-Type
     - Authorization

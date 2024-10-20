@@ -72,7 +72,7 @@ public class SecurityConfig {
         return http.build();
     }
 
-     String[] postAndAuthenticated() {
+    String[] postAndAuthenticated() {
         log.debug("Extracting ( HTTP POST & Authenticated ) paths");
         return new String[]{
                 extractPath(props -> props.getAuthentication().getRefreshAccessToken())
@@ -108,7 +108,6 @@ public class SecurityConfig {
                 extractPath(props -> props.getUser().getAccount().getCore()) // de;ete account
         };
     }
-
 
 
     String[] postAndUserPaths() {
@@ -157,14 +156,6 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration(corsProperties.getPathPattern(), configuration);
 
-        log.info("Cors configuration loaded with allowed origins: {}, allowed methods: {}, allowed headers: {}, exposed headers: {}, allow credentials: {}, max age: {}",
-                corsProperties.getAllowedOrigins(),
-                corsProperties.getAllowedMethods(),
-                corsProperties.getAllowedHeaders(),
-                corsProperties.getExposedHeaders(),
-                corsProperties.isAllowCredentials(),
-                corsProperties.getMaxAge()
-        );
         return source;
     }
 

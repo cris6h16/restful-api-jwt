@@ -6,11 +6,11 @@ swagger:
     core: http://localhost:8015
 
 db:
-  host: ${PSQL_HOSTNAME}
-  port: ${PSQL_PORT}
-  db-name: ${PSQ L_DB_NAME}
-  username: ${PSQL_USER}
-  password: ${PSQL_PASS}
+  host: localhost
+  port: 9000
+  db-name: api
+  username: cris6h16
+  password: 12345678
   hikari:
     schema: dev
 
@@ -22,10 +22,15 @@ jpa:
       ddl-auto: create
 
 redis:
-  host: ${REDIS_HOSTNAME}
-  port: ${REDIS_PORT}
-  password: ${REDIS_PASS}
+  host: localhost
+  port: 6000
+  password: admin
 
+
+
+mail:
+  username: ${MAIL_USER}
+  password: ${MAIL_PASS}
 
 logging:
   level:
@@ -36,19 +41,5 @@ spring:
   config:
     import:
       - classpath:base.yaml
-
-  mail:
-    host: smtp.gmail.com
-    port: 465
-    username: ${MAIL_USER}
-    password: ${MAIL_PASS}
-    protocol: smtp
-    properties:
-      mail:
-        smtp:
-          ssl:
-            enable: true
-            trust: smtp.gmail.com
-            checkserveridentity: true
-        debug: false
+      - classpath:mail.yaml
 

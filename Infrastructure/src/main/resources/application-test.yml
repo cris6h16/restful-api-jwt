@@ -6,11 +6,11 @@ swagger:
     core: http://mocked2.com
 
 db:
-  host: ${PSQL_HOSTNAME}
-  port: ${PSQL_PORT}
-  db-name: ${PSQL_DB_NAME}
-  username: ${PSQL_USER}
-  password: ${PSQL_PASS}
+  host: localhost
+  port: 9000
+  db-name: api
+  username: cris6h16
+  password: 12345678
   hikari:
     schema: prod
 
@@ -19,12 +19,12 @@ jpa:
     properties:
       hibernate:
         format_sql: true
-        ddl-auto: update
+        ddl-auto: create
 
 redis:
-  host: ${REDIS_HOSTNAME}
-  port: ${REDIS_PORT}
-  password: ${REDIS_PASS}
+  host: localhost
+  port: 6000
+  password: admin
 
 
 

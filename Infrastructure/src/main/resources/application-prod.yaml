@@ -28,6 +28,9 @@ redis:
 
 
 
+mail:
+  username: ${MAIL_USER}
+  password: ${MAIL_PASS}
 
 logging:
   level:
@@ -40,54 +43,11 @@ logging:
       total-size-cap: 200MB  # limit total logs size
 
 
+
 spring:
 
   config:
     import:
       - classpath:base.yaml
+      - classpath:mail.yaml
 
-  mail:
-    host: smtp.gmail.com
-    port: 465
-    username: ${MAIL_USER}
-    password: ${MAIL_PASS}
-    protocol: smtp
-    properties:
-      mail:
-        smtp:
-          ssl:
-            enable: true
-            trust: smtp.gmail.com
-            checkserveridentity: true
-        debug: false
-
-
-
-  # My ISP is blocking port 587, so I have to use port 465
-  #  mail:
-  #    host: smtp.gmail.com
-  #    port: 587
-  #    username: ${MAIL_USER}
-  #    password: ${MAIL_PASS}
-  #    protocol: smtp
-  #    properties:
-  #      mail:
-  #        debug: true
-  #        transport:
-  #          protocol: smtp
-  #        smtp:
-  #          auth: true
-  #          starttls:
-  #            enable: true
-  #            required: true
-
-
-  # SSL disabled due to chrome is blocking self-signed certificates...
-
-#server:
-#  ssl:
-#    key-store: classpath:${JKS_NAME}
-#    key-store-password: ${KEY_STORE_PASS}
-#    key-store-type: JKS
-#    key-alias: ${KEY_ALIAS}
-#    enabled: true

@@ -2,6 +2,7 @@ package org.cris6h16.Config.SpringBoot.Services;
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
+import org.cris6h16.Config.SpringBoot.Properties.RedisProperty;
 import org.cris6h16.In.Commands.GetAllPublicProfilesCommand;
 import org.cris6h16.In.Results.GetAllPublicProfilesOutput;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,7 +13,12 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 
+import java.time.Duration;
+
 public class CacheServiceTest {
+
+    @Mock
+    RedisProperty redisProperty;
 
     @Mock
     private RedisTemplate<GetAllPublicProfilesCommand, GetAllPublicProfilesOutput> redisTemplate;
@@ -66,10 +72,18 @@ public class CacheServiceTest {
         GetAllPublicProfilesCommand command = mock(GetAllPublicProfilesCommand.class);
         GetAllPublicProfilesOutput output = mock(GetAllPublicProfilesOutput.class);
 
+        mockRedisProperty(17);
+
         // Act
         cacheService.putAllUsers(command, output);
 
         // Assert
-        verify(valueOperations).set(command, output);
+        verify(valueOperations).set(command, output, Duration.ofMinutes(17));
+        verify(redisProperty.getTtl()).getMinutes();
+    }
+
+    private void mockRedisProperty(int minutes) {
+        when(redisProperty.getTtl()).thenReturn(mock(RedisProperty.Ttl.class));
+        when(redisProperty.getTtl().getMinutes()).thenReturn(minutes);
     }
 }

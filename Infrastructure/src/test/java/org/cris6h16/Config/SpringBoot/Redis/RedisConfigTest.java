@@ -53,19 +53,4 @@ class RedisConfigTest {
         assertThat(getAllTemplate.getValueSerializer() ).isInstanceOf(Jackson2JsonRedisSerializer.class);
     }
 
-    @Test
-    void cacheManager_correctInteractionWithProperty(){
-        // Arrange
-        int minutes = 1234567890;
-
-        when(redisProperty.getTtl()).thenReturn(mock(RedisProperty.Ttl.class));
-        when(redisProperty.getTtl().getMinutes()).thenReturn(minutes);
-
-        // Act
-        RedisCacheManager cacheManager = redisConfig.cacheManager(new LettuceConnectionFactory());
-
-        // Assert
-
-        verify(redisProperty.getTtl()).getMinutes();
-    }
 }

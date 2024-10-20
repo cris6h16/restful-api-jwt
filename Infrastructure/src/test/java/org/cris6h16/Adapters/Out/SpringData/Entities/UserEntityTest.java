@@ -137,6 +137,7 @@ public class UserEntityTest {
         // Arrange
         UserEntity u = createUserEntity();
         userJpaRepository.save(u);
+        userJpaRepository.flush();
 
         // Act
         UserEntity eager = userJpaRepository.findById(u.getId()).orElseThrow();

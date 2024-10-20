@@ -52,3 +52,13 @@ server:
 
 
 
+
+  # SSL disabled due to chrome is blocking self-signed certificates...
+
+#server:
+#  ssl:
+#    key-store: classpath:${JKS_NAME}
+#    key-store-password: ${KEY_STORE_PASS}
+#    key-store-type: JKS
+#    key-alias: ${KEY_ALIAS}
+#    enabled: true

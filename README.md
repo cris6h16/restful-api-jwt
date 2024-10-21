@@ -1,4 +1,46 @@
-## 1 Design
+## 0. Run the project
+
+### 0.1 Requirements
+
+- Docker
+
+### 0.2 Run
+
+1. add the 2 required environment variables in the [.env](.env) file ( described in the mentioned file )
+    - `MAIL_USER`
+    - `MAIL_PASS`
+
+2. Run the following command in the root directory of the project:
+
+```bash
+docker compose up
+```
+
+wait until the project is up and running, the first time can take a few minutes.
+
+3. when it's built & running you can access to:
+
+- [swagger-ui](http://localhost:8007)
+- [backend](http://localhost:3001)
+
+_remember that backend is secured, you cant access directly using the browser, but you can use the swagger-ui, curl, postman,
+etc. for test the endpoints.
+
+### 0.3 Additional
+
+- You can the default admin user for test the admin endpoints with the following credentials:
+
+```text
+username: cris6h16
+password: 12345678
+```
+
+- if you want see the db or the cache you can see the real time data accessing directly to the containers,
+also you can use _pgAdmin_ for access to the database, or _RedisInsight_ for access to the cache, 
+but for this last one you need to expose the port of db or/and cache in the docker-compose file.
+
+
+## 1. Design
 
 ### 1.1 JWT Structure
 
@@ -30,36 +72,17 @@ Used to authenticate the user, this one is used by the client to access the API.
 }
 ```
 
-### 1.3 Token Storage
+### 1.3 Authentication
 
-Tokens are commonly stored in **Local Storage** or **Session Storage** on the client side. This method simplifies
-accessing the token when sending requests with the token in the `Authorization` header, as required by standards such as
-**OAuth2**, which mandates that tokens be included in the `Authorization` header for secured endpoints.
+After a successful authentication a refresh & access token will be returned.   
 
-#### Security Considerations
+```bash
+{
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cC...",
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cC..."
+}
+```
 
-- **CSRF Protection:** Storing the token in Local/Session Storage helps prevent **CSRF** attacks since the token must be
-  manually added to the `Authorization` header and is not automatically included in requests like cookies.
-- **XSS Vulnerability:** However, this approach can be vulnerable to **XSS** attacks, as JavaScript running on the
-  client can potentially access the token.
-
-#### Best Practices for Secure Token Storage
-
-During a workshop, the following insights were highlighted:
-
-- **JWTs** stored in Local/Session Storage and accessible via JavaScript are susceptible to **XSS** attacks.
-- **JWTs** securely stored in cookies offer enhanced protection against both **XSS** and **CSRF** attacks.
-
-  **Using Cookies:**
-    - **HttpOnly:** Prevents **XSS** attacks by making the cookie inaccessible to JavaScript.
-    - **Secure:** Ensures the cookie is only sent over **HTTPS**, safeguarding it during transmission.
-    - **SameSite:** Prevents **CSRF** attacks by restricting the contexts in which the cookie is sent (e.g., strict mode
-      only sends cookies in first-party contexts).
-    - **Path:** Limits the scope of the cookie, ensuring it is only sent to specified paths.
-    - **Max-Age:** Defines the cookie’s lifetime, after which it expires and is deleted.
-
-By storing **JWTs** in secure, HttpOnly cookies, you can significantly enhance the security of token storage on the
-client side, protecting against common web vulnerabilities like **XSS** and **CSRF** attacks.
 
 ### 1.4 Cache
 
@@ -362,6 +385,7 @@ Guide to Software Structure and Design"_ by Robert C. Martin.
   - _JUnit 5_
   - _AssertJ_
   - _Mockito_
+- _Docker_
 - _Docker Compose_
 - _PostgreSQL_
 - _OpenAPI_
@@ -372,10 +396,11 @@ Guide to Software Structure and Design"_ by Robert C. Martin.
 
 ### 2.2 Refactoring   
 
-I know that there are some things that can be improved, like break down the
-`.yaml` files into more-specific files, like `paths.yaml`, `jwt.yaml`, `responses.yaml`, etc.
-this is one that I just remembered now, but honestly I can stay refactoring this project 
-today, tomorrow, this week, this month and so on; and I will always find something to improve.
+There are several areas for improvement in the current implementation. One key aspect is the potential to add an additional layer between the port and the inputs. While I have implemented a facade to simplify the use of ports, it currently handles transactions as well, which means it does not purely act as a facade. Ideally, the facade should only serve as a controller layer, helping to separate concerns.
+
+If I add more input types in the future, I may need additional facades to manage those inputs and their corresponding transactions, leading to duplication in transaction handling that should be addressed. Additionally, the tests can be refactored to enhance clarity and coverage.
+
+It's essential to recognize that refactoring is an ongoing process. I could spend an indefinite amount of time refining this project and will always discover areas that could be improved. In summary, while there are many potential improvements to be made, refactoring should be viewed as a continuous journey rather than a final destination.
 
 ### 2.3 Questions you may have
 
@@ -400,7 +425,29 @@ I feel when I write the OpenAPI Description I have all the control of the docume
 because I wanna test the real behavior ( of course in a different
 environment, like a different schema, etc. ) even if those tests are slower.
 
-2. What's about the coverage?
+2. Why cors comes disabled in the application?
+
+If you had ever used Docker you may know the problem with CORS, just for give you an idea, this 
+was one of my logs:
+
+```bash
+...
+...
+backend     | 2024-10-20T16:36:43.154Z  INFO 7 --- [restful-api-jwt] [           main] o.c.C.S.Security.SecurityConfig          : Cors configuration loaded with allowed origins: [http://HOLA:3000, "http://localhost:8007"], allowed methods: [GET, POST, PUT, DELETE, PATCH, OPTIONS], allowed headers: [Content-Type, Authorization], exposed headers: [Content-Type], allow credentials: false, max age: 3600
+backend     | 2024-10-20T16:36:43.155Z  INFO 7 --- [restful-api-jwt] [           main] o.c.C.S.Security.SecurityConfig          : Cors configuration loaded with allowed origins: [http://HOLA:3000, "http://localhost:8007"], allowed methods: [GET, POST, PUT, DELETE, PATCH, OPTIONS], allowed headers: [Content-Type, Authorization], exposed headers: [Content-Type], allow credentials: false, max age: 3600
+backend     | 2024-10-20T16:36:43.191Z DEBUG 7 --- [restful-api-jwt] [
+...
+...
+backend     | 2024-10-20T16:40:37.067Z DEBUG 7 --- [restful-api-jwt] [l-1 housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Pool stats (total=10, active=0, idle=10, waiting=0)
+backend     | 2024-10-20T16:40:37.067Z DEBUG 7 --- [restful-api-jwt] [l-1 housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Fill pool skipped, pool has sufficient level or currently being filled.                                                                                                                                                
+backend     | 2024-10-20T16:40:40.656Z DEBUG 7 --- [restful-api-jwt] [nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/v1/auth/login
+backend     | 2024-10-20T16:40:40.658Z DEBUG 7 --- [restful-api-jwt] [nio-8080-exec-3] o.s.web.cors.DefaultCorsProcessor        : Reject: 'http://localhost:8007' origin is not allowed                                                                                                                                                                                 
+```
+_and dont think that my app just logs and the config was not being loaded, or that my app just printed it but
+the config never was set, the app logs when the config is loaded_
+
+
+4. What's about the coverage?
 
 > I achieved 100% coverage in the `domain`, `application`, `infrastructure`.
 

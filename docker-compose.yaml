@@ -9,7 +9,7 @@ services:
     ports:
       - "${BACK_PUBLIC_PORT}:8080"
     restart: unless-stopped
-    environment:
+    environment: # cors comes deactivated, dont worry about the 2 env variables below
       - FRONTEND_URL=${FRONTEND_URL} # cors
       - SWAGGER_CORE="http://172.28.192.1:${SWAGGER_UI_EXTERNAL_PORT}" # cors, localhost because hostname can be used just inside the containers
       - PSQL_HOSTNAME=${PSQL_HOSTNAME}
